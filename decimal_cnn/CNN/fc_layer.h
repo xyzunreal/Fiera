@@ -3,6 +3,8 @@
 #include <float.h>
 #include <string.h>
 #include "layer_t.h"
+#include "optimization_method.h"
+#include "gradient_t.h"
 
 #pragma pack(push, 1)
 struct fc_layer_t
@@ -28,20 +30,22 @@ struct fc_layer_t
 
 		int maxval = in_size.x * in_size.y * in_size.z;
 
+		// Weight initialization
+		
 		for ( int i = 0; i < out_size; i++ )
 			for ( int h = 0; h < in_size.x*in_size.y*in_size.z; h++ )
 				weights( h, i, 0 ) = 2.19722f / maxval * rand() / float( RAND_MAX );
 		// 2.19722f = f^-1(0.9) => x where [1 / (1 + exp(-x) ) = 0.9]
 	}
 
-	float activator_function( float x )
+	float activator_function( float x )            // Not used.
 	{
 		//return tanhf( x );
 		float sig = 1.0f / (1.0f + exp( -x ));
 		return sig;
 	}
 
-	float activator_derivative( float x )
+	float activator_derivative( float x )          // Not used
 	{
 		//float t = tanhf( x );
 		//return 1 - t * t;
@@ -56,6 +60,7 @@ struct fc_layer_t
 	}
 
 	int map( point_t d )
+	// Tensor saves data in 1D format. `map` maps 3D point to 1D tensor.
 	{
 		return d.z * (in.size.x * in.size.y) +
 			d.y * (in.size.x) +
@@ -63,6 +68,10 @@ struct fc_layer_t
 	}
 
 	void activate()
+	/* 
+	 * `activate` activates (forward propogate) the fc layer.
+	 * It saves the result after propogation in `out` variable.
+	 */
 	{
 		for ( int n = 0; n < out.size.x; n++ )
 		{
@@ -78,7 +87,7 @@ struct fc_layer_t
 
 			input[n] = inputv;
 
-			out( n, 0, 0 ) = activator_function( inputv );
+			out( n, 0, 0 ) = inputv;
 		}
 	}
 
@@ -101,6 +110,10 @@ struct fc_layer_t
 	}
 
 	void calc_grads( tensor_t<float>& grad_next_layer )
+	
+	// Calculates backward propogation and saves result in `grads_in`. 
+	
+
 	{
 		memset( grads_in.data, 0, grads_in.size.x *grads_in.size.y*grads_in.size.z * sizeof( float ) );
 		for ( int n = 0; n < out.size.x; n++ )
