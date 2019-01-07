@@ -5,7 +5,7 @@
 #include <string.h>
 
 //template<typename T>
-struct tensor_bit_t
+struct tensor_bin_t
 {
 	bitset<100000> data;
 
@@ -19,8 +19,12 @@ struct tensor_bit_t
 		//size.y = _y;
 		//size.z = _z;
 	//}
+	tensor_bin_t()
+	{
+		data = 0;
+	}
 
-	tensor_bit_t(const tensor_bit_t& other )
+	tensor_bin_t(const tensor_bin_t& other )
 	{
 		//data = new T[other.size.x *other.size.y *other.size.z];
 		//memcpy(
@@ -66,7 +70,7 @@ struct tensor_bit_t
 		];
 	}
 
-	void copy_from( std::vector<std::vector<std::vector<T>>> data )
+	void copy_from( std::vector<std::vector<std::vector<T> > > data )
 	{
 		int z = data.size();
 		int y = data[0].size();
@@ -78,11 +82,11 @@ struct tensor_bit_t
 					this->data[k*(size.x*size.y) + j*(size.x) + i] = data[k][j][i];
 	}
 	
-	xnor_builtin_popcount(tensor_bit_t other){
+	void xnor_builtin_popcount(tensor_bin_t other){
 		// 
 	}
 	
-	~tensor_bit_t()
+	~tensor_bin_t()
 	{
 		delete[] data;
 	}
