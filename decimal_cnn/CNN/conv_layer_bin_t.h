@@ -2,22 +2,32 @@
 #include "layer_t.h"
 
 #pragma pack(push, 1)
-struct conv_layer_t
+struct conv_layer_bin_t
 {
-	layer_type type = layer_type::conv;
+	layer_type type = layer_type::conv_bin;
 	tensor_t<float> grads_in;
 	tensor_t<float> in;
 	tensor_t<float> out;
+	tensor_bin_t in_bin;
+	tensor_bin_t out_bin;
 	std::vector<tensor_t<float>> filters;
+	vector<tensor_bin_t> filters_bin;
 	std::vector<tensor_t<gradient_t>> filter_grads;
 	uint16_t stride;
 	uint16_t extend_filter;
-
-	conv_layer_t( uint16_t stride, uint16_t extend_filter, uint16_t number_filters, tdsize in_size )
+	vector<float> alpha;
+	
+	conv_layer_bin_t( uint16_t stride, uint16_t extend_filter, uint16_t number_filters, tdsize in_size )
 		:
-		grads_in( in_size.x, in_size.y, in_size.z ),
-		in( in_size.x, in_size.y, in_size.z ),
+		grads_in( in_size.x, in_size.y, in_size.z),
+		in(in_size.x, in_size.y, in_size.z ),
 		out(
+		(in_size.x - extend_filter) / stride + 1,
+			(in_size.y - extend_filter) / stride + 1,
+			number_filters
+		),
+		in_bin(in_size.x, in_size.y, in_size.z),
+		out_bin(
 		(in_size.x - extend_filter) / stride + 1,
 			(in_size.y - extend_filter) / stride + 1,
 			number_filters
@@ -37,14 +47,27 @@ struct conv_layer_t
 		for ( int a = 0; a < number_filters; a++ )
 		{
 			tensor_t<float> t( extend_filter, extend_filter, in_size.z );
-
+			tensor_bin_t tb(extend_filter, extend_filter, in_size.z);
 			int maxval = extend_filter * extend_filter * in_size.z;
 
-			for ( int i = 0; i < extend_filter; i++ )
-				for ( int j = 0; j < extend_filter; j++ )
-					for ( int z = 0; z < in_size.z; z++ )
-						t( i, j, z ) = 1.0f / maxval * rand() / float( RAND_MAX );
+			for ( int i = 0; i < extend_filter; i++ ){
+			
+				for ( int j = 0; j < extend_filter; j++ ){
+					
+					for ( int z = 0; z < in_size.z; z++ ){
+						 //initialization of floating weights 
+						//t( i, j, z ) = (1.0f / maxval * (rand()-rand()) / float( RAND_MAX ));
+						 /**************temporary*************/
+						 t(i,j,z) = pow(-1,i^j)*2+i+j-3;
+						// initialization of binary weights
+						tb.data[tb(i,j,z)] = 0;
+					}
+				}
+			}
+			cout<<"******weights for conv_bin********\n"<<endl;
+			print_tensor(t);
 			filters.push_back( t );
+			filters_bin.push_back(tb);
 		}
 		for ( int i = 0; i < number_filters; i++ )
 		{
@@ -102,12 +125,76 @@ struct conv_layer_t
 		this->in = in;
 		activate();
 	}
-
+	
+	
+	void binarize(){
+		
+		// binarizes weights
+		for(int filter = 0; filter<filters.size(); filter++){
+			
+			tensor_t<float> &tf = filters[filter];
+			tensor_bin_t &tb = filters_bin[filter];
+			
+			for(int x=0; x< filters_bin[filter].size.x; x++){
+				for(int y=0; y< filters_bin[filter].size.y; y++){
+					for(int z=0; z< filters_bin[filter].size.z; z++){
+						// ************************ remember always take var.data[var(x,y,z)] *****************************
+						if(tf(x,y,z) >= 0) tb.data[tb(x,y,z)] = 1;
+						else tb.data[tb(x,y,z)] = 0;
+					}
+				}
+			}
+			cout<<"************ binarized weights **********\n";
+			print_tensor_bin(tb);
+		}
+		
+		//binarizes in 
+		for(int x=0; x<in.size.x; x++){
+			for(int y=0; y<in.size.y; y++){
+				for(int z=0; z<in.size.z; z++){
+					in_bin.data[in_bin(x,y,z)] = in(x,y,z)>=0 ? 1 : 0;
+					
+				}
+			}
+		}
+		cout<<"******binarize input**************"<<endl;
+		print_tensor_bin(in_bin);
+		
+	}
+	
+	void cal_mean(){
+		//cout<<filters.size()<<' '<<filters[0].size.x<<' '<<filters[0].size.y<<' '<<filters[0].size.z<<endl;
+		
+		alpha.resize(filters.size());
+		
+		for(int filter = 0; filter<filters.size(); filter++){
+			float sum = 0;
+			tensor_t<float> &tf = filters[filter];
+			for(int x=0; x<tf.size.x; x++)
+				for(int y=0; y<tf.size.y; y++)
+					for(int z=0; z<tf.size.z; z++){
+						sum += tf(x,y,z);
+				}
+			alpha[filter] = sum/(tf.size.x*tf.size.y*tf.size.z);
+		}
+		
+		cout<<"*******mean for weights*********\n";
+		cout<<alpha[0]<<endl;
+		
+		//~ return sum/(filters.size()*);
+	}
+	
 	void activate()
 	{
-		for ( int filter = 0; filter < filters.size(); filter++ )
+		//~ cout<<"*******debug*******"<<endl;
+		//initialize alpha for xornet
+		cal_mean();
+		//binarize filters and in 
+		binarize();
+		
+		for ( int filter = 0; filter < filters_bin.size(); filter++ )
 		{
-			tensor_t<float>& filter_data = filters[filter];
+			tensor_bin_t &filter_data = filters_bin[filter];
 			for ( int x = 0; x < out.size.x; x++ )
 			{
 				for ( int y = 0; y < out.size.y; y++ )
@@ -118,14 +205,19 @@ struct conv_layer_t
 						for ( int j = 0; j < extend_filter; j++ )
 							for ( int z = 0; z < in.size.z; z++ )
 							{
-								float f = filter_data( i, j, z );
-								float v = in( mapped.x + i, mapped.y + j, z );
-								sum += f*v;
+								bool f = filter_data.data[filter_data( i, j, z )];
+								bool v = in_bin.data[in_bin( mapped.x + i, mapped.y + j, z )];
+								sum += (!(f^v));
 							}
-					out( x, y, filter ) = sum;
+					out( x, y, filter ) = (2*sum - extend_filter*extend_filter*in.size.z);
+					
+					out(x,y,filter) *= alpha[filter];
+					
 				}
 			}
 		}
+		cout<<"*********output for conv_bin*********\n";
+		print_tensor(out);
 	}
 	
 	
@@ -144,7 +236,7 @@ struct conv_layer_t
 					}
 	}
 
-	void calc_grads( tensor_t<float>& grad_next_layer, bool ismini)
+	void calc_grads( tensor_t<float>& grad_next_layer, bool ismini = false)
 	{
 
 		for ( int k = 0; k < filter_grads.size(); k++ )

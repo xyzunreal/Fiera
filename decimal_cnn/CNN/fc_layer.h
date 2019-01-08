@@ -34,8 +34,13 @@ struct fc_layer_t
 		
 		for ( int i = 0; i < out_size; i++ )
 			for ( int h = 0; h < in_size.x*in_size.y*in_size.z; h++ )
-				weights( h, i, 0 ) = 2.19722f / maxval * rand() / float( RAND_MAX );
+				/**************temporary*************/
+				weights(h,i,0) = pow(-1,i^h)*2+h+i-3;
+				//weights( h, i, 0 ) = 2.19722f / maxval * rand() / float( RAND_MAX );
 		// 2.19722f = f^-1(0.9) => x where [1 / (1 + exp(-x) ) = 0.9]
+		
+		cout<<"********weights for fc************\n";
+		print_tensor(weights);
 	}
 
 	float activator_function( float x )            // Not used.
@@ -85,10 +90,13 @@ struct fc_layer_t
 						inputv += in( i, j, z ) * weights( m, n, 0 );
 					}
 
-			input[n] = inputv;
 
 			out( n, 0, 0 ) = inputv;
+			out( n, 0, 0 ) = n*2-3;
 		}
+		
+		cout<<"*******output for fc**********\n";
+		print_tensor(out);
 	}
 
 	void fix_weights()

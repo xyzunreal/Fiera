@@ -1,11 +1,15 @@
 #pragma once
 #include "tensor_t.h"
+#include "tensor_bin_t.h"
 #include "optimization_method.h"
 #include "fc_layer.h"
 #include "pool_layer_t.h"
-#include "relu_layer_t.h"
+#include "prelu_layer_t.h"
 #include "conv_layer_t.h"
 #include "dropout_layer_t.h"
+#include "conv_layer_bin_t.h"
+#include "fc_layer_bin.h"
+#include "scale_layer_t.h"
 
 static void calc_grads( layer_t* layer, tensor_t<float>& grad_next_layer )
 {
@@ -14,8 +18,20 @@ static void calc_grads( layer_t* layer, tensor_t<float>& grad_next_layer )
 		case layer_type::conv:
 			((conv_layer_t*)layer)->calc_grads( grad_next_layer );
 			return;
-		case layer_type::relu:
-			((relu_layer_t*)layer)->calc_grads( grad_next_layer );
+		//to be checked for binary
+		//~ case layer_type::scale:
+			//~ ((scale_layer_t*)layer)->calc_grads( grad_next_layer );
+			//~ return;
+		//to be checked for binary
+		case layer_type::conv_bin:
+			((conv_layer_bin_t*)layer)->calc_grads( grad_next_layer );
+			return;
+		// to be checked for binary
+		case layer_type::fc_bin:
+			((fc_layer_bin_t*)layer)->calc_grads( grad_next_layer );
+			return;
+		case layer_type::prelu:
+			((prelu_layer_t*)layer)->calc_grads( grad_next_layer );
 			return;
 		case layer_type::fc:
 			((fc_layer_t*)layer)->calc_grads( grad_next_layer );
@@ -38,8 +54,20 @@ static void fix_weights( layer_t* layer )
 		case layer_type::conv:
 			((conv_layer_t*)layer)->fix_weights();
 			return;
-		case layer_type::relu:
-			((relu_layer_t*)layer)->fix_weights();
+		//to be checked for binary
+		case layer_type::scale:
+			((scale_layer_t*)layer)->fix_weights();
+			return;
+		// to be checked for binary convolution
+		case layer_type::conv_bin:
+			((conv_layer_bin_t*)layer)->fix_weights();
+			return;
+		case layer_type::prelu:
+			((prelu_layer_t*)layer)->fix_weights();
+			return;
+		//to be checked for binary fc
+		case layer_type::fc_bin:
+			((fc_layer_bin_t*)layer)->fix_weights();
 			return;
 		case layer_type::fc:
 			((fc_layer_t*)layer)->fix_weights();
@@ -62,8 +90,20 @@ static void activate( layer_t* layer, tensor_t<float>& in )
 		case layer_type::conv:
 			((conv_layer_t*)layer)->activate( in );
 			return;
-		case layer_type::relu:
-			((relu_layer_t*)layer)->activate( in );
+		// to be checked for binary convolution
+		case layer_type::scale:
+			((scale_layer_t*)layer)->activate( in );
+			return;
+		// to be checked for binary convolution
+		case layer_type::conv_bin:
+			((conv_layer_bin_t*)layer)->activate( in );
+			return;
+		case layer_type::prelu:
+			((prelu_layer_t*)layer)->activate( in );
+			return;
+		// to be checked for binary fc
+		case layer_type::fc_bin:
+			((fc_layer_bin_t*)layer)->activate( in );
 			return;
 		case layer_type::fc:
 			((fc_layer_t*)layer)->activate( in );

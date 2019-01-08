@@ -1,8 +1,8 @@
 #pragma once
 #include "point_t.h"
-#include <cassert>
-#include <vector>
-#include <string.h>
+#include<bitset>
+
+using namespace std;
 
 //template<typename T>
 struct tensor_bin_t
@@ -19,11 +19,14 @@ struct tensor_bin_t
 		//size.y = _y;
 		//size.z = _z;
 	//}
-	tensor_bin_t()
+
+	tensor_bin_t( int _x, int _y, int _z )
 	{
 		data = 0;
+		size.x = _x;
+		size.y = _y;
+		size.z = _z;
 	}
-
 	tensor_bin_t(const tensor_bin_t& other )
 	{
 		//data = new T[other.size.x *other.size.y *other.size.z];
@@ -52,25 +55,24 @@ struct tensor_bin_t
 		//~ return clone;
 	//~ }
 
-	bool operator()( int _x, int _y, int _z )
+	int operator()( int _x, int _y, int _z )
 	{
 		
 		return this->get( _x, _y, _z );
 	}
 
-	bool get( int _x, int _y, int _z )
+	int get( int _x, int _y, int _z )
 	{
 		assert( _x >= 0 && _y >= 0 && _z >= 0 );
 		assert( _x < size.x && _y < size.y && _z < size.z );
 
-		return data[
+		return (
 			_z * (size.x * size.y) +
 				_y * (size.x) +
-				_x
-		];
+				_x);
 	}
 
-	void copy_from( std::vector<std::vector<std::vector<T> > > data )
+	void copy_from( std::vector<std::vector<std::vector<float> > > data )
 	{
 		int z = data.size();
 		int y = data[0].size();
@@ -88,11 +90,11 @@ struct tensor_bin_t
 	
 	~tensor_bin_t()
 	{
-		delete[] data;
+		//~ delete[] data;
 	}
 };
 
-static void print_tensor( tensor_t data )
+static void print_tensor_bin( tensor_bin_t data )
 {
 	int mx = data.size.x;
 	int my = data.size.y;
@@ -105,25 +107,26 @@ static void print_tensor( tensor_t data )
 		{
 			for ( int x = 0; x < mx; x++ )
 			{
-				printf( "%.2f \t", (float)data.get( x, y, z ) );
+				// indexing changed
+				printf( "%.2f \t", (float)data.data[data( x, y, z )]);
 			}
 			printf( "\n" );
 		}
 	}
 }
 
-static tensor_t<float> to_tensor( std::vector<std::vector<std::vector<float>>> data )
-{
-	int z = data.size();
-	int y = data[0].size();
-	int x = data[0][0].size();
+//~ static tensor_t<float> to_tensor( std::vector<std::vector<std::vector<float>>> data )
+//~ {
+	//~ int z = data.size();
+	//~ int y = data[0].size();
+	//~ int x = data[0][0].size();
 
 
-	tensor_t<float> t( x, y, z );
+	//~ tensor_t<float> t( x, y, z );
 
-	for ( int i = 0; i < x; i++ )
-		for ( int j = 0; j < y; j++ )
-			for ( int k = 0; k < z; k++ )
-				t( i, j, k ) = data[k][j][i];
-	return t;
-}
+	//~ for ( int i = 0; i < x; i++ )
+		//~ for ( int j = 0; j < y; j++ )
+			//~ for ( int k = 0; k < z; k++ )
+				//~ t( i, j, k ) = data[k][j][i];
+	//~ return t;
+//~ }

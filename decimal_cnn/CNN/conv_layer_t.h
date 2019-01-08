@@ -39,11 +39,19 @@ struct conv_layer_t
 			tensor_t<float> t( extend_filter, extend_filter, in_size.z );
 
 			int maxval = extend_filter * extend_filter * in_size.z;
-
-			for ( int i = 0; i < extend_filter; i++ )
-				for ( int j = 0; j < extend_filter; j++ )
-					for ( int z = 0; z < in_size.z; z++ )
-						t( i, j, z ) = 1.0f / maxval * rand() / float( RAND_MAX );
+			
+			cout<<"**************weights for convolution*******\n";
+			
+			for ( int i = 0; i < extend_filter; i++){
+				for ( int j = 0; j < extend_filter; j++){
+					for ( int z = 0; z < in_size.z; z++ ){
+						/**************temporary*************/
+						 t(i,j,z) = pow(-1,i^j)*2+i+j-3;
+						//t( i, j, z ) = 1.0f / maxval * rand() / float( RAND_MAX );
+					}
+				}
+			}
+			print_tensor(t);
 			filters.push_back( t );
 		}
 		for ( int i = 0; i < number_filters; i++ )
@@ -126,6 +134,8 @@ struct conv_layer_t
 				}
 			}
 		}
+		cout<<"*********out for convolution";
+		print_tensor(out);
 	}
 
 	void fix_weights()

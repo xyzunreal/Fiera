@@ -1,4 +1,3 @@
-#pragma once
 
 enum class layer_type
 {
@@ -7,7 +6,7 @@ enum class layer_type
 	scale,
 	fc,
 	fc_bin,
-	relu,
+	prelu,
 	pool,
 	dropout_layer
 };

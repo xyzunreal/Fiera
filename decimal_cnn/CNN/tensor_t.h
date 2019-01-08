@@ -94,7 +94,7 @@ static void print_tensor( tensor_t<float>& data )
 		{
 			for ( int x = 0; x < mx; x++ )
 			{
-				printf( "%.2f \t", (float)data.get( x, y, z ) );
+				printf( "%.5f \t", (float)data.get( x, y, z ) );
 			}
 			printf( "\n" );
 		}
