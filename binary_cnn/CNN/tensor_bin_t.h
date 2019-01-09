@@ -7,7 +7,7 @@ using namespace std;
 //template<typename T>
 struct tensor_bin_t
 {
-	bitset<100000> data;
+	bitset<10000000> data;
 
 	tdsize size;
 
@@ -20,9 +20,10 @@ struct tensor_bin_t
 		//size.z = _z;
 	//}
 
-	tensor_bin_t( int _x, int _y, int _z )
+	tensor_bin_t(int _m, int _x, int _y, int _z )
 	{
 		data = 0;
+		size.m = _m;
 		size.x = _x;
 		size.y = _y;
 		size.z = _z;
@@ -55,33 +56,38 @@ struct tensor_bin_t
 		//~ return clone;
 	//~ }
 
-	int operator()( int _x, int _y, int _z )
+	int operator()(int _m, int _x, int _y, int _z)
 	{
 		
-		return this->get( _x, _y, _z );
+		return this->get(_m, _x, _y, _z);
 	}
 
-	int get( int _x, int _y, int _z )
+	int get( int _m, int _x, int _y, int _z)
 	{
-		assert( _x >= 0 && _y >= 0 && _z >= 0 );
-		assert( _x < size.x && _y < size.y && _z < size.z );
+		assert( _m >=0 &&_x >= 0 && _y >= 0 && _z >= 0 );
+		assert( _m < size.m && _x < size.x && _y < size.y && _z < size.z );
 
 		return (
-			_z * (size.x * size.y) +
-				_y * (size.x) +
-				_x);
+			_m * (size.x * size.y * size.z) +
+				_z * (size.x * size.y) +
+				_y * size.x +
+				 _x );
 	}
 
-	void copy_from( std::vector<std::vector<std::vector<float> > > data )
+	void copy_from( std::vector<vector<std::vector<std::vector<float> > > > data )
 	{
-		int z = data.size();
-		int y = data[0].size();
-		int x = data[0][0].size();
+		// data is [m][z][y][x]
 
-		for ( int i = 0; i < x; i++ )
-			for ( int j = 0; j < y; j++ )
-				for ( int k = 0; k < z; k++ )
-					this->data[k*(size.x*size.y) + j*(size.x) + i] = data[k][j][i];
+		int m = data.size();
+		int z = data[0].size();
+		int y = data[0][0].size();
+		int x = data[0][0][0].size();
+
+		for( int tm = 0; tm < m; tm++)
+			for ( int i = 0; i < x; i++ )
+				for ( int j = 0; j < y; j++ )
+					for ( int k = 0; k < z; k++ )
+						this->data[tm*(size.x*size.y*size.z) + k*(size.x*size.y) + j*(size.x) + i] = data[m][k][j][i];
 	}
 	
 	void xnor_builtin_popcount(tensor_bin_t other){
@@ -99,18 +105,24 @@ static void print_tensor_bin( tensor_bin_t data )
 	int mx = data.size.x;
 	int my = data.size.y;
 	int mz = data.size.z;
+	int mm = data.size.m;
 
-	for ( int z = 0; z < mz; z++ )
-	{
-		printf( "[Dim%d]\n", z );
-		for ( int y = 0; y < my; y++ )
+	for(int tm = 0; tm < mm; tm++){
+		
+		printf("[Example %d]\n", tm);
+
+		for ( int z = 0; z < mz; z++ )
 		{
-			for ( int x = 0; x < mx; x++ )
+			printf( "[Dim%d]\n", z );
+			for ( int y = 0; y < my; y++ )
 			{
-				// indexing changed
-				printf( "%.2f \t", (float)data.data[data( x, y, z )]);
+				for ( int x = 0; x < mx; x++ )
+				{
+					// indexing changed
+					cout<<data.data[data( tm, x, y, z)]<<' ';
+				}
+				printf( "\n" );
 			}
-			printf( "\n" );
 		}
 	}
 }
