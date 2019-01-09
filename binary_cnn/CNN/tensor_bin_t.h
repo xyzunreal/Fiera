@@ -20,6 +20,17 @@ struct tensor_bin_t
 		//size.z = _z;
 	//}
 
+
+				/*to be deleted*/
+	tensor_bin_t(int _x, int _y, int _z){
+		data = 0;
+		size.x = _x;
+		size.y = _y;
+		size.z = _z;
+
+	}
+				/*to be deleted*/
+
 	tensor_bin_t(int _m, int _x, int _y, int _z )
 	{
 		data = 0;
@@ -55,6 +66,13 @@ struct tensor_bin_t
 			//~ clone.data[i] -= other.data[i];
 		//~ return clone;
 	//~ }
+
+					/*to be deleted*/
+	int operator()(int _x, int _y, int _z)
+	{
+		return this->get(0, _x, _y, _z);
+	}
+					/*to be deleted*/
 
 	int operator()(int _m, int _x, int _y, int _z)
 	{
