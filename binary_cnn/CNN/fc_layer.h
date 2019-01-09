@@ -15,19 +15,17 @@ struct fc_layer_t
 	tensor_t<float> out;
 	std::vector<float> input;
 	tensor_t<float> weights;
-	std::vector<gradient_t> gradients;
+	tensor_t<gradient_t> gradients;
 
 	fc_layer_t( tdsize in_size, int out_size )
 		:
-		in( in_size.x, in_size.y, in_size.z ),
-		out( out_size, 1, 1 ),
-		grads_in( in_size.x, in_size.y, in_size.z ),
-		weights( in_size.x*in_size.y*in_size.z, out_size, 1 )
+		in( in_size.m, in_size.x, in_size.y, in_size.z ),
+		out( in_size.m, out_size, 1, 1 ),
+		grads_in( in_size.m, in_size.x, in_size.y, in_size.z ),
+		weights( in_size.x*in_size.y*in_size.z, out_size, 1, 1 ),
+		gradients(in_size.m, out_size, 1, 1)
+
 	{
-		input = std::vector<float>( out_size );
-		gradients = std::vector<gradient_t>( out_size );
-
-
 		int maxval = in_size.x * in_size.y * in_size.z;
 
 		// Weight initialization
@@ -35,27 +33,12 @@ struct fc_layer_t
 		for ( int i = 0; i < out_size; i++ )
 			for ( int h = 0; h < in_size.x*in_size.y*in_size.z; h++ )
 				/**************temporary*************/
-				weights(h,i,0) = pow(-1,i^h)*2+h+i-3;
+				weights(h, i, 0, 0) = pow(-1, i ^ h) * 2 + h + i - 3;
 				//weights( h, i, 0 ) = 2.19722f / maxval * rand() / float( RAND_MAX );
 		// 2.19722f = f^-1(0.9) => x where [1 / (1 + exp(-x) ) = 0.9]
 		
 		cout<<"********weights for fc************\n";
 		print_tensor(weights);
-	}
-
-	float activator_function( float x )            // Not used.
-	{
-		//return tanhf( x );
-		float sig = 1.0f / (1.0f + exp( -x ));
-		return sig;
-	}
-
-	float activator_derivative( float x )          // Not used
-	{
-		//float t = tanhf( x );
-		//return 1 - t * t;
-		float sig = 1.0f / (1.0f + exp( -x ));
-		return sig * (1 - sig);
 	}
 
 	void activate( tensor_t<float>& in )
@@ -67,7 +50,8 @@ struct fc_layer_t
 	int map( point_t d )
 	// Tensor saves data in 1D format. `map` maps 3D point to 1D tensor.
 	{
-		return d.z * (in.size.x * in.size.y) +
+		return d.m * (in.size.x * in.size.y * in.size.z) +
+			d.z * (in.size.x * in.size.y) +
 			d.y * (in.size.x) +
 			d.x;
 	}
@@ -78,21 +62,21 @@ struct fc_layer_t
 	 * It saves the result after propogation in `out` variable.
 	 */
 	{
-		for ( int n = 0; n < out.size.x; n++ )
-		{
-			float inputv = 0;
+		for ( int m = 0; m < in.size.m; m++)
+			for ( int n = 0; n < out.size.x; n++ )
+			{
+				float inputv = 0;
 
-			for ( int i = 0; i < in.size.x; i++ )
-				for ( int j = 0; j < in.size.y; j++ )
-					for ( int z = 0; z < in.size.z; z++ )
-					{
-						int m = map( { i, j, z } );
-						inputv += in( i, j, z ) * weights( m, n, 0 );
-					}
+				for ( int i = 0; i < in.size.x; i++ )
+					for ( int j = 0; j < in.size.y; j++ )
+						for ( int z = 0; z < in.size.z; z++ )
+						{
+							int m = map( { i, j, z } );
+							inputv += in( i, j, z ) * weights( m, n, 0 );
+						}
 
 
-			out( n, 0, 0 ) = inputv;
-			out( n, 0, 0 ) = n*2-3;
+				out( m, n, 0, 0 ) = inputv;
 		}
 		
 		cout<<"*******output for fc**********\n";

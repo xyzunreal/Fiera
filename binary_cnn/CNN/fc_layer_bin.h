@@ -26,21 +26,27 @@ struct fc_layer_bin_t
 	std::vector<float> input;
 	tensor_t<float> weights;
     tensor_bin_t weights_bin;
-	std::vector<gradient_t> gradients;
+	tensor_t<gradient_t> gradients;
 
-	fc_layer_bin_t( tdsize in_size, int out_size ) // INPUT WILL BE 3D CONV LAYER BUT OUTPUT WILL BE 1D FC LAYER
+	fc_layer_bin_t( tdsize in_size, int out_size )
+	/**
+	 * Parameters
+	 * ----------
+	 * in_size : (int m, int x, int y, int z)
+	 * 		Size of input matrix.
+	 * out_size : int
+	 * 		No of fully connected nodes in output.
+	 **/
 		:
-		in( in_size.x, in_size.y, in_size.z ),
-        in_bin(in_size.x, in_size.y, in_size.z),
-		out( out_size, 1, 1 ),
-        out_bin(out_size, 1, 1),
-        weights_bin( in_size.x*in_size.y*in_size.z, out_size, 1 ),
-		grads_in( in_size.x, in_size.y, in_size.z ),
-		weights( in_size.x*in_size.y*in_size.z, out_size, 1 )
+		in( in_size.m, in_size.x, in_size.y, in_size.z ),
+        in_bin( in_size.m, in_size.x, in_size.y, in_size.z),
+		out( in_size.m, out_size, 1, 1 ),
+        out_bin( in_size.m, out_size, 1, 1),
+        weights_bin( in_size.m * in_size.x * in_size.y * in_size.z, out_size, 1, 1 ),
+		grads_in( in_size.m, in_size.x, in_size.y, in_size.z ),
+		weights( in_size.m * in_size.x * in_size.y * in_size.z, out_size, 1, 1 ),
+		gradients(in_size.m, out_size, 1, 1)
 	{
-		//~ input = std::vector<float>( out_size );
-		gradients = std::vector<gradient_t>( out_size );
-
 
 		int maxval = in_size.x * in_size.y * in_size.z;
 
@@ -49,11 +55,11 @@ struct fc_layer_bin_t
 		for ( int i = 0; i < out_size; i++ ){
 			for ( int h = 0; h < in_size.x*in_size.y*in_size.z; h++ ){
 				/**************temporary*************/
-				weights(h,i,0) = pow(-1,i^h)*2+i+h-3;
-				//weights( h, i, 0 ) = 2.19722f / maxval * (rand()-rand()) / float( RAND_MAX );
+				weights(h, i, 0, 0) = pow(-1,i^h)*2+i+h-3;
+				// weights(h, i, 0, 0 ) = 2.19722f / maxval * (rand()-rand()) / float( RAND_MAX );
 				// 2.19722f = f^-1(0.9) => x where [1 / (1 + exp(-x) ) = 0.9]
 				
-				weights_bin.data[weights_bin(h,i,0)] = 0;
+				weights_bin.data[weights_bin(h, i, 0, 0)] = 0;
 			}
 		}
 		cout<<"***********weights for fc bin ************";
@@ -71,19 +77,17 @@ struct fc_layer_bin_t
         // BINARIZING `weights`
         for (int i = 0; i < weights.size.x; ++i){
             for (int j = 0; j < weights.size.y; j++){
-                weights_bin.data[weights_bin(i, j, 0)] = weights(i, j, 0) >= 0 ? 1 : 0;
+                weights_bin.data[weights_bin(i, j, 0, 0)] = weights(i, j, 0, 0) >= 0 ? 1 : 0;
 				
 			}
 		}
         // BINARIZING `in`
-        for ( int i = 0; i < in.size.x; i++ ){
-            for ( int j = 0; j < in.size.y; j++ ){
-                for ( int z = 0; z < in.size.z; z++ ){
-					in_bin.data[in_bin(i, j, z)] = in(i, j, z) >= 0 ? 1 : 0;
+		for ( int m = 0; m < in.size.m; m++ )
+			for ( int i = 0; i < in.size.x; i++ )
+				for ( int j = 0; j < in.size.y; j++ )
+					for ( int z = 0; z < in.size.z; z++ )
+						in_bin.data[in_bin(m, i, j, z)] = in(m, i, j, z) >= 0 ? 1 : 0;
 					
-				}
-			}
-		}
     }
 
     void calculate_alpha()
