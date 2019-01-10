@@ -8,5 +8,6 @@ enum class layer_type
 	fc_bin,
 	prelu,
 	pool,
-	dropout_layer
+	dropout_layer,
+	softmax
 };
