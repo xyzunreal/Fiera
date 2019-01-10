@@ -23,7 +23,7 @@ struct softmax_layer_t
 	softmax_layer_t( tdsize in_size):
 	in( in_size.x, 1, 1),
 		out( in_size.x, 1, 1 ),
-		grads_in( in_size.x, in_size.y, in_size.z ),
+		grads_in( in_size.x, in_size.y, in_size.z )
 	{
 	
 	}
@@ -69,4 +69,4 @@ struct softmax_layer_t
 	
 	
 	
-}
+};

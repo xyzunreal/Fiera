@@ -195,6 +195,6 @@ struct conv_layer_t
 	// 			}
 	// 		}
 	// 	}
-	// }
+	}
 };
 #pragma pack(pop)

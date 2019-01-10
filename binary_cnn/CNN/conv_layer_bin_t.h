@@ -72,7 +72,7 @@ struct conv_layer_bin_t
 		}
 
 		cout<<"******weights for conv_bin********\n"<<endl;
-		print_tensor(filters));
+		print_tensor(filters);
 		
 		// for ( int i = 0; i < number_filters; i++ )
 		// {
@@ -121,7 +121,7 @@ struct conv_layer_bin_t
 			0,
 			normalize_range( a / stride, out.size.x, false ),
 			normalize_range( b / stride, out.size.y, false ),
-			(int)filters.size() - 1,
+			(int)filters.size.m - 1,
 		};
 	}
 
@@ -140,9 +140,9 @@ struct conv_layer_bin_t
 			// tensor_t<float> &tf = filters[filter];
 			// tensor_bin_t &tb = filters_bin[filter];
 			
-			for(int x=0; x< filters_bin[filter].size.x; x++){
-				for(int y=0; y< filters_bin[filter].size.y; y++){
-					for(int z=0; z< filters_bin[filter].size.z; z++){
+			for(int x=0; x< filters.size.x; x++){
+				for(int y=0; y< filters.size.y; y++){
+					for(int z=0; z< filters.size.z; z++){
 						// ************************ remember always take var.data[var(x,y,z)] *****************************
 						if(filters(filter,x,y,z) >= 0) filters_bin.data[filters_bin(filter,x,y,z)] = 1;
 						else filters_bin.data[filters_bin(filter,x,y,z)] = 0;
@@ -172,14 +172,14 @@ struct conv_layer_bin_t
 	void cal_mean(){
 		//cout<<filters.size()<<' '<<filters[0].size.x<<' '<<filters[0].size.y<<' '<<filters[0].size.z<<endl;
 		
-		alpha.resize(filters.size());
+		alpha.resize(filters.size.m);
 		
 		for(int filter = 0; filter<filters.size.m; filter++){
 			float sum = 0;
 			// tensor_t<float> &tf = filters[filter];
-			for(int x=0; x<tf.size.x; x++)
-				for(int y=0; y<tf.size.y; y++)
-					for(int z=0; z<tf.size.z; z++){
+			for(int x=0; x<filters.size.x; x++)
+				for(int y=0; y<filters.size.y; y++)
+					for(int z=0; z<filters.size.z; z++){
 						sum += filters(filter,x,y,z);
 				}
 			alpha[filter] = sum/(filters.size.x*filters.size.y*filters.size.z);
@@ -215,7 +215,7 @@ struct conv_layer_bin_t
 							for ( int j = 0; j < extend_filter; j++ )
 								for ( int z = 0; z < in.size.z; z++ )
 								{
-									bool f = filters_bin.data[filter_bin(filter, i, j, z )];
+									bool f = filters_bin.data[filters_bin(filter, i, j, z )];
 									bool v = in_bin.data[in_bin(example, mapped.x + i, mapped.y + j, z )];
 									sum += (!(f^v));
 								}
@@ -232,7 +232,7 @@ struct conv_layer_bin_t
 	
 	
 	
-	void fix_weights()
+	void fix_weights(){
 	// {
 	// 	for ( int a = 0; a < filters.size(); a++ )
 	// 		for ( int i = 0; i < extend_filter; i++ )
@@ -246,7 +246,7 @@ struct conv_layer_bin_t
 	// 				}
 	}
 
-	void calc_grads( tensor_t<float>& grad_next_layer, bool ismini = false)
+	void calc_grads( tensor_t<float>& grad_next_layer)
 	{
 
 		// for ( int k = 0; k < filter_grads.size(); k++ )
