@@ -42,7 +42,6 @@ struct conv_layer_t
 
 			int maxval = extend_filter * extend_filter * in_size.z;
 			
-			cout<<"**************weights for convolution*******\n";
 			
 			for ( int i = 0; i < extend_filter; i++){
 				for ( int j = 0; j < extend_filter; j++){
@@ -53,9 +52,12 @@ struct conv_layer_t
 					}
 				}
 			}
-			print_tensor(filters);
 			//filters.push_back( t );
 		}
+
+		cout<<"**************weights for convolution*******\n";
+		print_tensor(filters);
+		
 		// for ( int i = 0; i < number_filters; i++ )
 		// {
 		// 	tensor_t<gradient_t> t( extend_filter, extend_filter, in_size.z );
