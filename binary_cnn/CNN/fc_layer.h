@@ -37,7 +37,7 @@ struct fc_layer_t
 				//weights( h, i, 0 ) = 2.19722f / maxval * rand() / float( RAND_MAX );
 		// 2.19722f = f^-1(0.9) => x where [1 / (1 + exp(-x) ) = 0.9]
 		
-		cout<<"********weights for fc************\n";
+		cout << "********weights for fc************\n";
 		print_tensor(weights);
 	}
 
@@ -62,7 +62,7 @@ struct fc_layer_t
 	 * It saves the result after propogation in `out` variable.
 	 */
 	{
-		for ( int m = 0; m < in.size.m; m++)
+		for ( int e = 0; e < in.size.m; e++)
 			for ( int n = 0; n < out.size.x; n++ )
 			{
 				float inputv = 0;
@@ -71,12 +71,12 @@ struct fc_layer_t
 					for ( int j = 0; j < in.size.y; j++ )
 						for ( int z = 0; z < in.size.z; z++ )
 						{
-							int m = map( { i, j, z } );
-							inputv += in( i, j, z ) * weights( m, n, 0 );
+							int m = map( { e, i, j, z } );
+							inputv += in( e, i, j, z ) * weights(m, n, 0, 0 );
 						}
 
 
-				out( m, n, 0, 0 ) = inputv;
+				out( e, n, 0, 0 ) = inputv;
 		}
 		
 		cout<<"*******output for fc**********\n";
@@ -85,20 +85,20 @@ struct fc_layer_t
 
 	void fix_weights()
 	{
-		for ( int n = 0; n < out.size.x; n++ )
-		{
-			gradient_t& grad = gradients[n];
-			for ( int i = 0; i < in.size.x; i++ )
-				for ( int j = 0; j < in.size.y; j++ )
-					for ( int z = 0; z < in.size.z; z++ )
-					{
-						int m = map( { i, j, z } );
-						float& w = weights( m, n, 0 );
-						w = update_weight( w, grad, in( i, j, z ) );
-					}
+		// for ( int n = 0; n < out.size.x; n++ )
+		// {
+		// 	gradient_t& grad = gradients[n];
+		// 	for ( int i = 0; i < in.size.x; i++ )
+		// 		for ( int j = 0; j < in.size.y; j++ )
+		// 			for ( int z = 0; z < in.size.z; z++ )
+		// 			{
+		// 				int m = map( { i, j, z } );
+		// 				float& w = weights( m, n, 0 );
+		// 				w = update_weight( w, grad, in( i, j, z ) );
+		// 			}
 
-			update_gradient( grad );
-		}
+		// 	update_gradient( grad );
+		// }
 	}
 
 	void calc_grads( tensor_t<float>& grad_next_layer )
@@ -107,20 +107,20 @@ struct fc_layer_t
 	
 
 	{
-		memset( grads_in.data, 0, grads_in.size.x *grads_in.size.y*grads_in.size.z * sizeof( float ) );
-		for ( int n = 0; n < out.size.x; n++ )
-		{
-			gradient_t& grad = gradients[n];
-			grad.grad = grad_next_layer( n, 0, 0 ) * activator_derivative( input[n] );
+		// memset( grads_in.data, 0, grads_in.size.x *grads_in.size.y*grads_in.size.z * sizeof( float ) );
+		// for ( int n = 0; n < out.size.x; n++ )
+		// {
+		// 	gradient_t& grad = gradients[n];
+		// 	grad.grad = grad_next_layer( n, 0, 0 ) * activator_derivative( input[n] );
 
-			for ( int i = 0; i < in.size.x; i++ )
-				for ( int j = 0; j < in.size.y; j++ )
-					for ( int z = 0; z < in.size.z; z++ )
-					{
-						int m = map( { i, j, z } );
-						grads_in( i, j, z ) += grad.grad * weights( m, n, 0 );
-					}
-		}
+		// 	for ( int i = 0; i < in.size.x; i++ )
+		// 		for ( int j = 0; j < in.size.y; j++ )
+		// 			for ( int z = 0; z < in.size.z; z++ )
+		// 			{
+		// 				int m = map( { i, j, z } );
+		// 				grads_in( i, j, z ) += grad.grad * weights( m, n, 0 );
+		// 			}
+		// }
 	}
 };
 #pragma pack(pop)

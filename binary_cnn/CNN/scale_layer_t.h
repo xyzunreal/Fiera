@@ -15,16 +15,16 @@ struct scale_layer_t
     tensor_t<float> out;
 
     float s_param;     // `s_param` REPRESENT SCALE VALUE WHICH IS SINGLE LEARNABLE PARAMETER.
-    std::vector<gradient_t> gradients;
+    tensor_t<gradient_t> gradients;
 
-    scale_layer_t(int in_size)        // EXPECTS 1D INPUT
+    scale_layer_t(tdsize in_size)        // EXPECTS 1D INPUT
         :
-        in(in_size, 1, 1),
-        out(in_size, 1, 1),
-        grads_in(in_size, 1, 1)
+        in(in_size.m, in_size.x, 1, 1),
+        out(in_size.m, in_size.x, 1, 1),
+        grads_in(in_size.m, in_size.x, 1, 1),
+        gradients(in_size.m, in_size.x, 1, 1)
         
     {
-        gradients = std::vector<gradient_t> (in_size);
         s_param = 0.001;    
     }
 
@@ -36,9 +36,9 @@ struct scale_layer_t
 
     void activate()
     {
-        for (int i = 0; i < in.size.x; i++){
-            out(i, 0, 0) = s_param * in(i, 0, 0);
-		}
+		for (int tm = 0; tm < in.size.m; tm++)
+			for (int i = 0; i < in.size.x; i++)
+				out(i, 0, 0) = s_param * in(i, 0, 0);
         cout<<"*****output for scale***********\n";
         print_tensor(out);
     }

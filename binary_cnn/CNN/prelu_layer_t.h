@@ -1,4 +1,4 @@
-/* TODO: Implement prelu instead of relu activation function
+/*Implement prelu instead of relu activation function
    It follows:
     f(x) = alpha * x	for x < 0
     f(x) = x		for x >= 0
@@ -31,9 +31,9 @@ struct prelu_layer_t
 	float alpha;
 
 	prelu_layer_t( tdsize in_size ):
-		in( in_size.x, in_size.y, in_size.z ),
-		out( in_size.x, in_size.y, in_size.z ),
-		grads_in( in_size.x, in_size.y, in_size.z )
+		in( in_size.m, in_size.x, in_size.y, in_size.z ),
+		out(in_size.m, in_size.x, in_size.y, in_size.z ),
+		grads_in( in_size.m, in_size.x, in_size.y, in_size.z )
 	{
 		alpha=0.05;
 	}
@@ -47,15 +47,16 @@ struct prelu_layer_t
 
 	void activate()
 	{
-		for ( int i = 0; i < in.size.x; i++ )
-			for ( int j = 0; j < in.size.y; j++ )
-				for ( int z = 0; z < in.size.z; z++ )
-				{
-					float x = in( i, j, z );
-					if ( x < 0 )
-						x = x*alpha;
-					out( i, j, z ) = x;
-				}
+		for ( int tm = 0; tm < in.size.m; tm++ )
+			for ( int i = 0; i < in.size.x; i++ )
+				for ( int j = 0; j < in.size.y; j++ )
+					for ( int k = 0; k < in.size.z; k++ )
+					{
+						float x = in( tm, i, j, k);
+						if ( x < 0 )
+							x = x*alpha;
+						out( tm, i, j, k) = x;
+					}
 		cout<<"********output for prelu*****\n";
 		print_tensor(out);
 	}
@@ -67,13 +68,13 @@ struct prelu_layer_t
 
 	void calc_grads( tensor_t<float>& grad_next_layer )
 	{
-		for ( int i = 0; i < in.size.x; i++ )
-			for ( int j = 0; j < in.size.y; j++ )
-				for ( int z = 0; z < in.size.z; z++ )
-				{
-					grads_in( i, j, z ) = (in( i, j, z ) < 0) ?
-						(in( i, j, z ) * grad_next_layer( i, j, z )) : (0);
-				}
+		for ( int tm = 0; tm < in.size.m; tm++ )
+			for ( int i = 0; i < in.size.x; i++ )
+				for ( int j = 0; j < in.size.y; j++ )
+					for ( int k = 0; k < in.size.z; k++ )
+					{
+						grads_in( tm, i, j, k) = (in( tm, i, j, k) < 0) ? (in( tm, i, j, k) * grad_next_layer( tm, i, j, k)) : (0);
+					}
 							
 	}
 };
