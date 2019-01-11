@@ -12,7 +12,7 @@
 #include "scale_layer_t.h"
 #include "softmax_layer_t.h"
 
-using namespace std;
+//using namespace std;
 
 
 static void calc_grads( layer_t* layer, tensor_t<float>& grad_next_layer )
