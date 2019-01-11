@@ -11,6 +11,7 @@ struct scale_layer_t
 {
     layer_type type = layer_type::scale;
     tensor_t<float> grads_in;
+    float grads_scale;
     tensor_t<float> in;
     tensor_t<float> out;
 
@@ -48,9 +49,15 @@ struct scale_layer_t
         
     }
 
-    void calc_grads()
+    void calc_grads(tensor_t<float>& grad_next_layer)
     {
-
+        grads_scale = 0;
+        for(int i=0; i<out.size.m; i++){
+            for(int j=0; j<out.size.x; j++){
+                grads_scale += grad_next_layer(i,j,0,0)*in(i,j,0,0); 
+                grads_in(i,j,0,0) = grad_next_layer(i,j,0,0)*s_param;
+            }
+        }
     }
 
 };

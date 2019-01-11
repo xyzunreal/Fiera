@@ -29,6 +29,8 @@ struct prelu_layer_t
 	tensor_t<float> in;
 	tensor_t<float> out;
 	float alpha;
+	float grads_alpha;
+	float p_relu_zero;
 
 	prelu_layer_t( tdsize in_size ):
 		in( in_size.m, in_size.x, in_size.y, in_size.z ),
@@ -36,6 +38,7 @@ struct prelu_layer_t
 		grads_in( in_size.m, in_size.x, in_size.y, in_size.z )
 	{
 		alpha=0.05;
+		p_relu_zero = 0.5;
 	}
 
 
@@ -68,13 +71,27 @@ struct prelu_layer_t
 
 	void calc_grads( tensor_t<float>& grad_next_layer )
 	{
-		for ( int tm = 0; tm < in.size.m; tm++ )
-			for ( int i = 0; i < in.size.x; i++ )
-				for ( int j = 0; j < in.size.y; j++ )
+		for ( int e = 0; e < in.size.m; e++ ){
+			for ( int i = 0; i < in.size.x; i++ ){
+				for ( int j = 0; j < in.size.y; j++ ){
 					for ( int k = 0; k < in.size.z; k++ )
 					{
-						grads_in( tm, i, j, k) = (in( tm, i, j, k) < 0) ? (in( tm, i, j, k) * grad_next_layer( tm, i, j, k)) : (0);
+						// grads_in( e, i, j, k) = (in( e, i, j, k) < 0) ? (in( tm, i, j, k) * grad_next_layer( tm, i, j, k)) : (0);
+						if(in(e,i,j,k)>0){
+							grads_in(e,i,j,k) = grad_next_layer(e,i,j,k);
+						}
+						else if(int(in(e,i,j,k)) == 0){
+							grads_in(e,i,j,k) = grad_next_layer(e,i,j,k)*p_relu_zero;
+						}
+						else{
+							grads_alpha += grad_next_layer(e,i,j,k) * (in(e, i, j, k));
+							grads_in(e,i,j,k) = grad_next_layer(e,i,j,k)*alpha;
+						}
 					}
+				}
+			
+			}
+		}
 							
 	}
 };
