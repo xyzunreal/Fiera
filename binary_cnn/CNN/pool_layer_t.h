@@ -134,6 +134,7 @@ struct pool_layer_t
 							}
 						}
 						grads_in( tm, x, y, z ) = sum_error;
+					}
 				}
 			}
 		}

@@ -123,43 +123,31 @@ int main()
 	
 	vector<layer_t*> layers;
 	
-	tensor_t<float> temp_in(1, 5,5,1);
+	tensor_t<float> temp_in(1, 5,5,3);
 	
+	
+	
+	for(int k=0; k<3; k++)
 	for(int i=0; i<5; i++){
 		for(int j=0; j<5; j++){
-			int maxval = 25;
-			temp_in(0, i,j,0) = 2.19722f / maxval * (rand()-rand()) / float( RAND_MAX );
-		}
-	}
-	
-	
-	for(int i=0; i<5; i++){
-		for(int j=0; j<5; j++){
-			temp_in(0, i,j,0) = pow(-1,i^j)*2+i+j-4;
+			temp_in(0, i,j,k) = pow(-1,i^j)*2+i+j-4;
 		}
 	}
 	
 	//debug
 	cout<<"*********input image *******"<<endl;
 	
-	for(int x=0; x<5; x++){
-		for(int y=0; y<5; y++){
-			//debug
-			cout<<temp_in(0, x,y,0)<<' ';
-		}
-		//debug
-		cout<<endl;
-	}
+	print_tensor(temp_in);
 
-	// conv_layer_t * layer1 = new conv_layer_t(1, 3, 1, temp_in.size);		// 28 * 28 * 1 -> 24 * 24 * 8
-	// layer1->activate(temp_in);
-	// prelu_layer_t * layer2 = new prelu_layer_t( {3,3,1} );
-	// layer2->activate(layer1->out);
-	// conv_layer_bin_t * layer3 = new conv_layer_bin_t(1, 2, 1, {3,3,1});
-	// layer3->activate(layer2->out);
-	// fc_layer_t * layer4 = new fc_layer_t({2,2,1}, 3);
+	conv_layer_t * layer1 = new conv_layer_t(1, 3, 1, temp_in.size);		// 28 * 28 * 1 -> 24 * 24 * 8
+	layer1->activate(temp_in);
+	prelu_layer_t * layer2 = new prelu_layer_t( {1,3,3,1} );
+	layer2->activate(layer1->out);
+	conv_layer_bin_t * layer3 = new conv_layer_bin_t(1, 2, 1, {1,3,3,1});
+	layer3->activate(layer2->out);
+	// fc_layer_t * layer4 = new fc_layer_t({1,2,2,1}, 3);
 	// layer4->activate(layer3->out);
-	// fc_layer_bin_t * layer5 = new fc_layer_bin_t({3,1,1}, 2);
+	// fc_layer_bin_t * layer5 = new fc_layer_bin_t({1,3,1,1}, 2);
 	// layer5->activate(layer4->out);
 	// scale_layer_t * layer6 = new scale_layer_t(2);
 	// layer6->activate(layer5->out);

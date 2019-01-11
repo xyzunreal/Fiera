@@ -50,9 +50,8 @@ struct fc_layer_bin_t
 		
 		for ( int i = 0; i < out_size; i++ )
 			for ( int h = 0; h < in_size.x*in_size.y*in_size.z; h++ ){
-				/**************temporary*************/
-				weights(h, i, 0, 0) = pow(-1,i^h)*2+i+h-3;
-				// weights(h, i, 0, 0 ) = 2.19722f / maxval * (rand()-rand()) / float( RAND_MAX );
+				
+				weights(h,i, 0, 0 ) =  (1.0f * (rand()-rand())) / float( RAND_MAX );
 				// 2.19722f = f^-1(0.9) => x where [1 / (1 + exp(-x) ) = 0.9]
 				
 				weights_bin.data[weights_bin(h, i, 0, 0)] = 0;

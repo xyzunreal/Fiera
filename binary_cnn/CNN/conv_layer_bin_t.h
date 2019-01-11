@@ -9,6 +9,7 @@ struct conv_layer_bin_t
 	tensor_t<float> in;
 	tensor_t<float> out;
 	tensor_bin_t in_bin;
+	tensor_bin_t in_bin2;
 	tensor_bin_t out_bin;
 	tensor_t<float> filters; //std::vector<tensor_t<float>> filters;
 	tensor_bin_t filters_bin; //vector<tensor_bin_t> filters_bin;
@@ -16,6 +17,7 @@ struct conv_layer_bin_t
 	uint16_t stride;
 	uint16_t extend_filter;
 	vector<float> alpha;
+	vector<float> alpha2;
 	
 	conv_layer_bin_t( uint16_t stride, uint16_t extend_filter, uint16_t number_filters, tdsize in_size )
 		:
@@ -27,6 +29,7 @@ struct conv_layer_bin_t
 			number_filters
 		),
 		in_bin(in_size.m, in_size.x, in_size.y, in_size.z),
+		in_bin2(in_size.m, in_size.x, in_size.y, in_size.z),
 		out_bin(in_size.m,
 		(in_size.x - extend_filter) / stride + 1,
 			(in_size.y - extend_filter) / stride + 1,
@@ -59,9 +62,8 @@ struct conv_layer_bin_t
 					
 					for ( int z = 0; z < in_size.z; z++ ){
 						 //initialization of floating weights 
-						//t( i, j, z ) = (1.0f / maxval * (rand()-rand()) / float( RAND_MAX ));
-						 /**************temporary*************/
-						 filters(a,i,j,z) = pow(-1,i^j)*2+i+j-3;
+						filters(a,i, j, z ) =  (1.0f * (rand()-rand())) / float( RAND_MAX );
+						
 						// initialization of binary weights
 						filters_bin.data[filters_bin(a,i,j,z)] = 0;
 					}
@@ -172,31 +174,53 @@ struct conv_layer_bin_t
 	void cal_mean(){
 		//cout<<filters.size()<<' '<<filters[0].size.x<<' '<<filters[0].size.y<<' '<<filters[0].size.z<<endl;
 		
-		alpha.resize(filters.size.m);
+		alpha.resize(in.size.m);
 		
-		for(int filter = 0; filter<filters.size.m; filter++){
+		for(int e = 0; e<in.size.m; e++){
 			float sum = 0;
 			// tensor_t<float> &tf = filters[filter];
-			for(int x=0; x<filters.size.x; x++)
-				for(int y=0; y<filters.size.y; y++)
-					for(int z=0; z<filters.size.z; z++){
-						sum += filters(filter,x,y,z);
+			for(int x=0; x<in.size.x; x++)
+				for(int y=0; y<in.size.y; y++)
+					for(int z=0; z<in.size.z; z++){
+						sum += abs(in(e,x,y,z));
 				}
-			alpha[filter] = sum/(filters.size.x*filters.size.y*filters.size.z);
+			
+			alpha[e] = sum/(in.size.x*in.size.y*in.size.z);
+			cout<<"alpha "<<endl;
+			cout<<"alpha "<<e<<' '<<alpha[e]<<endl;
 		}
-		
-		cout<<"*******mean for weights*********\n";
-		cout<<alpha[0]<<endl;
-		
+
+		alpha2.resize(in.size.m);
+		tensor_t<float> temp(in.size.m, in.size.x, in.size.y, in.size.z);
+
+		for(int e = 0; e<in.size.m; e++){
+			float sum = 0;
+			// tensor_t<float> &tf = filters[filter];
+			for(int x=0; x<in.size.x; x++)
+				for(int y=0; y<in.size.y; y++)
+					for(int z=0; z<in.size.z; z++){
+						temp(e,x,y,z) = in(e,x,y,z) - alpha[e]*(in_bin(e,x,y,z));
+						in_bin2.data[in_bin2(e,x,y,z)] = temp(e,x,y,z)>=0? 1 : 0;
+						sum += abs(temp(e,x,y,z));
+				}
+			alpha2[e] = sum/(in.size.x*in.size.y*in.size.z);
+
+			cout<<"alpha2"<<endl;
+			cout<<"alpha2 "<<e<<' '<<alpha2[e]<<endl;
+		}
+
+
 		//~ return sum/(filters.size()*);
 	}
+
 	
 	void activate()
 	{
-		//initialize alpha for xornet
-		cal_mean();
 		//binarize filters and in 
 		binarize();
+
+		//initialize alpha for xornet
+		cal_mean();
 
 		//binarize convolution :)
 
@@ -210,18 +234,20 @@ struct conv_layer_bin_t
 					for ( int y = 0; y < out.size.y; y++ )
 					{
 						point_t mapped = map_to_input( { (uint16_t)x, (uint16_t)y, 0 }, 0 );
-						float sum = 0;
+						float sum = 0, sum2 = 0;
 						for ( int i = 0; i < extend_filter; i++ )
 							for ( int j = 0; j < extend_filter; j++ )
 								for ( int z = 0; z < in.size.z; z++ )
 								{
 									bool f = filters_bin.data[filters_bin(filter, i, j, z )];
 									bool v = in_bin.data[in_bin(example, mapped.x + i, mapped.y + j, z )];
+									bool v2 = in_bin2.data[in_bin2(example, mapped.x + i, mapped.y + j, z)];
 									sum += (!(f^v));
+									sum2 += (!(f^v2));
 								}
-						out(example, x, y, filter ) = (2*sum - extend_filter*extend_filter*in.size.z);
+						out(example, x, y, filter ) = alpha[filter]*(2*sum - extend_filter*extend_filter*in.size.z);
 						
-						out(example, x,y,filter) *= alpha[filter];
+						out(example, x,y,filter) += alpha2[filter]*(2*sum2 - extend_filter*extend_filter*in.size.z);
 						
 					}
 				}
