@@ -68,7 +68,7 @@ struct fc_layer_t
 					for ( int j = 0; j < in.size.y; j++ )
 						for ( int z = 0; z < in.size.z; z++ )
 						{
-							int m = map( { e, i, j, z } );
+							int m = map( { 0 , i, j, z } );
 							inputv += in( e, i, j, z ) * weights(m, n, 0, 0 );
 						}
 

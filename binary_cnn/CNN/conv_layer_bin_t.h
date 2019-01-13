@@ -245,9 +245,9 @@ struct conv_layer_bin_t
 									sum += (!(f^v));
 									sum2 += (!(f^v2));
 								}
-						out(example, x, y, filter ) = alpha[filter]*(2*sum - extend_filter*extend_filter*in.size.z);
+						out(example, x, y, filter ) = alpha[example]*(2*sum - extend_filter*extend_filter*in.size.z);
 						
-						out(example, x,y,filter) += alpha2[filter]*(2*sum2 - extend_filter*extend_filter*in.size.z);
+						out(example, x,y,filter) += alpha2[example]*(2*sum2 - extend_filter*extend_filter*in.size.z);
 						
 					}
 				}
