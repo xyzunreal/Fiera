@@ -7,6 +7,9 @@
 #include "gradient_t.h"
 #include "tensor_bin_t.h"
 
+
+using namespace std;
+
 #pragma pack(push, 1)
 struct fc_layer_bin_t
 {
@@ -43,22 +46,19 @@ struct fc_layer_bin_t
 		weights( in_size.m * in_size.x * in_size.y * in_size.z, out_size, 1, 1 ),
 		gradients(in_size.m, out_size, 1, 1)
 	{
-
-		int maxval = in_size.x * in_size.y * in_size.z;
-
 		// WEIGHT INITIALIZATION
 		
 		for ( int i = 0; i < out_size; i++ )
 			for ( int h = 0; h < in_size.x*in_size.y*in_size.z; h++ ){
 				
 				weights(h,i, 0, 0 ) =  (1.0f * (rand()-rand())) / float( RAND_MAX );
-				// 2.19722f = f^-1(0.9) => x where [1 / (1 + exp(-x) ) = 0.9]
-				
 				weights_bin.data[weights_bin(h, i, 0, 0)] = 0;
+			
 			}
 	
-		cout<<"***********weights for fc bin ************";
+		cout<<"***********float weights for fc bin ************\n";
 		print_tensor(weights);
+		
 	}
 
 	void activate( tensor_t<float>& in )
@@ -70,13 +70,13 @@ struct fc_layer_bin_t
     void binarize()
     {
         // BINARIZING `weights`
-        for (int i = 0; i < weights.size.x; ++i){
-            for (int j = 0; j < weights.size.y; j++){
+        for (int i = 0; i < weights.size.m; ++i){
+            for (int j = 0; j < weights.size.x; j++){
                 weights_bin.data[weights_bin(i, j, 0, 0)] = weights(i, j, 0, 0) >= 0 ? 1 : 0;
-				
 			}
 		}
-        // BINARIZING `in`
+        
+		// BINARIZING `in`
 		for ( int m = 0; m < in.size.m; m++ )
 			for ( int i = 0; i < in.size.x; i++ )
 				for ( int j = 0; j < in.size.y; j++ )
@@ -129,6 +129,7 @@ struct fc_layer_bin_t
         print_tensor_bin(in_bin);
         
         calculate_alpha();
+		
 		for( int e = 0; e < in.size.m; e++)
 			for(int n = 0; n < out.size.x; n++ ){
 				int inputv = 0;

@@ -187,7 +187,7 @@ struct conv_layer_bin_t
 			
 			alpha[e] = sum/(in.size.x*in.size.y*in.size.z);
 			cout<<"alpha "<<endl;
-			cout<<"alpha "<<e<<' '<<alpha[e]<<endl;
+			cout<<"alpha for"<<e<<"th example is "<<alpha[e]<<endl;
 		}
 
 		alpha2.resize(in.size.m);
@@ -206,7 +206,7 @@ struct conv_layer_bin_t
 			alpha2[e] = sum/(in.size.x*in.size.y*in.size.z);
 
 			cout<<"alpha2"<<endl;
-			cout<<"alpha2 "<<e<<' '<<alpha2[e]<<endl;
+			cout<<"alpha2 for "<<e<<"th example is "<<alpha2[e]<<endl;
 		}
 
 
@@ -224,7 +224,7 @@ struct conv_layer_bin_t
 
 		//binarize convolution :)
 
-		for(int example = 0; example<in.size.m; example++)
+		for(int example = 0; example<in.size.m; example++){
 		
 			for ( int filter = 0; filter < filters_bin.size.m; filter++ )
 			{
@@ -252,8 +252,18 @@ struct conv_layer_bin_t
 					}
 				}
 			}
+		}	
+
+
 		cout<<"*********output for conv_bin*********\n";
 		print_tensor(out);
+
+		// conv_layer_t temp_conv(1, this->extend_filter, filters.size.m, in.size);
+		// temp_conv.filters = this->filters;
+
+		// cout<<"*******output if weights and input is float*******\n";
+		// temp_conv.activate(this->in);
+
 	}
 	
 	
@@ -282,7 +292,7 @@ struct conv_layer_bin_t
 						for(int i=0; i<filters.size.y;i++){
 							for(int l=j; l<(in.size.x - filters.size.x)+j; l++){
 								for(int n=i; n<(in.size.y - filters.size.y)+i; n++){
-									filter_grads(e, j, i, k) += grad_next_layer(e, l, n ,k)*in(m, l, n, k);
+									// filter_grads(e, j, i, k) += grad_next_layer(e, l, n ,k)*in(m, l, n, k);
 
 								}
 

@@ -8,8 +8,8 @@ struct conv_layer_t
 	tensor_t<float> grads_in;
 	tensor_t<float> in;
 	tensor_t<float> out;
-	tensor_t<float> filters; //std::vector<tensor_t<float>> filters;
-	tensor_t<gradient_t> filter_grads; //std::vector<tensor_t<gradient_t>> filter_grads;
+	tensor_t<float> filters; 
+	tensor_t<gradient_t> filter_grads;
 	uint16_t stride;
 	uint16_t extend_filter;
 
@@ -38,7 +38,6 @@ struct conv_layer_t
 
 		for ( int a = 0; a < number_filters; a++ )
 		{
-			//tensor_t<float> t( extend_filter, extend_filter, in_size.z );
 
 			int maxval = extend_filter * extend_filter * in_size.z;
 			
@@ -52,18 +51,11 @@ struct conv_layer_t
 					}
 				}
 			}
-			//filters.push_back( t );
 		}
 
 		cout<<"**************weights for convolution*******\n";
 		print_tensor(filters);
 		
-		// for ( int i = 0; i < number_filters; i++ )
-		// {
-		// 	tensor_t<gradient_t> t( extend_filter, extend_filter, in_size.z );
-		// 	filter_grads.push_back( t );
-		// }
-
 	}
 
 	point_t map_to_input( point_t out, int z )
@@ -121,7 +113,6 @@ struct conv_layer_t
 
 			for ( int filter = 0; filter < filters.size.m; filter++ )
 			{
-				//tensor_t<float>& filter_data = filters[filter];
 				for ( int x = 0; x < out.size.x; x++ )
 				{
 					for ( int y = 0; y < out.size.y; y++ )
@@ -140,7 +131,7 @@ struct conv_layer_t
 					}
 				}
 			}
-		cout<<"*********out for convolution";
+		cout<<"*********out for convolution*************\n";
 		print_tensor(out);
 	}
 

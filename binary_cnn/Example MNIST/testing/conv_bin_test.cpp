@@ -145,10 +145,10 @@ int main()
 	layer2->activate(layer1->out);
 	conv_layer_bin_t * layer3 = new conv_layer_bin_t(1, 2, 1, {1,3,3,1});
 	layer3->activate(layer2->out);
-	// fc_layer_t * layer4 = new fc_layer_t({1,2,2,1}, 3);
-	// layer4->activate(layer3->out);
-	// fc_layer_bin_t * layer5 = new fc_layer_bin_t({1,3,1,1}, 2);
-	// layer5->activate(layer4->out);
+	fc_layer_t * layer4 = new fc_layer_t({1,2,2,1}, 3);
+	layer4->activate(layer3->out);
+	fc_layer_bin_t * layer5 = new fc_layer_bin_t({1,3,1,1}, 2);
+	layer5->activate(layer4->out);
 	// scale_layer_t * layer6 = new scale_layer_t(2);
 	// layer6->activate(layer5->out);
 	 
