@@ -41,11 +41,14 @@ struct fc_layer_bin_t
         in_bin( in_size.m, in_size.x, in_size.y, in_size.z),
 		out( in_size.m, out_size, 1, 1 ),
         out_bin( in_size.m, out_size, 1, 1),
-        weights_bin( in_size.m * in_size.x * in_size.y * in_size.z, out_size, 1, 1 ),
-		grads_in( in_size.m, in_size.x, in_size.y, in_size.z ),
-		weights( in_size.m * in_size.x * in_size.y * in_size.z, out_size, 1, 1 ),
+        weights_bin(in_size.x * in_size.y * in_size.z, out_size, 1, 1 ),
+		grads_in(in_size.m, in_size.x, in_size.y, in_size.z ),
+		weights(in_size.x * in_size.y * in_size.z, out_size, 1, 1 ),
+		// to be checked later :(
 		gradients(in_size.m, out_size, 1, 1)
 	{
+		cout<<"**********flag************\n";
+		assert(true);
 		// WEIGHT INITIALIZATION
 		
 		for ( int i = 0; i < out_size; i++ )
@@ -90,12 +93,12 @@ struct fc_layer_bin_t
         // CAN USE MULTIPLE BINARISATION BY CHANGING `calculate_alpha` and `multiply_by_alpha` FUNCTIONS
         float sum = 0;
 
-        for (int i = 0; i < weights.size.x; ++i)
-            for (int j = 0; j < weights.size.y; j++)
+        for (int i = 0; i < weights.size.m; ++i)
+            for (int j = 0; j < weights.size.x; j++)
                 sum += weights(i, j, 0, 0);
-        int n = weights.size.z * weights.size.y * weights.size.x;      // NO OF ELEMENTS IN `weights`
+        int n = weights.size.m * weights.size.z * weights.size.y * weights.size.x;      // NO OF ELEMENTS IN `weights`
         alpha = sum / n;
-        cout<<"*********mean********\n";
+        cout<<"*********alpha for weights********\n";
         cout<<alpha<<endl;
     }
 
@@ -137,11 +140,11 @@ struct fc_layer_bin_t
 					for ( int j = 0; j < in.size.y; j++ )
 						for ( int z = 0; z < in.size.z; z++ )
 						{ 
-							int m = map( { e, i, j, z } );
-							inputv += !(in_bin.data[in_bin( e, i, j, z )] ^ weights_bin.data[weights_bin( e, m, n, 0 )]);
+							int m = map( { 0 , i, j, z } );
+							inputv += !(in_bin.data[in_bin( e, i, j, z )] ^ weights_bin.data[weights_bin(m, n, 0, 0)]);
 						}
 				
-				out( e, n, 0, 0 ) = 2*inputv - weights.size.x;   // 2P-N
+				out( e, n, 0, 0 ) = 2*inputv - weights.size.m;   // 2P-N
 				//cout<<out( n, 0, 0 )<<endl;
 			}
 		cout<<"********** output before multiplying*******";

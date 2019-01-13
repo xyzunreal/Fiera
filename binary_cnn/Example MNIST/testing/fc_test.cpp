@@ -123,13 +123,13 @@ int main()
 	
 	vector<layer_t*> layers;
 	
-	tensor_t<float> temp_in(1, 3,1,1);
+	tensor_t<float> temp_in(1, 2,2,1);
 	
 	
 	
 	for(int k=0; k<1; k++)
-	for(int i=0; i<3; i++){
-		for(int j=0; j<1; j++){
+	for(int i=0; i<2; i++){
+		for(int j=0; j<2; j++){
 			temp_in(0, i,j,k) = pow(-1,i^j)*2+i+j-4;
 		}
 	}
@@ -147,7 +147,7 @@ int main()
 	// layer3->activate(layer2->out);
 	// fc_layer_t * layer4 = new fc_layer_t({1,2,2,1}, 3);
 	// layer4->activate(layer3->out);
-	fc_layer_bin_t * layer5 = new fc_layer_bin_t({1,3,1,1}, 2);
+	fc_layer_bin_t * layer5 = new fc_layer_bin_t({1,2,2,1}, 2);
 	layer5->activate(temp_in);
 	// scale_layer_t * layer6 = new scale_layer_t(2);
 	// layer6->activate(layer5->out);
