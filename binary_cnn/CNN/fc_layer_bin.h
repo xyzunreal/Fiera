@@ -236,7 +236,7 @@ struct fc_layer_bin_t
 								grads_in(e,i,j,z) += 0;
 						}
 			}
-			
+
 		cout<<"*****grads_next_layer*****\n";
 		print_tensor(grad_next_layer);
 

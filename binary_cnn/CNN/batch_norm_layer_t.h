@@ -98,7 +98,6 @@ struct batch_norm_layer_t
 		cal_mean();
 		cal_sigma();
 		cal_in_hat();
-
 	}
 	
 	
