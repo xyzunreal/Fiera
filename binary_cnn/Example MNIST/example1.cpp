@@ -20,8 +20,8 @@ float train( vector<layer_t*>& layers, tensor_t<float>& data, tensor_t<float>& e
 	}
 	// cross_entropy(true , layer[last-1]->out);
 	
-	int tm = layers[layers.size()-1].out.size.m;
-	int tx = layers[layers.size()-1].out.size.x;
+	int tm = layers[layers.size()-1].out.size.m; 	//No of examples in last layer (softmax).
+	int tx = layers[layers.size()-1].out.size.x;	//Size of output in last layer (softmax).
 
 	tensor_t<float> softmax_grads(tm,tx,1,1);
 

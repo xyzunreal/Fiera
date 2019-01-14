@@ -82,20 +82,26 @@ struct fc_layer_t
 
 	void fix_weights()
 	{
-		// for ( int n = 0; n < out.size.x; n++ )
-		// {
-		// 	gradient_t& grad = gradients[n];
-		// 	for ( int i = 0; i < in.size.x; i++ )
-		// 		for ( int j = 0; j < in.size.y; j++ )
-		// 			for ( int z = 0; z < in.size.z; z++ )
-		// 			{
-		// 				int m = map( { i, j, z } );
-		// 				float& w = weights( m, n, 0 );
-		// 				w = update_weight( w, grad, in( i, j, z ) );
-		// 			}
+		
+		
+		for ( int e = 0; e < out.size.m; e++ )			
+			for ( int n = 0; n < out.size.x; n++ )
+			{
+				gradient_t& grad = gradients(e, n, 0, 0);
+				for ( int i = 0; i < in.size.x; i++ )
+					for ( int j = 0; j < in.size.y; j++ )
+						for ( int z = 0; z < in.size.z; z++ )
+						{
+							int m = map( { 0, i, j, z } );
+							float& w = weights( m, n, 0, 0 );
 
-		// 	update_gradient( grad );
-		// }
+							// Acc to simpleCNN but incorrect acc to constructor.
+							// w = update_weight( w, grad, in( e, i, j, z ) ); 
+							w = update_weight( w, grad );
+						}
+
+				update_gradient( grad );
+			}
 	}
 
 	void calc_grads( tensor_t<float>& grad_next_layer )
@@ -104,20 +110,22 @@ struct fc_layer_t
 	
 
 	{
-		// memset( grads_in.data, 0, grads_in.size.x *grads_in.size.y*grads_in.size.z * sizeof( float ) );
-		// for ( int n = 0; n < out.size.x; n++ )
-		// {
-		// 	gradient_t& grad = gradients[n];
-		// 	grad.grad = grad_next_layer( n, 0, 0 ) * activator_derivative( input[n] );
+		memset( grads_in.data, 0, grads_in.size.m *grads_in.size.x *grads_in.size.y*grads_in.size.z * sizeof( float ) );
+		
+		for(int e = 0; e < out.size.m; e++)
+			for ( int n = 0; n < out.size.x; n++ )
+			{
+				gradient_t& grad = gradients(e, n, 0, 0);
+				grad.grad = grad_next_layer( e, n, 0, 0 ) ;
 
-		// 	for ( int i = 0; i < in.size.x; i++ )
-		// 		for ( int j = 0; j < in.size.y; j++ )
-		// 			for ( int z = 0; z < in.size.z; z++ )
-		// 			{
-		// 				int m = map( { i, j, z } );
-		// 				grads_in( i, j, z ) += grad.grad * weights( m, n, 0 );
-		// 			}
-		// }
+				for ( int i = 0; i < in.size.x; i++ )
+					for ( int j = 0; j < in.size.y; j++ )
+						for ( int z = 0; z < in.size.z; z++ )
+						{
+							int m = map( {0, i, j, z } );
+							grads_in( e, i, j, z ) += grad.grad * weights( m, n, 0, 0 );
+						}
+			}
 	}
 };
 #pragma pack(pop)

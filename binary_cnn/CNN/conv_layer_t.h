@@ -137,55 +137,55 @@ struct conv_layer_t
 
 	void fix_weights()
 	{
-		// for ( int a = 0; a < filters.size(); a++ )
-		// 	for ( int i = 0; i < extend_filter; i++ )
-		// 		for ( int j = 0; j < extend_filter; j++ )
-		// 			for ( int z = 0; z < in.size.z; z++ )
-		// 			{
-		// 				float& w = filters[a].get( i, j, z );
-		// 				gradient_t& grad = filter_grads[a].get( i, j, z );
-		// 				w = update_weight( w, grad );
-		// 				update_gradient( grad );
-		// 			}
+		for ( int a = 0; a < filters.size.m; a++ )
+			for ( int i = 0; i < extend_filter; i++ )
+				for ( int j = 0; j < extend_filter; j++ )
+					for ( int z = 0; z < in.size.z; z++ )
+					{
+						float& w = filters(a, i, j, z );
+						gradient_t& grad = filter_grads(a, i, j, z );
+						w = update_weight( w, grad );
+						update_gradient( grad );
+					}
 	}
 
 	void calc_grads( tensor_t<float>& grad_next_layer )
 	{
+		for ( int k = 0; k < filter_grads.size.m; k++ )
+		{
+			for ( int i = 0; i < extend_filter; i++ )
+				for ( int j = 0; j < extend_filter; j++ )
+					for ( int z = 0; z < in.size.z; z++ )
+						filter_grads(k, i, j, z ).grad = 0;
+		}
 
-	// 	for ( int k = 0; k < filter_grads.size(); k++ )
-	// 	{
-	// 		for ( int i = 0; i < extend_filter; i++ )
-	// 			for ( int j = 0; j < extend_filter; j++ )
-	// 				for ( int z = 0; z < in.size.z; z++ )
-	// 					filter_grads[k].get( i, j, z ).grad = 0;
-	// 	}
-
-	// 	for ( int x = 0; x < in.size.x; x++ )
-	// 	{
-	// 		for ( int y = 0; y < in.size.y; y++ )
-	// 		{
-	// 			range_t rn = map_to_output( x, y );
-	// 			for ( int z = 0; z < in.size.z; z++ )
-	// 			{
-	// 				float sum_error = 0;
-	// 				for ( int i = rn.min_x; i <= rn.max_x; i++ )
-	// 				{
-	// 					int minx = i * stride;
-	// 					for ( int j = rn.min_y; j <= rn.max_y; j++ )
-	// 					{
-	// 						int miny = j * stride;
-	// 						for ( int k = rn.min_z; k <= rn.max_z; k++ )
-	// 						{
-	// 							int w_applied = filters[k].get( x - minx, y - miny, z );
-	// 							sum_error += w_applied * grad_next_layer( i, j, k );
-	// 							filter_grads[k].get( x - minx, y - miny, z ).grad += in( x, y, z ) * grad_next_layer( i, j, k );
-	// 						}
-	// 					}
-	// 				}
-	// 				grads_in( x, y, z ) = sum_error;
-	// 			}
-	// 		}
-	// 	}
+		for ( int e = 0; e < in.size.m; e++)
+			for ( int x = 0; x < in.size.x; x++ )
+			{
+				for ( int y = 0; y < in.size.y; y++ )
+				{
+					range_t rn = map_to_output( x, y );
+					for ( int z = 0; z < in.size.z; z++ )
+					{
+						float sum_error = 0;
+						for ( int i = rn.min_x; i <= rn.max_x; i++ )
+						{
+							int minx = i * stride;
+							for ( int j = rn.min_y; j <= rn.max_y; j++ )
+							{
+								int miny = j * stride;
+								for ( int k = rn.min_z; k <= rn.max_z; k++ )
+								{
+									int w_applied = filters(k, x - minx, y - miny, z );
+									sum_error += w_applied * grad_next_layer(e, i, j, k );
+									filter_grads(k, x - minx, y - miny, z ).grad += in(e, x, y, z ) * grad_next_layer(e, i, j, k );
+								}
+							}
+						}
+						grads_in( e, x, y, z ) = sum_error;
+					}
+				}
+			}
 	}
 };
 #pragma pack(pop)
