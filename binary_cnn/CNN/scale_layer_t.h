@@ -38,8 +38,10 @@ struct scale_layer_t
     void activate()
     {
 		for (int tm = 0; tm < in.size.m; tm++)
-			for (int i = 0; i < in.size.x; i++)
-				out(i, 0, 0) = s_param * in(i, 0, 0);
+			for (int i = 0; i < in.size.x; i++){
+				out(tm,i, 0, 0) = s_param * in(tm, i, 0, 0);
+                // cout<<s_param<<' '<<in(tm, i, 0, 0)<<' '<<s_param * in(tm, i, 0, 0)<<endl;
+            }
         cout<<"*****output for scale***********\n";
         print_tensor(out);
     }

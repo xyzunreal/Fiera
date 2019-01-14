@@ -125,7 +125,7 @@ static void print_tensor( tensor_t<float>& data )
 				for ( int x = 0; x < mx; x++ )
 				{
 					// indexing changed
-					printf( "%.2f \t", (float)data(tm, x, y, z));
+					printf( "%.6f \t", (float)data(tm, x, y, z));
 				}
 				printf( "\n" );
 			}

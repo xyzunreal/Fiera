@@ -12,9 +12,10 @@ To calculate cross entropy loss
 #include "tensor_bin_t.h"
 
 #pragma pack(push, 1)
-float crossentropy_layer_t(tensor_t<float>& predicted ,tensor_t<float>& actual){
+tensor_t<float> cross_entropy(tensor_t<float>& predicted ,tensor_t<float>& actual){
         int index;
-        tensor_t<float> temp;
+        tensor_t<float> temp(predicted.size.m, 1, 1, 1);
+
         for(int e=0; e < predicted.size.m; e++){
             for ( int i = 0; i < predicted.size.x; i++ ){
                 if( int(actual(e,i, 0, 0)) == 1){
@@ -22,7 +23,7 @@ float crossentropy_layer_t(tensor_t<float>& predicted ,tensor_t<float>& actual){
                     break;
                 }	
             }
-            temp.push_back(-log(predicted(e,index,0,0)));
+            temp(e,0,0,0) = (-log(predicted(e,index,0,0)));
         }
         return temp; 
     }

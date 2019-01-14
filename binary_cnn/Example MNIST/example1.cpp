@@ -18,17 +18,19 @@ float train( vector<layer_t*>& layers, tensor_t<float>& data, tensor_t<float>& e
 		else
 			activate( layers[i], layers[i - 1]->out );
 	}
-	// cross_entropy(true , layer[last-1]->out);
+	int size = layers.size();
+
+	cross_entropy(layers[size-1]->out, expected);
 	
-	int tm = layers[layers.size()-1].out.size.m;
-	int tx = layers[layers.size()-1].out.size.x;
+	int tm = layers[size - 1]->out.size.m;
+	int tx = layers[size - 1]->out.size.x;
 
 	tensor_t<float> softmax_grads(tm,tx,1,1);
 
 	for(int i=0; i<tm; i++){
 		for(int j=0; j<tx; j++){
-			if(data(i,j,0,0)==1){
-				softmax_grads(i,j,0,0) = (-1.0/layers[layers.size()-1].out(i,j,0,0));
+			if(int(expected(i,j,0,0)) == 1){
+				softmax_grads(i,j,0,0) = (-1.0/layers[size - 1]->out(i,j,0,0));
 			}
 		}
 	}

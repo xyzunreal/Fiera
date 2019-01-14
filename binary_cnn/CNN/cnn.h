@@ -11,6 +11,7 @@
 #include "fc_layer_bin.h"
 #include "scale_layer_t.h"
 #include "softmax_layer_t.h"
+#include "cross_entropy_layer_t.h"
 
 //using namespace std;
 

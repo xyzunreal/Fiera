@@ -133,36 +133,31 @@ int main()
 			temp_in(0, i,j,k) = pow(-1,i^j)*2+i+j-4;
 		}
 	}
+
+    tensor_t<float> t_grads(25, 3,1,1);
+    for (int i=0;i<25;i++)
+            for(int j=0;j<3;j++)
+                    t_grads(i, j, 0, 0) = pow(-1,i^j)*2+i+j-4;
 	
-	tensor_t<float> t_grads(1,3,3,1);
-	for(int i=0; i<3; i++){
-		for(int j=0; j<3; j++){
-			t_grads(0, i,j,0) = pow(-1,i^j)*2+i+j-4;
-		}
-	}
 	//debug
 	cout<<"*********input image *******"<<endl;
+	
 	print_tensor(temp_in);
 
-	// conv_layer_t * layer1 = new conv_layer_t(1, 3, 1, temp_in.size);		// 28 * 28 * 1 -> 24 * 24 * 8
-	// layer1->activate(temp_in);
-	// prelu_layer_t * layer2 = new prelu_layer_t( {1,3,3,1} );
-	// layer2->activate(layer1->out);
-	conv_layer_bin_t * layer3 = new conv_layer_bin_t(1, 3, 1, {1,5,5,1});
+	/* conv_layer_t * layer1 = new conv_layer_t(1, 3, 1, temp_in.size);		// 28 * 28 * 1 -> 24 * 24 * 8 */
+	/* layer1->activate(temp_in); */
+	/* prelu_layer_t * layer2 = new prelu_layer_t( {1,3,3,1} ); */
+	/* layer2->activate(layer1->out); */
+	fc_layer_bin_t * layer3 = new fc_layer_bin_t({1,5,5,1}, 3);
 	layer3->activate(temp_in);
-
-	cout<<"******grads_next_layer*******\n";
-	print_tensor(t_grads);
-	layer3->calc_grads(t_grads);
-	// fc_layer_t * layer4 = new fc_layer_t({1,2,2,1}, 3);
-	// layer4->activate(layer3->out);
-	// fc_layer_bin_t * layer5 = new fc_layer_bin_t({1,3,1,1}, 2);
-	// layer5->activate(layer4->out);
-	// scale_layer_t * layer6 = new scale_layer_t({1,2,1,1});
+    layer3->calc_grads(t_grads);
+	/* fc_layer_t * layer4 = new fc_layer_t({1,2,2,1}, 3); */
+	/* layer4->activate(layer3->out); */
+	/* fc_layer_bin_t * layer5 = new fc_layer_bin_t({1,3,1,1}, 2); */
+	/* layer5->activate(layer4->out); */
+	/* // scale_layer_t * layer6 = new scale_layer_t(2); */
 	// layer6->activate(layer5->out);
-	// softmax_layer_t * layer7 = new softmax_layer_t({1,2,1,1});
-	// layer7->activate(layer6->out);
-	
+	 
 	 //cout<<"******** conv"
 	//layer1->activate(temp_in);
 	//layers.push_back( (layer_t*)layer1 );

@@ -8,8 +8,9 @@ struct conv_layer_bin_t
 	tensor_t<float> grads_in;
 	tensor_t<float> in;
 	tensor_t<float> out;
-	tensor_bin_t in_bin;
-	tensor_bin_t in_bin2;
+	tensor_bin_t in_bin; 		// 1st BINARIZATION (h1)
+	tensor_bin_t in_bin2;		// 2nd BINARIZATION (h2)
+	tensor_t<float> al_b; 			// α1 * h1 + α2 * h2
 	tensor_bin_t out_bin;
 	tensor_t<float> filters; //std::vector<tensor_t<float>> filters;
 	tensor_bin_t filters_bin; //vector<tensor_bin_t> filters_bin;
@@ -30,6 +31,7 @@ struct conv_layer_bin_t
 		),
 		in_bin(in_size.m, in_size.x, in_size.y, in_size.z),
 		in_bin2(in_size.m, in_size.x, in_size.y, in_size.z),
+		al_b(in_size.m, in_size.x, in_size.y, in_size.z),
 		out_bin(in_size.m,
 		(in_size.x - extend_filter) / stride + 1,
 			(in_size.y - extend_filter) / stride + 1,
@@ -42,6 +44,7 @@ struct conv_layer_bin_t
 	{
 		this->stride = stride;
 		this->extend_filter = extend_filter;
+		// cout<<"*********flag************\n";
 		assert( (float( in_size.x - extend_filter ) / stride + 1)
 				==
 				((in_size.x - extend_filter) / stride + 1) );
@@ -69,18 +72,11 @@ struct conv_layer_bin_t
 					}
 				}
 			}
-			// filters.push_back( t );
-			// filters_bin.push_back(tb);
 		}
 
 		cout<<"******weights for conv_bin********\n"<<endl;
 		print_tensor(filters);
-		
-		// for ( int i = 0; i < number_filters; i++ )
-		// {
-		// 	tensor_t<gradient_t> t( extend_filter, extend_filter, in_size.z );
-		// 	filter_grads.push_back( t );
-		// }
+
 
 	}
 
@@ -173,9 +169,11 @@ struct conv_layer_bin_t
 	
 	void cal_mean(){
 		//cout<<filters.size()<<' '<<filters[0].size.x<<' '<<filters[0].size.y<<' '<<filters[0].size.z<<endl;
-		
+	
 		alpha.resize(in.size.m);
-		
+		alpha2.resize(in.size.m);
+
+		// CALCULATE alpha1		
 		for(int e = 0; e<in.size.m; e++){
 			float sum = 0;
 			// tensor_t<float> &tf = filters[filter];
@@ -190,26 +188,34 @@ struct conv_layer_bin_t
 			cout<<"alpha for"<<e<<"th example is "<<alpha[e]<<endl;
 		}
 
-		alpha2.resize(in.size.m);
+		// CALCULATE alpha2
 		tensor_t<float> temp(in.size.m, in.size.x, in.size.y, in.size.z);
-
 		for(int e = 0; e<in.size.m; e++){
 			float sum = 0;
 			// tensor_t<float> &tf = filters[filter];
 			for(int x=0; x<in.size.x; x++)
 				for(int y=0; y<in.size.y; y++)
 					for(int z=0; z<in.size.z; z++){
-						temp(e,x,y,z) = in(e,x,y,z) - alpha[e]*(in_bin(e,x,y,z));
+						temp(e,x,y,z) = in(e,x,y,z) - alpha[e]*(in_bin(e,x,y,z)==1 ? float(1) : float(-1) );
 						in_bin2.data[in_bin2(e,x,y,z)] = temp(e,x,y,z)>=0? 1 : 0;
 						sum += abs(temp(e,x,y,z));
 				}
 			alpha2[e] = sum/(in.size.x*in.size.y*in.size.z);
 
+			cout << "******in_bin2******";
+			print_tensor_bin(in_bin2);
 			cout<<"alpha2"<<endl;
 			cout<<"alpha2 for "<<e<<"th example is "<<alpha2[e]<<endl;
 		}
 
-
+		// CALCULATE al_b
+		for (int e = 0; e < in.size.m; e++)
+			for(int x=0; x<in.size.x; x++)
+				for(int y=0; y<in.size.y; y++)
+					for(int z=0; z<in.size.z; z++){
+						al_b(e, x, y, z) = alpha[e] * (in_bin(e, x, y, z) == 1 ? float(1) : float(-1) ) +
+								alpha2[e] * (in_bin2(e, x, y, z) == 1 ? float(1) : float(-1) );
+					}
 		//~ return sum/(filters.size()*);
 	}
 
@@ -284,24 +290,42 @@ struct conv_layer_bin_t
 
 	void calc_grads( tensor_t<float>& grad_next_layer)
 	{
-		for(int m=0; m<in.size.m;m++){
-		for(int e=0; e<filters.size.m; e++){
+		for ( int k = 0; k < filter_grads.size.m; k++ )
+		{
+			for ( int i = 0; i < extend_filter; i++ )
+				for ( int j = 0; j < extend_filter; j++ )
+					for ( int z = 0; z < in.size.z; z++ )
+						filter_grads(k, i, j, z ).grad = 0;
+		}
 
-				for(int k=0; k<filters.size.z; k++){
-					for(int j=0; j<filters.size.x; j++){
-						for(int i=0; i<filters.size.y;i++){
-							for(int l=j; l<(in.size.x - filters.size.x)+j; l++){
-								for(int n=i; n<(in.size.y - filters.size.y)+i; n++){
-									// filter_grads(e, j, i, k) += grad_next_layer(e, l, n ,k)*in(m, l, n, k);
-
+		for ( int e = 0; e < in.size.m; e++)
+			for ( int x = 0; x < in.size.x; x++ )
+				for ( int y = 0; y < in.size.y; y++ ){
+					range_t rn = map_to_output( x, y );
+					for ( int z = 0; z < in.size.z; z++ ){
+						float sum_error = 0;
+						for ( int i = rn.min_x; i <= rn.max_x; i++ ){
+							int minx = i * stride;
+							for ( int j = rn.min_y; j <= rn.max_y; j++ ){
+								int miny = j * stride;
+								for ( int k = rn.min_z; k <= rn.max_z; k++ ){
+									
+									filter_grads(k, x - minx, y - miny, z ).grad += al_b(e, x, y, z ) * grad_next_layer(e, i, j, k );
+									
+									if(in(e,x,y,z) <= 1){
+										float w_applied = (filters_bin(k, x - minx, y - miny, z ) == 1? float(1) : float(-1));
+										sum_error += w_applied * grad_next_layer(e, i, j, k );
+									}
+									else sum_error = 0;
 								}
-
 							}
 						}
+						grads_in( e, x, y, z ) = sum_error;
 					}
 				}
-		}
-	}
+
+		cout<<"*********grads_in************\n";
+		print_tensor(grads_in);
 	}
 };
 #pragma pack(pop)

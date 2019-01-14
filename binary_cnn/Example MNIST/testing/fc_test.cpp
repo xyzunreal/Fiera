@@ -130,10 +130,14 @@ int main()
 	for(int k=0; k<1; k++)
 	for(int i=0; i<2; i++){
 		for(int j=0; j<2; j++){
-			temp_in(0, i,j,k) = pow(-1,i^j)*2+i+j-4;
+			temp_in(k, i,j,0) = pow(-1,i^j)*2+i+j-4;
 		}
 	}
 	
+	tensor_t<float> t_grad(1,2,1,1);
+	for(int i=0; i<2; i++)
+		t_grad(0,i,0,0) = i-2;
+
 	//debug
 	cout<<"*********input image *******"<<endl;
 	
@@ -147,8 +151,9 @@ int main()
 	// layer3->activate(layer2->out);
 	// fc_layer_t * layer4 = new fc_layer_t({1,2,2,1}, 3);
 	// layer4->activate(layer3->out);
-	fc_layer_bin_t * layer5 = new fc_layer_bin_t({1,2,2,1}, 2);
+	fc_layer_t * layer5 = new fc_layer_t({1,2,2,1}, 2);
 	layer5->activate(temp_in);
+	layer5->calc_grads(t_grad);
 	// scale_layer_t * layer6 = new scale_layer_t(2);
 	// layer6->activate(layer5->out);
 	 
