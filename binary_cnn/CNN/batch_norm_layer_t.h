@@ -13,8 +13,8 @@ struct batch_norm_layer_t
 	float epsilon;
     float gamma;
     float beta;
-	float grads_beta;
-	float grads_gamma;
+	gradient_t grads_beta;
+	gradient_t grads_gamma;
     std::vector<float> u_mean;
     std::vector<float> sigma, grads_sigma, grads_mean;
     bool adjust_variance;
@@ -103,23 +103,18 @@ struct batch_norm_layer_t
 	
 	
 	void fix_weights(){
-	// {
-	// 	for ( int a = 0; a < filters.size(); a++ )
-	// 		for ( int i = 0; i < extend_filter; i++ )
-	// 			for ( int j = 0; j < extend_filter; j++ )
-	// 				for ( int z = 0; z < in.size.z; z++ )
-	// 				{
-	// 					float& w = filters[a].get( i, j, z );
-	// 					gradient_t& grad = filter_grads[a].get( i, j, z );
-	// 					w = update_weight( w, grad );
-	// 					update_gradient( grad );
-	// 				}
+		grads_beta.grad /= out.size.m;
+		grads_gamma.grad /= out.size.m;
+		update_weight(beta,grads_beta);
+		update_gradient(grads_beta);
+		update_weight(gamma,grads_gamma);
+		update_gradient(grads_gamma);
 	}
 
 	void calc_grads( tensor_t<float>& grad_next_layer)
 	{
-		grads_beta = 0;
-		grads_gamma = 0;
+		grads_beta.grad = 0;
+		grads_gamma.grad = 0;
 
 		for(int i=0; i<out.size.z; i++){
 
@@ -131,8 +126,8 @@ struct batch_norm_layer_t
 			for(int e=0; e<out.size.m; e++){
 				for(int k=0; k<out.size.x; k++){
 					for(int j=0; j<out.size.y; j++){
-						grads_beta += grad_next_layer(e,k,j,i); 
-						grads_gamma += grad_next_layer(e,k,j,i)*in_hat(e,k,j,i);
+						grads_beta.grad += grad_next_layer(e,k,j,i); 
+						grads_gamma.grad += grad_next_layer(e,k,j,i)*in_hat(e,k,j,i);
 						grads_in_hat(e,k,j,i) = grad_next_layer(e,k,j,i)*gamma;
 						temp_sigma += (grads_in_hat(e, k, j, i)*(in(e,k,j,i)-u_mean[i])*(-1.0/2.0)*(pow((sigma[i]+epsilon),-3/2)));
 						temp_mean1 += (grads_in_hat(e, k, j, i)*(in(e,k,j,i)-u_mean[i])*(-1.0/sqrt(sigma[i] + epsilon)));
@@ -150,7 +145,7 @@ struct batch_norm_layer_t
 			for(int e=0; e<out.size.m; e++){
 				for(int k=0; k<out.size.x; k++){
 					for(int j=0; j<out.size.y; j++){
-						grads_in(e, j, k, i ) = grads_in_hat(e, j, k, i)* (1.0/sqrt(sigma[i]+epsilon)) + grads_sigma[i] * (2.0 * (in(e, j, k, i) - u_mean[i])/ out.size.m ) + grads_mean[i]/out.size.m;
+						grads_in(e,j,k,i) = grads_in_hat(e, j, k, i)* (1.0/sqrt(sigma[i]+epsilon)) + grads_sigma[i] * (2.0 * (in(e, j, k, i) - u_mean[i])/ out.size.m ) + grads_mean[i]/out.size.m;
 					}
 				}
 			}

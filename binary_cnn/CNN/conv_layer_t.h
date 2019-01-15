@@ -144,6 +144,7 @@ struct conv_layer_t
 					{
 						float& w = filters(a, i, j, z );
 						gradient_t& grad = filter_grads(a, i, j, z );
+						grad.grad /= in.size.m;
 						w = update_weight( w, grad );
 						update_gradient( grad );
 					}

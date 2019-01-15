@@ -52,8 +52,7 @@ struct fc_layer_bin_t
 		// to be checked later :(
 		gradients(in_size.x * in_size.y * in_size.z, out_size, 1, 1)
 	{
-		cout<<"**********flag************\n";
-		assert(true);
+		
 		// WEIGHT INITIALIZATION
 		
 		for ( int i = 0; i < out_size; i++ )

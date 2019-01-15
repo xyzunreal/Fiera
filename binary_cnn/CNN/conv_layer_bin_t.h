@@ -275,17 +275,17 @@ struct conv_layer_bin_t
 	
 	
 	void fix_weights(){
-	// {
-	// 	for ( int a = 0; a < filters.size(); a++ )
-	// 		for ( int i = 0; i < extend_filter; i++ )
-	// 			for ( int j = 0; j < extend_filter; j++ )
-	// 				for ( int z = 0; z < in.size.z; z++ )
-	// 				{
-	// 					float& w = filters[a].get( i, j, z );
-	// 					gradient_t& grad = filter_grads[a].get( i, j, z );
-	// 					w = update_weight( w, grad );
-	// 					update_gradient( grad );
-	// 				}
+		for ( int a = 0; a < filters.size.m; a++ )
+			for ( int i = 0; i < extend_filter; i++ )
+				for ( int j = 0; j < extend_filter; j++ )
+					for ( int z = 0; z < in.size.z; z++ )
+					{
+						float& w = filters(a, i, j, z );
+						gradient_t& grad = filter_grads(a, i, j, z );
+						grad.grad /= in.size.m;
+						w = update_weight( w, grad );
+						update_gradient(grad);
+					}
 	}
 
 	void calc_grads( tensor_t<float>& grad_next_layer)

@@ -29,7 +29,7 @@ struct prelu_layer_t
 	tensor_t<float> in;
 	tensor_t<float> out;
 	float alpha;
-	float grads_alpha;
+	gradient_t grads_alpha;
 	float p_relu_zero;
 
 	prelu_layer_t( tdsize in_size ):
@@ -65,8 +65,10 @@ struct prelu_layer_t
 	}
 
 	void fix_weights()
-	{
-
+	{	// grads_alpha contains sum of gradients of alphas for all examples. 
+		grads_alpha.grad /= out.size.m;
+		update_weight(alpha,grads_alpha);
+		update_gradient(grads_alpha);
 	}
 
 	void calc_grads( tensor_t<float>& grad_next_layer )
@@ -84,7 +86,7 @@ struct prelu_layer_t
 							grads_in(e,i,j,k) = grad_next_layer(e,i,j,k)*p_relu_zero;
 						}
 						else{
-							grads_alpha += grad_next_layer(e,i,j,k) * (in(e, i, j, k));
+							grads_alpha.grad += grad_next_layer(e,i,j,k) * (in(e, i, j, k));
 							grads_in(e,i,j,k) = grad_next_layer(e,i,j,k)*alpha;
 						}
 					}

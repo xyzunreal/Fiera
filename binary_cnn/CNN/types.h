@@ -9,5 +9,6 @@ enum class layer_type
 	prelu,
 	pool,
 	dropout_layer,
-	softmax
+	softmax,
+	batch_norm
 };

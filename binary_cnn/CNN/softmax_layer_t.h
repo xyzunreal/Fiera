@@ -14,22 +14,25 @@ To implement softmax
 #pragma pack(push, 1)
 struct softmax_layer_t
 {
-	layer_type type = layer_type::softmax ;
+	layer_type type = layer_type::softmax;
 	
 	tensor_t<float> in;
 	tensor_t<float> out;
 	tensor_t<float> grads_in;
 	
 	softmax_layer_t( tdsize in_size):
-	in( in_size.m, in_size.x, 1, 1),
+		in( in_size.m, in_size.x, 1, 1),
 		out( in_size.m, in_size.x, 1, 1 ),
-		grads_in( in_size.m, in_size.x, in_size.y, in_size.z )
+		grads_in( in_size.m, in_size.x, 1, 1)
 	{
-	
+
 	}
 	
 	void activate( tensor_t<float>& in )
-	{
+	{	
+		cout<<"flag19\n";
+		// print_tensor(in);
+		cout<<in.size.m<<" "<<in.size.x<<' '<<in.size.y<<" "<<in.size.z<<endl;
 		this->in = in;
 		activate();
 	}
@@ -37,8 +40,8 @@ struct softmax_layer_t
 	
 	void activate()
 	{
-	
-		float temp1,sum;
+
+		float temp1, sum = 0;
 		for ( int tm = 0; tm < in.size.m; tm++ )
 			for ( int i = 0; i < in.size.x; i++ )
 			{
@@ -59,7 +62,7 @@ struct softmax_layer_t
 	
 	void fix_weights()
 	{
-
+		
 	}
 	
 	void calc_grads( tensor_t<float>& grad_next_layer )
@@ -71,3 +74,4 @@ struct softmax_layer_t
 		}
 	}	
 };
+#pragma pack(pop)

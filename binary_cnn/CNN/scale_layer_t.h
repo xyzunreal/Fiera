@@ -1,17 +1,12 @@
 #pragma once
-#include <math.h>
-#include <float.h>
-#include <string.h>
 #include "layer_t.h"
-#include "optimization_method.h"
-#include "gradient_t.h"
-#include "tensor_bin_t.h"
+#pragma pack(push, 1)
 
 struct scale_layer_t
 {
     layer_type type = layer_type::scale;
     tensor_t<float> grads_in;
-    float grads_scale;
+    gradient_t grads_scale;
     tensor_t<float> in;
     tensor_t<float> out;
 
@@ -44,22 +39,28 @@ struct scale_layer_t
             }
         cout<<"*****output for scale***********\n";
         print_tensor(out);
+        // cout<<"************flag********\n";
+	    // cout<<out.size.m<<' '<<out.size.x<<' '<<out.size.y<<" "<<out.size.z<<endl;
     }
 
     void fix_weights()
     {
-        
+        // grads_scale contains sum of gradients of s_param for all examples. 
+		grads_scale.grad /= out.size.m;
+		update_weight(s_param,grads_scale);
+		update_gradient(grads_scale);
     }
 
     void calc_grads(tensor_t<float>& grad_next_layer)
     {
-        grads_scale = 0;
+        grads_scale.grad = 0;
         for(int i=0; i<out.size.m; i++){
             for(int j=0; j<out.size.x; j++){
-                grads_scale += grad_next_layer(i,j,0,0)*in(i,j,0,0); 
+                grads_scale.grad += grad_next_layer(i,j,0,0)*in(i,j,0,0); 
                 grads_in(i,j,0,0) = grad_next_layer(i,j,0,0)*s_param;
             }
         }
     }
 
 };
+#pragma pack(pop)
