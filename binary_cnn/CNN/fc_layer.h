@@ -82,26 +82,26 @@ struct fc_layer_t
 
 	void fix_weights()
 	{
-		
-		
-		for ( int e = 0; e < out.size.m; e++ )			
-			for ( int n = 0; n < out.size.x; n++ )
-			{
-				gradient_t& grad = gradients(e, n, 0, 0);
-				for ( int i = 0; i < in.size.x; i++ )
-					for ( int j = 0; j < in.size.y; j++ )
-						for ( int z = 0; z < in.size.z; z++ )
-						{
-							int m = map( { 0, i, j, z } );
-							float& w = weights( m, n, 0, 0 );
-
-							// Acc to simpleCNN but incorrect acc to constructor.
-							// w = update_weight( w, grad, in( e, i, j, z ) ); 
-							w = update_weight( w, grad );
+		for ( int n = 0; n < out.size.x; n++ )
+		{
+			for ( int i = 0; i < in.size.x; i++ )
+				for ( int j = 0; j < in.size.y; j++ )
+					for ( int z = 0; z < in.size.z; z++ )
+					{
+						int m = map( { 0, i, j, z } );
+						float& w = weights( m, n, 0, 0 );
+						gradient_t grad_sum;
+						gradient_t weight_grad;
+						for ( int e = 0; e < out.size.m; e++ ){			
+							weight_grad = gradients(e, n, 0, 0) * in(e, i, j, z);	// d W = A(l) * d A(l+1)
+							grad_sum = weight_grad + grad_sum;
 						}
-
-				update_gradient( grad );
-			}
+						grad_sum = grad_sum / out.size.m;
+						w = update_weight( w, grad_sum); 
+					}
+			for (int e = 0; e < out.size.m; e++)
+				update_gradient( gradients(e, n, 0, 0) );
+		}
 	}
 
 	void calc_grads( tensor_t<float>& grad_next_layer )
