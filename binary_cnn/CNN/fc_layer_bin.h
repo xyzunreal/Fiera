@@ -100,12 +100,12 @@ struct fc_layer_bin_t
 		alpha2.resize(in.size.m);
 
 		// CALCULATE alpha1		
-		for(int e = 0; e<in.size.m; e++){
+		for(int e = 0; e < in.size.m; e++){
 			float sum = 0;
 			// tensor_t<float> &tf = filters[filter];
-			for(int x=0; x<in.size.x; x++)
-				for(int y=0; y<in.size.y; y++)
-					for(int z=0; z<in.size.z; z++){
+			for(int x = 0; x < in.size.x; x++)
+				for(int y = 0; y < in.size.y; y++)
+					for(int z = 0; z < in.size.z; z++){
 						sum += abs(in(e,x,y,z));
 				}
 			
@@ -196,20 +196,26 @@ struct fc_layer_bin_t
 
 	void fix_weights()
 	{
-		// for ( int n = 0; n < out.size.x; n++ )
-		// {
-		// 	gradient_t& grad = gradients[n];
-		// 	for ( int i = 0; i < in.size.x; i++ )
-		// 		for ( int j = 0; j < in.size.y; j++ )
-		// 			for ( int z = 0; z < in.size.z; z++ )
-		// 			{
-		// 				int m = map( { i, j, z } );
-		// 				float& w = weights( m, n, 0 );
-		// 				w = update_weight( w, grad, al_b( i, j, z ) );
-		// 			}
-
-		// 	update_gradient( grad );
-		// }
+		for ( int n = 0; n < out.size.x; n++ )
+		{
+			for ( int i = 0; i < in.size.x; i++ )
+				for ( int j = 0; j < in.size.y; j++ )
+					for ( int z = 0; z < in.size.z; z++ )
+					{
+						int m = map( { 0, i, j, z } );
+						float& w = weights( m, n, 0, 0 );
+						gradient_t grad_sum;
+						gradient_t weight_grad;
+						for ( int e = 0; e < out.size.m; e++ ){			
+							weight_grad = gradients(e, n, 0, 0) * al_b(e, i, j, z);	// d W = d A(l+1) * A(l)(binary) 
+							grad_sum = weight_grad + grad_sum;
+						}
+						grad_sum = grad_sum / out.size.m;
+						w = update_weight( w, grad_sum); 
+					}
+			for (int e = 0; e < out.size.m; e++)
+				update_gradient( gradients(e, n, 0, 0) );
+		}
 	}
 
 	void calc_grads( tensor_t<float>& grad_next_layer )
@@ -222,7 +228,7 @@ struct fc_layer_bin_t
 		for(int e=0; e<in.size.m; e++)
 			for ( int n = 0; n < out.size.x; n++ )
 			{
-				gradient_t& grad = gradients(e,n,0,0);
+				gradient_t& grad = gradients(e, n, 0, 0);
 				grad.grad = grad_next_layer(e, n, 0, 0 );
 
 				for ( int i = 0; i < in.size.x; i++ )

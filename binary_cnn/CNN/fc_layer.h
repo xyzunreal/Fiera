@@ -93,7 +93,7 @@ struct fc_layer_t
 						gradient_t grad_sum;
 						gradient_t weight_grad;
 						for ( int e = 0; e < out.size.m; e++ ){			
-							weight_grad = gradients(e, n, 0, 0) * in(e, i, j, z);	// d W = A(l) * d A(l+1)
+							weight_grad = gradients(e, n, 0, 0) * in(e, i, j, z);	// d W = d A(l+1) * A(l)
 							grad_sum = weight_grad + grad_sum;
 						}
 						grad_sum = grad_sum / out.size.m;
