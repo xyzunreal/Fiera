@@ -67,8 +67,11 @@ struct prelu_layer_t
 	void fix_weights()
 	{	// grads_alpha contains sum of gradients of alphas for all examples. 
 		grads_alpha.grad /= out.size.m;
-		update_weight(alpha,grads_alpha);
+		alpha = update_weight(alpha,grads_alpha);
 		update_gradient(grads_alpha);
+		
+		cout<<"*******updated alpha for prelu*****\n";
+		cout<<alpha<<endl;
 	}
 
 	void calc_grads( tensor_t<float>& grad_next_layer )
@@ -94,6 +97,9 @@ struct prelu_layer_t
 			
 			}
 		}
+		cout<<"***********grads_in for prelu********\n";
+        print_tensor(grads_in);
+		
 							
 	}
 };

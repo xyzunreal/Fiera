@@ -197,6 +197,7 @@ struct conv_layer_bin_t
 				for(int y=0; y<in.size.y; y++)
 					for(int z=0; z<in.size.z; z++){
 						temp(e,x,y,z) = in(e,x,y,z) - alpha[e]*(in_bin(e,x,y,z)==1 ? float(1) : float(-1) );
+						// cout<<in(e,x,y,z)<<" "<<alpha[e]*(in_bin(e,x,y,z)==1 ? float(1) : float(-1) )<<endl;
 						in_bin2.data[in_bin2(e,x,y,z)] = temp(e,x,y,z)>=0? 1 : 0;
 						sum += abs(temp(e,x,y,z));
 				}
@@ -283,9 +284,12 @@ struct conv_layer_bin_t
 						float& w = filters(a, i, j, z );
 						gradient_t& grad = filter_grads(a, i, j, z );
 						grad.grad /= in.size.m;
-						w = update_weight( w, grad );
+						w = update_weight( w, grad, 1, true );
 						update_gradient(grad);
 					}
+
+		cout<<"*******new weights for conv_bin*****\n";
+		print_tensor(filters);
 	}
 
 	void calc_grads( tensor_t<float>& grad_next_layer)
@@ -313,7 +317,7 @@ struct conv_layer_bin_t
 									filter_grads(k, x - minx, y - miny, z ).grad += al_b(e, x, y, z ) * grad_next_layer(e, i, j, k );
 									
 									if(in(e,x,y,z) <= 1){
-										float w_applied = (filters_bin(k, x - minx, y - miny, z ) == 1? float(1) : float(-1));
+										float w_applied = (filters_bin.data[filters_bin(k, x - minx, y - miny, z )] == 1? float(1) : float(-1));
 										sum_error += w_applied * grad_next_layer(e, i, j, k );
 									}
 									else sum_error = 0;
@@ -324,7 +328,7 @@ struct conv_layer_bin_t
 					}
 				}
 
-		cout<<"*********grads_in************\n";
+		cout<<"*********grads_in for conv_bin************\n";
 		print_tensor(grads_in);
 	}
 };

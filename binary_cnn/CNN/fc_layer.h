@@ -102,6 +102,9 @@ struct fc_layer_t
 			for (int e = 0; e < out.size.m; e++)
 				update_gradient( gradients(e, n, 0, 0) );
 		}
+
+		cout<<"*******new weights for float fc*****\n";
+		print_tensor(weights);
 	}
 
 	void calc_grads( tensor_t<float>& grad_next_layer )
@@ -128,10 +131,10 @@ struct fc_layer_t
 						}
 			}
 		
-		cout<<"*****grads_next_layer*****\n";
-		print_tensor(grad_next_layer);
+		// cout<<"*****grads_next_layer*****\n";
+		// print_tensor(grad_next_layer);
 
-		cout<<"grads_in***********\n";
+		cout<<"**********grads_in for float fc***********\n";
 		print_tensor(grads_in);
 		
 

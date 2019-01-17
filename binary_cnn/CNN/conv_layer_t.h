@@ -1,7 +1,7 @@
 #pragma once
 #include "layer_t.h"
 
-#pragma pack(push, 1)
+// #pragma pack(push, 1)
 struct conv_layer_t
 {
 	layer_type type = layer_type::conv;
@@ -148,6 +148,9 @@ struct conv_layer_t
 						w = update_weight( w, grad );
 						update_gradient( grad );
 					}
+
+		cout<<"*******new weights for float conv*****\n";
+		print_tensor(filters);
 	}
 
 	void calc_grads( tensor_t<float>& grad_next_layer )
@@ -198,8 +201,8 @@ struct conv_layer_t
 			}
 		}
 		
-		// cout<<"*********grads_in********\n";
-		// print_tensor(grads_in);
+		cout<<"*********grads_in for float conv********\n";
+		print_tensor(grads_in);
 	}
 };
-#pragma pack(pop)
+// #pragma pack(pop)

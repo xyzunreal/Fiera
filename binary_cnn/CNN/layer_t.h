@@ -9,5 +9,7 @@ struct layer_t
 	tensor_t<float> grads_in;
 	tensor_t<float> in;
 	tensor_t<float> out;
+	tensor_t<float> sfsdf;
+	tensor_bin_t fdfs;
 };
 #pragma pack(pop)
