@@ -102,12 +102,12 @@ struct batch_norm_layer_t
 	
 	
 	
-	void fix_weights(){
+	void fix_weights(float learning_rate){
 		grads_beta.grad /= out.size.m;
 		grads_gamma.grad /= out.size.m;
-		update_weight(beta,grads_beta);
+		update_weight(beta,grads_beta,1,false, learning_rate);
 		update_gradient(grads_beta);
-		update_weight(gamma,grads_gamma);
+		update_weight(gamma,grads_gamma,1,false, learning_rate);
 		update_gradient(grads_gamma);
 	}
 

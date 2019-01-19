@@ -59,7 +59,7 @@ struct softmax_layer_t
 	}
 	
 	
-	void fix_weights()
+	void fix_weights(float learning_rate)
 	{
 		
 	}

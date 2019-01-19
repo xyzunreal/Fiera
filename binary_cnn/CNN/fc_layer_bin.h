@@ -193,7 +193,7 @@ struct fc_layer_bin_t
 		print_tensor(out);
 	}
 
-	void fix_weights()
+	void fix_weights(float learning_rate)
 	{
 		for ( int n = 0; n < out.size.x; n++ )
 		{
@@ -210,7 +210,7 @@ struct fc_layer_bin_t
 							grad_sum = weight_grad + grad_sum;
 						}
 						grad_sum = grad_sum / out.size.m;
-						w = update_weight( w, grad_sum, 1, true); 
+						w = update_weight( w, grad_sum, 1, true, learning_rate); 
 					}
 			for (int e = 0; e < out.size.m; e++)
 				update_gradient( gradients(e, n, 0, 0) );

@@ -53,33 +53,33 @@ static void calc_grads( layer_t* layer, tensor_t<float>& grad_next_layer )
 	}
 }
 
-static void fix_weights( layer_t* layer )
+static void fix_weights( layer_t* layer ,float learning_rate)
 {
 	switch ( layer->type )
 	{
 		case layer_type::conv:
-			((conv_layer_t*)layer)->fix_weights();
+			((conv_layer_t*)layer)->fix_weights(learning_rate);
 			return;
 		case layer_type::scale:
-			((scale_layer_t*)layer)->fix_weights();
+			((scale_layer_t*)layer)->fix_weights(learning_rate);
 			return;
 		case layer_type::softmax:
-			((softmax_layer_t*)layer)->fix_weights();
+			((softmax_layer_t*)layer)->fix_weights(learning_rate);
 			return;
 		case layer_type::conv_bin:
-			((conv_layer_bin_t*)layer)->fix_weights();
+			((conv_layer_bin_t*)layer)->fix_weights(learning_rate);
 			return;
 		case layer_type::prelu:
-			((prelu_layer_t*)layer)->fix_weights();
+			((prelu_layer_t*)layer)->fix_weights(learning_rate);
 			return;
 		case layer_type::fc:
-			((fc_layer_t*)layer)->fix_weights();
+			((fc_layer_t*)layer)->fix_weights(learning_rate);
 			return;
 		case layer_type::fc_bin:
-			((fc_layer_bin_t *)layer)->fix_weights();
+			((fc_layer_bin_t *)layer)->fix_weights(learning_rate);
 			return;
 		case layer_type::batch_norm:
-			((batch_norm_layer_t *)layer)->fix_weights();
+			((batch_norm_layer_t *)layer)->fix_weights(learning_rate);
 			return;
 		default:
 			assert( false );

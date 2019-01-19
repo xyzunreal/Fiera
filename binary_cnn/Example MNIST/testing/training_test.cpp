@@ -18,7 +18,7 @@ int main()
 	for(int k=0; k<1; k++)
 	    for(int i=0; i<5; i++)
             for(int j=0; j<5; j++)
-                temp_in(0, i,j,k) = pow(-1,i^j)*2+i+j-4;
+                temp_in(0, i,j,k) = 1.0f * (rand()) / float( RAND_MAX );
 	
     // Creating dummy prediction data
     for(int i=0; i<5; i++) predict(0,i,0,0) = 0;
@@ -42,7 +42,11 @@ int main()
 
    /*************************************************************************hard coded code****************************************************************************/
     
-    for(int i=0; i<3; i++){
+    vector<float> cost_vec;
+    cost_vec.push_back(0);
+    float learning_rate = 0.01;
+
+    for(int i=0; i<100; i++){
         layer1->activate(temp_in);
         layer2->activate(layer1->out);
         layer3->activate(layer2->out);
@@ -55,8 +59,9 @@ int main()
         layer10->activate(layer9->out);
         layer11->activate(layer10->out);
 
+        
         cout<<cross_entropy(layer11->out, predict)(0, 0, 0, 0);
-
+        cost_vec.push_back(cross_entropy(layer11->out, predict)(0, 0, 0, 0));
         
         int size = 11;
 
@@ -89,17 +94,28 @@ int main()
         
         cout<<"************Fix weights**********";
         
-        layer1->fix_weights();
-        layer2->fix_weights();
-        layer3->fix_weights();
-        layer4->fix_weights();
-        layer5->fix_weights();
-        layer6->fix_weights();
-        layer7->fix_weights();
-        layer8->fix_weights();
-        layer9->fix_weights();
-        layer10->fix_weights();
-        layer11->fix_weights();
+        float diff_cost = cost_vec[cost_vec.size()-1] - cost_vec[cost_vec.size()-2];
+        
+        if(diff_cost < 1e-5){
+            learning_rate /= 2.0;
+        }
+
+        layer1->fix_weights(learning_rate);
+        layer2->fix_weights(learning_rate);
+        layer3->fix_weights(learning_rate);
+        layer4->fix_weights(learning_rate);
+        layer5->fix_weights(learning_rate);
+        layer6->fix_weights(learning_rate);
+        layer7->fix_weights(learning_rate);
+        layer8->fix_weights(learning_rate);
+        layer9->fix_weights(learning_rate);
+        layer10->fix_weights(learning_rate);
+        layer11->fix_weights(learning_rate);
+    }
+
+    cout<<"**************cost*************\n";
+    for(int i=0; i<cost_vec.size(); i++){
+        cout<<cost_vec[i]<<endl;
     }
 
    /*************************************************************************hard coded code****************************************************************************/

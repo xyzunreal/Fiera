@@ -43,11 +43,11 @@ struct scale_layer_t
 	    // cout<<out.size.m<<' '<<out.size.x<<' '<<out.size.y<<" "<<out.size.z<<endl;
     }
 
-    void fix_weights()
+    void fix_weights(float learning_rate)
     {
         // grads_scale contains sum of gradients of s_param for all examples. 
 		grads_scale.grad /= out.size.m;
-		s_param = update_weight(s_param,grads_scale);
+		s_param = update_weight(s_param,grads_scale,1,false, learning_rate);
 		update_gradient(grads_scale);
        
         cout<<"*******updated s_param*****\n";

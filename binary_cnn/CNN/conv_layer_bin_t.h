@@ -275,7 +275,7 @@ struct conv_layer_bin_t
 	
 	
 	
-	void fix_weights(){
+	void fix_weights(float learning_rate){
 		for ( int a = 0; a < filters.size.m; a++ )
 			for ( int i = 0; i < extend_filter; i++ )
 				for ( int j = 0; j < extend_filter; j++ )
@@ -284,7 +284,7 @@ struct conv_layer_bin_t
 						float& w = filters(a, i, j, z );
 						gradient_t& grad = filter_grads(a, i, j, z );
 						grad.grad /= in.size.m;
-						w = update_weight( w, grad, 1, true );
+						w = update_weight( w, grad, 1, true, learning_rate);
 						update_gradient(grad);
 					}
 
