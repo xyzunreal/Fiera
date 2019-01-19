@@ -215,7 +215,6 @@ struct fc_layer_bin_t
 			for (int e = 0; e < out.size.m; e++)
 				update_gradient( gradients(e, n, 0, 0) );
 		}
-
 		cout<<"*******new weights for fc_bin*****\n";
 		print_tensor(weights);
 	}

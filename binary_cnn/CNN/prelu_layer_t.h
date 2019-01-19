@@ -69,7 +69,6 @@ struct prelu_layer_t
 		grads_alpha.grad /= out.size.m;
 		alpha = update_weight(alpha,grads_alpha);
 		update_gradient(grads_alpha);
-		
 		cout<<"*******updated alpha for prelu*****\n";
 		cout<<alpha<<endl;
 	}
@@ -97,9 +96,9 @@ struct prelu_layer_t
 			
 			}
 		}
+
 		cout<<"***********grads_in for prelu********\n";
         print_tensor(grads_in);
-		
 							
 	}
 };

@@ -50,9 +50,8 @@ struct softmax_layer_t
 			}
 		for ( int tm = 0; tm < in.size.m; tm++ )
 			for ( int i = 0; i < in.size.x; i++ )
-			{
 				out(tm, i, 0, 0) = exp(in(tm, i, 0, 0))/sum;		
-			}
+	
 				
 				
 		cout<<"********output for softmax ********\n";

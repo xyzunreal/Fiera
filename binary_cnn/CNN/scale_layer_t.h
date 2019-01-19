@@ -6,9 +6,9 @@ struct scale_layer_t
 {
     layer_type type = layer_type::scale;
     tensor_t<float> grads_in;
-    gradient_t grads_scale;
     tensor_t<float> in;
     tensor_t<float> out;
+    gradient_t grads_scale;
 
     float s_param;     // `s_param` REPRESENT SCALE VALUE WHICH IS SINGLE LEARNABLE PARAMETER.
     tensor_t<gradient_t> gradients;
