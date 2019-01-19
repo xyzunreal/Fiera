@@ -31,8 +31,8 @@ struct softmax_layer_t
 	void activate( tensor_t<float>& in )
 	{	
 		cout<<"flag19\n";
-		// print_tensor(in);
-		cout<<in.size.m<<" "<<in.size.x<<' '<<in.size.y<<" "<<in.size.z<<endl;
+		print_tensor(in);
+		// cout<<in.size.m<<" "<<in.size.x<<' '<<in.size.y<<" "<<in.size.z<<endl;
 		this->in = in;
 		activate();
 	}
@@ -50,9 +50,8 @@ struct softmax_layer_t
 			}
 		for ( int tm = 0; tm < in.size.m; tm++ )
 			for ( int i = 0; i < in.size.x; i++ )
-			{
 				out(tm, i, 0, 0) = exp(in(tm, i, 0, 0))/sum;		
-			}
+	
 				
 				
 		cout<<"********output for softmax ********\n";
@@ -72,6 +71,9 @@ struct softmax_layer_t
 				grads_in(e,i,0,0) = grad_next_layer(e,i,0,0)*(out(e,i,0,0)*(1-out(e,i,0,0)));
 			}
 		}
+
+		cout<<"********grads_in for softmax*********\n";
+		print_tensor(grads_in);
 	}	
 };
 #pragma pack(pop)

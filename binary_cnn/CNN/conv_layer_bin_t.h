@@ -283,9 +283,10 @@ struct conv_layer_bin_t
 						float& w = filters(a, i, j, z );
 						gradient_t& grad = filter_grads(a, i, j, z );
 						grad.grad /= in.size.m;
-						w = update_weight( w, grad );
+						w = update_weight( w, grad, 1, true);
 						update_gradient(grad);
 					}
+		print_tensor(filters);
 	}
 
 	void calc_grads( tensor_t<float>& grad_next_layer)
@@ -313,7 +314,7 @@ struct conv_layer_bin_t
 									filter_grads(k, x - minx, y - miny, z ).grad += al_b(e, x, y, z ) * grad_next_layer(e, i, j, k );
 									
 									if(in(e,x,y,z) <= 1){
-										float w_applied = (filters_bin(k, x - minx, y - miny, z ) == 1? float(1) : float(-1));
+										float w_applied = (filters_bin.data[filters_bin(k, x - minx, y - miny, z )] == 1? float(1) : float(-1));
 										sum_error += w_applied * grad_next_layer(e, i, j, k );
 									}
 									else sum_error = 0;

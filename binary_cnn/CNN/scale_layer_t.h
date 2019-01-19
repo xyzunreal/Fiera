@@ -6,9 +6,9 @@ struct scale_layer_t
 {
     layer_type type = layer_type::scale;
     tensor_t<float> grads_in;
-    gradient_t grads_scale;
     tensor_t<float> in;
     tensor_t<float> out;
+    gradient_t grads_scale;
 
     float s_param;     // `s_param` REPRESENT SCALE VALUE WHICH IS SINGLE LEARNABLE PARAMETER.
     tensor_t<gradient_t> gradients;
@@ -47,8 +47,11 @@ struct scale_layer_t
     {
         // grads_scale contains sum of gradients of s_param for all examples. 
 		grads_scale.grad /= out.size.m;
-		update_weight(s_param,grads_scale);
+		s_param = update_weight(s_param,grads_scale);
 		update_gradient(grads_scale);
+
+        cout<<"*******updated s_param*****\n";
+		cout<<s_param<<endl;
     }
 
     void calc_grads(tensor_t<float>& grad_next_layer)
@@ -60,6 +63,9 @@ struct scale_layer_t
                 grads_in(i,j,0,0) = grad_next_layer(i,j,0,0)*s_param;
             }
         }
+
+        cout<<"***********grads_in for scale********\n";
+        print_tensor(grads_in);
     }
 
 };

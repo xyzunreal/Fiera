@@ -210,11 +210,13 @@ struct fc_layer_bin_t
 							grad_sum = weight_grad + grad_sum;
 						}
 						grad_sum = grad_sum / out.size.m;
-						w = update_weight( w, grad_sum); 
+						w = update_weight( w, grad_sum, 1, true); 
 					}
 			for (int e = 0; e < out.size.m; e++)
 				update_gradient( gradients(e, n, 0, 0) );
 		}
+		cout<<"*******new weights for fc_bin*****\n";
+		print_tensor(weights);
 	}
 
 	void calc_grads( tensor_t<float>& grad_next_layer )
@@ -236,16 +238,16 @@ struct fc_layer_bin_t
 						{
 							int m = map( {0, i, j, z } );
 							if(in(e,i,j,z) <= 1)
-								grads_in(e, i, j, z ) += grad.grad * (weights( m, n,0, 0 ) == 1? float(1) : float(-1));
+								grads_in(e, i, j, z ) += grad.grad * (weights_bin.data[weights_bin( m, n,0, 0 )] == 1? float(1) : float(-1));
 							else
 								grads_in(e,i,j,z) += 0;
 						}
 			}
 
-		cout<<"*****grads_next_layer*****\n";
-		print_tensor(grad_next_layer);
+		// cout<<"*****grads_next_layer*****\n";
+		// print_tensor(grad_next_layer);
 
-		cout<<"grads_in***********\n";
+		cout<<"grads_in for fc_bin ***********\n";
 		print_tensor(grads_in);
 			
 	}

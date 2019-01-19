@@ -148,10 +148,15 @@ struct conv_layer_t
 						w = update_weight( w, grad );
 						update_gradient( grad );
 					}
+		cout<<"*******new weights for float conv*****\n";
+		print_tensor(filters);
 	}
 
 	void calc_grads( tensor_t<float>& grad_next_layer )
 	{
+		cout<<"*********grads_in for float conv********\n";
+		print_tensor(grads_in);
+
 		for ( int k = 0; k < filter_grads.size.m; k++ )
 		{
 			for ( int i = 0; i < extend_filter; i++ )
