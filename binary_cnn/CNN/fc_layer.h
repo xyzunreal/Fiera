@@ -16,8 +16,9 @@ struct fc_layer_t
 	std::vector<float> input;
 	tensor_t<float> weights;
 	tensor_t<gradient_t> gradients;
+	bool debug;
 
-	fc_layer_t( tdsize in_size, int out_size )
+	fc_layer_t( tdsize in_size, int out_size, bool debug_flag = false )
 		:
 		in( in_size.m, in_size.x, in_size.y, in_size.z ),
 		out( in_size.m, out_size, 1, 1 ),
@@ -26,6 +27,7 @@ struct fc_layer_t
 		gradients(in_size.m, out_size, 1, 1)
 
 	{
+		this->debug = debug_flag;
 		int maxval = in_size.x * in_size.y * in_size.z;
 
 		// Weight initialization
@@ -34,8 +36,11 @@ struct fc_layer_t
 			for ( int h = 0; h < in_size.x*in_size.y*in_size.z; h++ )
 				weights(h,i, 0, 0 ) =  (1.0f * (rand()-rand())) / float( RAND_MAX );
 		
-		cout << "********weights for fc************\n";
-		print_tensor(weights);
+		if(debug)
+		{
+			cout << "********weights for fc************\n";
+			print_tensor(weights);
+		}
 	}
 
 	void activate( tensor_t<float>& in )
@@ -76,8 +81,11 @@ struct fc_layer_t
 				out( e, n, 0, 0 ) = inputv;
 		}
 		
-		cout<<"*******output for fc**********\n";
-		print_tensor(out);
+		if(debug)
+		{
+			cout<<"*******output for fc**********\n";
+			print_tensor(out);
+		}
 	}
 
 	void fix_weights(float learning_rate)
@@ -103,8 +111,11 @@ struct fc_layer_t
 				update_gradient( gradients(e, n, 0, 0) );
 		}
 
-		cout<<"*******new weights for float fc*****\n";
-		print_tensor(weights);
+		if(debug)
+		{
+			cout<<"*******new weights for float fc*****\n";
+			print_tensor(weights);
+		}
 	}
 
 	void calc_grads( tensor_t<float>& grad_next_layer )
@@ -133,9 +144,11 @@ struct fc_layer_t
 		
 		// cout<<"*****grads_next_layer*****\n";
 		// print_tensor(grad_next_layer);
-
-		cout<<"**********grads_in for float fc***********\n";
-		print_tensor(grads_in);
+		if(debug)
+		{
+			cout<<"**********grads_in for float fc***********\n";
+			print_tensor(grads_in);
+		}
 		
 
 		// cout<<"weights_gre"

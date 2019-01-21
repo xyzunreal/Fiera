@@ -19,8 +19,9 @@ struct conv_layer_bin_t
 	uint16_t extend_filter;
 	vector<float> alpha;
 	vector<float> alpha2;
-	
-	conv_layer_bin_t( uint16_t stride, uint16_t extend_filter, uint16_t number_filters, tdsize in_size )
+	bool debug; 	
+	conv_layer_bin_t( uint16_t stride, uint16_t extend_filter, uint16_t number_filters, tdsize in_size ,
+	bool debug_flag = false)
 		:
 		grads_in(in_size.m, in_size.x, in_size.y, in_size.z),
 		in(in_size.m, in_size.x, in_size.y, in_size.z ),
@@ -42,6 +43,7 @@ struct conv_layer_bin_t
 		filters_bin(number_filters, extend_filter, extend_filter, in_size.z)
 
 	{
+		this->debug = debug_flag;
 		this->stride = stride;
 		this->extend_filter = extend_filter;
 		// cout<<"*********flag************\n";
@@ -73,9 +75,11 @@ struct conv_layer_bin_t
 				}
 			}
 		}
-
-		cout<<"******weights for conv_bin********\n"<<endl;
-		print_tensor(filters);
+		if(debug)
+		{
+			cout<<"\n******weights for conv_bin********\n"<<endl;
+			print_tensor(filters);
+		}
 
 
 	}
@@ -148,9 +152,11 @@ struct conv_layer_bin_t
 				}
 			}
 		}
-
-		cout<<"************ binarized weights **********\n";
-		print_tensor_bin(filters_bin);
+		if(debug)
+		{
+			cout<<"\n************ binarized weights **********\n";
+			print_tensor_bin(filters_bin);
+		}
 		
 		//binarizes in 
 		for(int example = 0; example<in.size.m; example++)
@@ -162,8 +168,12 @@ struct conv_layer_bin_t
 					}
 				}
 			}
-		cout<<"******binarize input**************"<<endl;
-		print_tensor_bin(in_bin);
+		
+		if(debug)
+		{
+			cout<<"\n******binarize input**************"<<endl;
+			print_tensor_bin(in_bin);
+		}
 		
 	}
 	
@@ -183,9 +193,12 @@ struct conv_layer_bin_t
 						sum += abs(in(e,x,y,z));
 				}
 			
-			alpha[e] = sum/(in.size.x*in.size.y*in.size.z);
-			cout<<"alpha "<<endl;
-			cout<<"alpha for"<<e<<"th example is "<<alpha[e]<<endl;
+			if(debug)
+			{
+				alpha[e] = sum/(in.size.x*in.size.y*in.size.z);
+				cout<<"\nalpha "<<endl;
+				cout<<"\nalpha for"<<e<<"th example is "<<alpha[e]<<endl;
+			}
 		}
 
 		// CALCULATE alpha2
@@ -203,10 +216,13 @@ struct conv_layer_bin_t
 				}
 			alpha2[e] = sum/(in.size.x*in.size.y*in.size.z);
 
-			cout << "******in_bin2******";
-			print_tensor_bin(in_bin2);
-			cout<<"alpha2"<<endl;
-			cout<<"alpha2 for "<<e<<"th example is "<<alpha2[e]<<endl;
+			if(debug)
+			{
+				cout << "\n******in_bin2******";
+				print_tensor_bin(in_bin2);
+				cout<<"\nalpha2"<<endl;
+				cout<<"\nalpha2 for "<<e<<"th example is "<<alpha2[e]<<endl;
+			}
 		}
 
 		// CALCULATE al_b
@@ -261,10 +277,11 @@ struct conv_layer_bin_t
 			}
 		}	
 
-
-		cout<<"*********output for conv_bin*********\n";
-		print_tensor(out);
-
+		if(debug)
+		{
+			cout<<"*********output for conv_bin*********\n";
+			print_tensor(out);
+		}
 		// conv_layer_t temp_conv(1, this->extend_filter, filters.size.m, in.size);
 		// temp_conv.filters = this->filters;
 
@@ -287,9 +304,11 @@ struct conv_layer_bin_t
 						w = update_weight( w, grad, 1, true, learning_rate);
 						update_gradient(grad);
 					}
-
-		cout<<"*******new weights for conv_bin*****\n";
-		print_tensor(filters);
+		if(debug)
+		{
+			cout<<"\n*******new weights for conv_bin*****\n";
+			print_tensor(filters);
+		}
 	}
 
 	void calc_grads( tensor_t<float>& grad_next_layer)
@@ -327,9 +346,11 @@ struct conv_layer_bin_t
 						grads_in( e, x, y, z ) = sum_error;
 					}
 				}
-
-		cout<<"*********grads_in for conv_bin************\n";
-		print_tensor(grads_in);
+		if(debug)
+		{
+			cout<<"*********grads_in for conv_bin************\n";
+			print_tensor(grads_in);
+		}
 	}
 };
 #pragma pack(pop)

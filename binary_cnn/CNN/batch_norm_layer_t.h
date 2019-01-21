@@ -18,8 +18,9 @@ struct batch_norm_layer_t
     std::vector<float> u_mean;
     std::vector<float> sigma, grads_sigma, grads_mean;
     bool adjust_variance;
-	
-	batch_norm_layer_t(tdsize in_size )
+	bool debug;
+
+	batch_norm_layer_t(tdsize in_size, bool debug_flag = false)
 		:
 		in(in_size.m, in_size.x, in_size.y, in_size.z ),
 		out(in_size.m, in_size.x, in_size.y, in_size.z),
@@ -27,6 +28,7 @@ struct batch_norm_layer_t
 		grads_in(in_size.m, in_size.x, in_size.y, in_size.z),
 		grads_in_hat(in_size.m, in_size.x, in_size.y, in_size.z)
 	{
+		this->debug = debug_flag;
 		epsilon = 1e-3;
         gamma = 1;
         beta = 0;
@@ -92,7 +94,12 @@ struct batch_norm_layer_t
                 }
             }
         }
+		if(debug){
+			cout<<"\n**********output for batchnorm************\n";
+			print_tensor(out);
+		}
     }
+	
 	void activate()
 	{
 		cal_mean();
@@ -109,6 +116,13 @@ struct batch_norm_layer_t
 		update_gradient(grads_beta);
 		update_weight(gamma,grads_gamma,1,false, learning_rate);
 		update_gradient(grads_gamma);
+		if(debug)
+		{
+			cout<<"\n***********updated beta********\n";
+			cout<<beta<<endl;
+			cout<<"\n***********update gamma*********\n";
+			cout<<gamma<<endl;
+		}
 	}
 
 	void calc_grads( tensor_t<float>& grad_next_layer)
@@ -150,6 +164,12 @@ struct batch_norm_layer_t
 				}
 			}
 
+		}
+
+		if(debug)
+		{
+			cout<<"\n*********grads_in for batch_norm************\n";
+			print_tensor(grads_in);
 		}	
 	}
 };

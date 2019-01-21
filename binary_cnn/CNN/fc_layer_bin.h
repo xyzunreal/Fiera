@@ -23,13 +23,13 @@ struct fc_layer_bin_t
     tensor_bin_t out_bin;
     vector<float> alpha;
 	vector<float> alpha2;
-
+	bool debug;
 	std::vector<float> input;
 	tensor_t<float> weights;
     tensor_bin_t weights_bin;
 	tensor_t<gradient_t> gradients;
 
-	fc_layer_bin_t( tdsize in_size, int out_size )
+	fc_layer_bin_t( tdsize in_size, int out_size, bool debug_flag = false )
 	/**
 	 * Parameters
 	 * ----------
@@ -52,7 +52,7 @@ struct fc_layer_bin_t
 		// to be checked later :(
 		gradients(in_size.x * in_size.y * in_size.z, out_size, 1, 1)
 	{
-		
+		this->debug = debug_flag;
 		// WEIGHT INITIALIZATION
 		
 		for ( int i = 0; i < out_size; i++ )
@@ -62,9 +62,11 @@ struct fc_layer_bin_t
 				weights_bin.data[weights_bin(h, i, 0, 0)] = 0;
 			
 			}
-	
-		cout<<"***********float weights for fc bin ************\n";
-		print_tensor(weights);
+		if(debug)
+		{
+			cout<<"***********float weights for fc bin ************\n";
+			print_tensor(weights);
+		}
 		
 	}
 
@@ -77,11 +79,9 @@ struct fc_layer_bin_t
     void binarize()
     {
         // BINARIZING `weights`
-        for (int i = 0; i < weights.size.m; ++i){
-            for (int j = 0; j < weights.size.x; j++){
+        for (int i = 0; i < weights.size.m; ++i)
+            for (int j = 0; j < weights.size.x; j++)
                 weights_bin.data[weights_bin(i, j, 0, 0)] = weights(i, j, 0, 0) >= 0 ? 1 : 0;
-			}
-		}
         
 		// BINARIZING `in`
 		for ( int m = 0; m < in.size.m; m++ )
@@ -104,13 +104,16 @@ struct fc_layer_bin_t
 			// tensor_t<float> &tf = filters[filter];
 			for(int x = 0; x < in.size.x; x++)
 				for(int y = 0; y < in.size.y; y++)
-					for(int z = 0; z < in.size.z; z++){
+					for(int z = 0; z < in.size.z; z++)
 						sum += abs(in(e,x,y,z));
-				}
 			
 			alpha[e] = sum/(in.size.x*in.size.y*in.size.z);
-			cout<<"alpha "<<endl;
-			cout<<"alpha for"<<e<<"th example is "<<alpha[e]<<endl;
+			
+			if(debug)
+			{
+				cout<<"alpha "<<endl;
+				cout<<"alpha for"<<e<<"th example is "<<alpha[e]<<endl;
+			}
 		}
 
 		// CALCULATE alpha2
@@ -127,10 +130,13 @@ struct fc_layer_bin_t
 				}
 			alpha2[e] = sum/(in.size.x*in.size.y*in.size.z);
 
-			cout << "******in_bin2******";
-			print_tensor_bin(in_bin2);
-			cout<<"alpha2"<<endl;
-			cout<<"alpha2 for "<<e<<"th example is "<<alpha2[e]<<endl;
+			if(debug)
+			{
+				cout << "******in_bin2******";
+				print_tensor_bin(in_bin2);
+				cout<<"alpha2"<<endl;
+				cout<<"alpha2 for "<<e<<"th example is "<<alpha2[e]<<endl;
+			}
 		}
 
 		// CALCULATE al_b
@@ -159,11 +165,14 @@ struct fc_layer_bin_t
 
 	{
         binarize();
-        cout<<"**********binary weights for fc bin **********";
-        print_tensor_bin(weights_bin);
-        cout<<"**********binary inputs for fc bin ************";
-        print_tensor_bin(in_bin);
-        
+
+		if(debug)
+		{
+			cout<<"**********binary weights for fc bin **********";
+	        print_tensor_bin(weights_bin);
+	        cout<<"**********binary inputs for fc bin ************";
+	        print_tensor_bin(in_bin);
+		}
         calculate_alpha();
 		
 		for( int e = 0; e < in.size.m; e++)
@@ -185,12 +194,17 @@ struct fc_layer_bin_t
 				out(e, n, 0, 0 ) = alpha[e] * ( 2 * sum - weights.size.m );			// alpha * ( 2P - N )
 				out(e, n, 0, 0 ) += alpha2[e] * (2 * sum2 - weights.size.m ); 		// alpha2 * ( 2P - N )
 			}
-		cout<<"********** output before multiplying*******";
-		print_tensor(out);
 
 
-		cout << "*************output of fc bin *************";
-		print_tensor(out);
+		if(debug)
+		{
+			cout<<"********** output before multiplying*******";
+			print_tensor(out);
+
+
+			cout << "*************output of fc bin *************";
+			print_tensor(out);
+		}
 	}
 
 	void fix_weights(float learning_rate)
@@ -215,8 +229,13 @@ struct fc_layer_bin_t
 			for (int e = 0; e < out.size.m; e++)
 				update_gradient( gradients(e, n, 0, 0) );
 		}
-		cout<<"*******new weights for fc_bin*****\n";
-		print_tensor(weights);
+
+
+		if(debug)
+		{
+			cout<<"*******new weights for fc_bin*****\n";
+			print_tensor(weights);
+		}
 	}
 
 	void calc_grads( tensor_t<float>& grad_next_layer )
@@ -247,9 +266,11 @@ struct fc_layer_bin_t
 		// cout<<"*****grads_next_layer*****\n";
 		// print_tensor(grad_next_layer);
 
-		cout<<"*********grads_in for fc bin***********\n";
-		print_tensor(grads_in);
-			
+
+		if(debug){	
+			cout<<"*********grads_in for fc bin***********\n";
+			print_tensor(grads_in);
+		}	
 	}
 };
 #pragma pack(pop)

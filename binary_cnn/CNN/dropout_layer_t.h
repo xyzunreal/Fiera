@@ -11,7 +11,7 @@ struct dropout_layer_t
 	tensor_t<bool> hitmap;
 	float p_activation;
 
-	dropout_layer_t( tdsize in_size, float p_activation )
+	dropout_layer_t( tdsize in_size, float p_activation)
 		:
 		in( in_size.x, in_size.y, in_size.z ),
 		out( in_size.x, in_size.y, in_size.z ),

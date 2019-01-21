@@ -9,11 +9,12 @@ struct scale_layer_t
     tensor_t<float> in;
     tensor_t<float> out;
     gradient_t grads_scale;
+    bool debug;
 
     float s_param;     // `s_param` REPRESENT SCALE VALUE WHICH IS SINGLE LEARNABLE PARAMETER.
     tensor_t<gradient_t> gradients;
 
-    scale_layer_t(tdsize in_size)        // EXPECTS 1D INPUT
+    scale_layer_t(tdsize in_size, bool debug_flag = false)        // EXPECTS 1D INPUT
         :
         in(in_size.m, in_size.x, 1, 1),
         out(in_size.m, in_size.x, 1, 1),
@@ -21,7 +22,8 @@ struct scale_layer_t
         gradients(in_size.m, in_size.x, 1, 1)
         
     {
-        s_param = 0.001;    
+        s_param = 0.001;
+        this->debug = debug_flag;    
     }
 
     void activate( tensor_t<float> & in )
@@ -37,8 +39,12 @@ struct scale_layer_t
 				out(tm,i, 0, 0) = s_param * in(tm, i, 0, 0);
                 // cout<<s_param<<' '<<in(tm, i, 0, 0)<<' '<<s_param * in(tm, i, 0, 0)<<endl;
             }
-        cout<<"*****output for scale***********\n";
-        print_tensor(out);
+
+        if(debug)
+        {
+            cout<<"*****output for scale***********\n";
+            print_tensor(out);
+        }
         // cout<<"************flag********\n";
 	    // cout<<out.size.m<<' '<<out.size.x<<' '<<out.size.y<<" "<<out.size.z<<endl;
     }
@@ -50,8 +56,11 @@ struct scale_layer_t
 		s_param = update_weight(s_param,grads_scale,1,false, learning_rate);
 		update_gradient(grads_scale);
        
-        cout<<"*******updated s_param*****\n";
-		cout<<s_param<<endl;
+        if(debug)
+        {
+            cout<<"*******updated s_param*****\n";
+		    cout<<s_param<<endl;
+        }
     }
 
     void calc_grads(tensor_t<float>& grad_next_layer)
@@ -63,9 +72,11 @@ struct scale_layer_t
                 grads_in(i,j,0,0) = grad_next_layer(i,j,0,0)*s_param;
             }
         }
-
-        cout<<"***********grads_in for scale********\n";
-        print_tensor(grads_in);
+        if(debug)
+        {
+            cout<<"***********grads_in for scale********\n";
+            print_tensor(grads_in);
+        }
 
         // cout<<"***********gradient for s_param*******\n";
         // cout<<

@@ -31,14 +31,16 @@ struct prelu_layer_t
 	float alpha;
 	gradient_t grads_alpha;
 	float p_relu_zero;
+	bool debug;
 
-	prelu_layer_t( tdsize in_size ):
+	prelu_layer_t( tdsize in_size, bool flag_debug = false ):
 		in( in_size.m, in_size.x, in_size.y, in_size.z ),
 		out(in_size.m, in_size.x, in_size.y, in_size.z ),
 		grads_in( in_size.m, in_size.x, in_size.y, in_size.z )
 	{
 		alpha=0.05;
 		p_relu_zero = 0.5;
+		this->debug=flag_debug;
 	}
 
 
@@ -60,8 +62,11 @@ struct prelu_layer_t
 							x = x*alpha;
 						out( tm, i, j, k) = x;
 					}
-		cout<<"********output for prelu*****\n";
-		print_tensor(out);
+		if(debug)
+		{
+			cout<<"********output for prelu*****\n";
+			print_tensor(out);
+		}
 	}
 
 	void fix_weights(float learning_rate)
@@ -69,8 +74,12 @@ struct prelu_layer_t
 		grads_alpha.grad /= out.size.m;
 		alpha = update_weight(alpha,grads_alpha,1,false, learning_rate);
 		update_gradient(grads_alpha);
-		cout<<"*******updated alpha for prelu*****\n";
-		cout<<alpha<<endl;
+		
+		if(debug)
+		{
+			cout<<"*******updated alpha for prelu*****\n";
+			cout<<alpha<<endl;
+		}
 	}
 
 	void calc_grads( tensor_t<float>& grad_next_layer )
@@ -97,8 +106,11 @@ struct prelu_layer_t
 			}
 		}
 
-		cout<<"***********grads_in for prelu********\n";
-        print_tensor(grads_in);
+		if(debug)
+		{
+			cout<<"***********grads_in for prelu********\n";
+  	    	print_tensor(grads_in);
+		}
 							
 	}
 };

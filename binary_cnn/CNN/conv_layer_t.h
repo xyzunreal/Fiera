@@ -12,8 +12,8 @@ struct conv_layer_t
 	tensor_t<gradient_t> filter_grads;
 	uint16_t stride;
 	uint16_t extend_filter;
-
-	conv_layer_t( uint16_t stride, uint16_t extend_filter, uint16_t number_filters, tdsize in_size)
+	bool debug;
+	conv_layer_t( uint16_t stride, uint16_t extend_filter, uint16_t number_filters, tdsize in_size, bool debug_flag=false)
 		:
 		grads_in( in_size.m, in_size.x, in_size.y, in_size.z ),
 		in(in_size.m, in_size.x, in_size.y, in_size.z ),
@@ -25,7 +25,8 @@ struct conv_layer_t
 		filters(number_filters, extend_filter, extend_filter, in_size.z),
 		filter_grads(number_filters, extend_filter, extend_filter, in_size.z)
 
-	{
+	{	
+		this->debug=debug_flag;
 		this->stride = stride;
 		this->extend_filter = extend_filter;
 		assert( (float( in_size.x - extend_filter ) / stride + 1)
@@ -53,8 +54,11 @@ struct conv_layer_t
 			}
 		}
 
-		cout<<"**************weights for convolution*******\n";
-		print_tensor(filters);
+		if(debug)
+		{
+			cout<<"**************weights for convolution*******\n";
+			print_tensor(filters);
+		}
 		
 	}
 
@@ -131,8 +135,11 @@ struct conv_layer_t
 					}
 				}
 			}
-		cout<<"*********out for convolution*************\n";
-		print_tensor(out);
+		if(debug)
+		{
+			cout<<"*********out for convolution*************\n";
+			print_tensor(out);
+		}
 	}
 
 	void fix_weights(float learning_rate)
@@ -148,15 +155,15 @@ struct conv_layer_t
 						w = update_weight( w, grad,1,false,learning_rate);
 						update_gradient( grad );
 					}
-		cout<<"*******new weights for float conv*****\n";
-		print_tensor(filters);
+		if(debug)
+		{
+			cout<<"*******new weights for float conv*****\n";
+			print_tensor(filters);
+		}
 	}
 
 	void calc_grads( tensor_t<float>& grad_next_layer )
 	{
-		cout<<"*********grads_in for float conv********\n";
-		print_tensor(grads_in);
-
 		for ( int k = 0; k < filter_grads.size.m; k++ )
 		{
 			for ( int i = 0; i < extend_filter; i++ )
@@ -203,8 +210,11 @@ struct conv_layer_t
 			}
 		}
 		
-		cout<<"*********grads_in for float conv********\n";
-		print_tensor(grads_in);
+		if(debug)
+		{
+			cout<<"*********grads_in for float conv********\n";
+			print_tensor(grads_in);
+		}
 	}
 };
 // #pragma pack(pop)
