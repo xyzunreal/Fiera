@@ -59,6 +59,15 @@ struct tensor_t
 		return clone;
 	}
 
+	bool operator==( tensor_t<T> t2 )
+	{
+		tensor_t<T> t1( *this );	
+		bool equal = false;
+		for ( int i = 0; i < t1.size.x * t1.size.y * t1.size.z* t1.size.m; i++ )
+			if (t1.data[i] != t2.data[i])	return false;
+		return true;	
+	}
+
 					/*to be deleted*/
 	T& operator()(int _x, int _y, int _z)
 	{
@@ -84,7 +93,7 @@ struct tensor_t
 				 _x ];
 	}
 
-	void copy_from( std::vector<std::vector<std::vector<std::vector<T> > > > data )
+	void from_vector( std::vector<std::vector<std::vector<std::vector<T> > > > data )
 	{
 		// data is [m][z][y][x]
 

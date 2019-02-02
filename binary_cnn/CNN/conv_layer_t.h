@@ -39,16 +39,14 @@ struct conv_layer_t
 
 		for ( int a = 0; a < number_filters; a++ )
 		{
-
 			int maxval = extend_filter * extend_filter * in_size.z;
-			
 			
 			for ( int i = 0; i < extend_filter; i++){
 				for ( int j = 0; j < extend_filter; j++){
 					for ( int z = 0; z < in_size.z; z++ ){
 						/**************temporary*************/
-						//  filters(a,i,j,z) = pow(-1,i^j)*2+i+j-3;
-						filters(a,i, j, z ) =  (1.0f * (rand()-rand())) / float( RAND_MAX );
+						 filters(a, i, j, z) = pow(-1,i^j)*2+i+j-3;
+						//  filters(a,i, j, z ) =  (1.0f * (rand()-rand())) / float( RAND_MAX );
 					}
 				}
 			}
@@ -130,6 +128,7 @@ struct conv_layer_t
 									float f = filters( filter, i, j, z );
 									float v = in(example, mapped.x + i, mapped.y + j, z );
 									sum += f*v;
+									cout<<f<<' '<<v<<" "<<sum<<endl;
 								}
 						out(example, x, y, filter ) = sum;
 					}
