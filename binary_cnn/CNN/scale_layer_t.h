@@ -78,8 +78,8 @@ struct scale_layer_t
             print_tensor(grads_in);
         }
 
-        // cout<<"***********gradient for s_param*******\n";
-        // cout<<
+        cout<<"***********gradient for s_param*******\n";
+        cout<<grads_scale.grad<<endl;
     }
 
 };

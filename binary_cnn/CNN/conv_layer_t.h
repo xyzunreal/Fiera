@@ -57,10 +57,9 @@ struct conv_layer_t
 			cout<<"**************weights for convolution*******\n";
 			print_tensor(filters);
 		}
-		
 	}
 
-	point_t map_to_input( point_t out, int z )
+	point_t map_to_input( point_t out, int z )	
 	{
 		out.x *= stride;
 		out.y *= stride;

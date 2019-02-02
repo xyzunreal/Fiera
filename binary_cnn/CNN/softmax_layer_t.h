@@ -40,6 +40,21 @@ struct softmax_layer_t
 		activate();
 	}
 	
+	void normalize_in()
+	{
+		for(int tm=0; tm<in.size.m; tm++){
+			float minm = 1e7;
+			float maxm = -1e7;
+			for(int i=0; i<in.size.x; i++){
+				minm = min(in(tm,i,0,0), minm);
+				maxm = max(in(tm,i,0,0), maxm);
+			}
+
+			for(int i=0; i<in.size.x; i++){
+				in(tm,i,0,0) = (in(tm,i,0,0) - minm)/(maxm-minm);
+			}
+		}
+	}
 	
 	void activate()
 	{

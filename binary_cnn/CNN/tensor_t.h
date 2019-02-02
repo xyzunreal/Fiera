@@ -15,6 +15,7 @@ struct tensor_t
 				/*to be deleted*/
 	tensor_t(int _x, int _y, int _z){
 		data = new T[_x * _y * _z];
+		memset(data,0,sizeof(T)*_x*_y*_z);
 		size.x = _x;
 		size.y = _y;
 		size.z = _z;
@@ -26,6 +27,7 @@ struct tensor_t
 	tensor_t(int _m, int _x, int _y, int _z)
 	{
 		data = new T[_x * _y * _z * _m];
+		memset(data,0,sizeof(T)*_x*_y*_z*_m);
 		size.m = _m;
 		size.x = _x;
 		size.y = _y;
