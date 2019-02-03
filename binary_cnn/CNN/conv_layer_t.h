@@ -110,15 +110,15 @@ struct conv_layer_t
 
 	void activate()
 	{
-		for(int example = 0; example<in.size.m; example++)
-
+		for(int example = 0; example<in.size.m; example++){
 			for ( int filter = 0; filter < filters.size.m; filter++ )
 			{
 				for ( int x = 0; x < out.size.x; x++ )
 				{
 					for ( int y = 0; y < out.size.y; y++ )
 					{
-						point_t mapped = map_to_input( { (uint16_t)x, (uint16_t)y, 0 }, 0 );
+						point_t mapped = map_to_input( { 0, (uint16_t)x, (uint16_t)y, 0 }, 0 );
+						
 						float sum = 0;
 						for ( int i = 0; i < extend_filter; i++ )
 							for ( int j = 0; j < extend_filter; j++ )
@@ -127,12 +127,13 @@ struct conv_layer_t
 									float f = filters( filter, i, j, z );
 									float v = in(example, mapped.x + i, mapped.y + j, z );
 									sum += f*v;
-									cout<<f<<' '<<v<<" "<<sum<<endl;
 								}
 						out(example, x, y, filter ) = sum;
 					}
 				}
 			}
+		}
+
 		if(debug)
 		{
 			cout<<"*********out for convolution*************\n";
@@ -170,14 +171,7 @@ struct conv_layer_t
 						filter_grads(k, i, j, z ).grad = 0;
 		}
 
-		for ( int k = 0; k < filter_grads.size.m; k++ )
-		{
-			for ( int i = 0; i < extend_filter; i++ )
-				for ( int j = 0; j < extend_filter; j++ )
-					for ( int z = 0; z < in.size.z; z++ )
-						filter_grads(k, i, j, z ).grad = 0;
-		}
-
+		
 		for(int e=0; e<in.size.m; e++){
 			for ( int x = 0; x < in.size.x; x++ )
 			{
@@ -210,6 +204,9 @@ struct conv_layer_t
 		
 		if(debug)
 		{
+			cout<<"*************grads filter**********\n";
+			print_tensor(filter_grads);
+			
 			cout<<"*********grads_in for float conv********\n";
 			print_tensor(grads_in);
 		}
