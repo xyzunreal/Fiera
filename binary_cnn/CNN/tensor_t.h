@@ -2,7 +2,13 @@
 #include "point_t.h"
 #include <cassert>
 #include <vector>
+#include <cmath>
 #include <string.h>
+
+// Checks equality of two floating point numbers upto two decimal points.
+bool areEqual(float a,float b) {
+	return trunc(100. * a) == trunc(100. * b);
+}
 
 template<typename T>
 struct tensor_t
@@ -11,7 +17,6 @@ struct tensor_t
 
 	tdsize size;
 
-	
 				/*to be deleted*/
 	tensor_t(int _x, int _y, int _z){
 		data = new T[_x * _y * _z];
@@ -66,17 +71,9 @@ struct tensor_t
 		tensor_t<T> t1( *this );	
 		bool equal = false;
 		for ( int i = 0; i < t1.size.x * t1.size.y * t1.size.z* t1.size.m; i++ )
-			if (t1.data[i] != t2.data[i])	return false;
+			if (!areEqual(t1.data[i], t2.data[i]))	return false;   // Cannot use '==' because of precision loss
 		return true;	
 	}
-
-					/*to be deleted*/
-	T& operator()(int _x, int _y, int _z)
-	{
-		return this->get(0, _x, _y, _z);
-	}
-					/*to be deleted*/
-
 
 	T& operator()( int _m, int _x, int _y, int _z)
 	{
@@ -136,7 +133,7 @@ void print_tensor( tensor_t<float>& data )
 				for ( int x = 0; x < mx; x++ )
 				{
 					// indexing changed
-					printf( "%.6f \t", (float)data(tm, x, y, z));
+					printf( "%.4f \t", (float)data(tm, x, y, z));
 				}
 				printf( "\n" );
 			}
