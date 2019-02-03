@@ -11,42 +11,42 @@ using namespace std;
 
 int main()
 {
-    tensor_t<float> temp_in(2, 3, 3, 2), filters(2, 2, 2, 2), expected_output(2, 2, 2, 2), grad_next_layer(2, 2, 2, 2);
+    tensor_t<float> temp_in(2, 3, 3, 2), filters(2, 2, 2, 2), expected_output(2, 2, 2, 2), grad_next_layer(2, 2, 2, 2), diff_weights(2,2,2,2);
     std::vector<std::vector<std::vector<std::vector<float> > > > vect=
 
-        {{{{-2.9662, -1.0606, -0.3090},
-          { 0.9343, -0.3821, -1.1669},
-          { 0.3636, -0.3156,  1.1450}},
+      {{{{-0.1782, -0.2595, -0.0145},
+          {-0.3839, -2.9662, -1.0606},
+          {-0.3090,  0.9343,  1.6243}},
 
-         {{-0.3822, -0.3553,  0.7542},
-          { 0.6901, -0.1443,  1.6120},
-          { 1.5671, -1.2432, -1.7178}}},
+         {{ 0.0016, -0.4375, -2.1085},
+          { 1.1450, -0.3822, -0.3553},
+          { 0.7542,  0.1332,  0.1825}}},
 
 
-        {{{-0.5824, -0.6153,  0.4105},
-          { 1.7675, -0.0832,  0.5087},
-          { 1.1178,  1.1286,  0.1416}},
+        {{{-0.5146,  0.8005, -0.1259},
+          {-0.9578,  1.7518,  0.9796},
+          { 0.4105,  1.7675, -0.0832}},
 
-         {{-0.5458,  1.1542, -1.5366},
-          {-0.5577, -0.4383,  1.1572},
-          { 0.0889,  0.2659, -0.1907}}}};
+         {{ 0.5087, -0.8253,  0.1633},
+          { 0.5013,  1.4206,  1.1542},
+          {-1.5366, -0.5577, -0.4383}}}};
 
     temp_in.from_vector(vect);
     cout<<"*********image*****\n\n";
     print_tensor(temp_in);
 
-    vect = {{{{-0.0231,  0.0257},
-            { 0.0071, -0.0927}},
+    vect = {{{{ 0.0000,  0.0000},
+          { 0.1686, -0.0938}},
 
-          {{-0.0566, -0.0032},
-            { 0.0028,  0.0011}}},
+         {{ 0.0000,  0.0000},
+          { 0.0000,  0.0220}}},
 
 
-          {{{ 0.0531, -0.1026},
-            {-0.0647, -0.0008}},
+        {{{ 0.0000, -0.0775},
+          { 0.0000,  0.0000}},
 
-          {{ 0.0140,  0.0898},
-            {-0.0857, -0.0485}}}};
+         {{-0.0039,  0.0734},
+          {-0.0856, -0.0569}}}};
       
       grad_next_layer.from_vector(vect);
       cout<<"**********grad_next_layer**********\n";
@@ -82,21 +82,23 @@ int main()
     expected_output.from_vector(vect);
 
 
-    conv_layer_t * layer = new conv_layer_t( 1, 2, 2, temp_in.size, true);
+    conv_layer_t * layer = new conv_layer_t( 1, 2, 2, temp_in.size, false);
     layer->in = temp_in;
     layer->filters = filters;
 
-    cout<<"**********filters weights************\n";
-    print_tensor(layer->filters);
+    cout<<"**********old filters ************\n";
+    print_tensor(filters);
     
     layer->activate();
     layer->calc_grads(grad_next_layer);
 
-    if (layer->out == expected_output) cout << "Convlayer forward working correctly";
-    else{
-        cout << "Expected output is\n";
-        print_tensor(expected_output);
-        cout << "\nActual output is\n";
-        print_tensor(layer->out);
-    }
+
+     
+    layer->fix_weights(1);
+    cout<<"**********new filters************\n";
+    print_tensor(layer->filters);
+
+    diff_weights = layer->filters - filters;
+    cout<<"*********diff weights";
+    print_tensor(diff_weights);
 }

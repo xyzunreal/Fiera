@@ -3,7 +3,7 @@
 
 // #define LEARNING_RATE 0.01
 #define MOMENTUM 0.6
-#define WEIGHT_DECAY 0.001
+#define WEIGHT_DECAY 0.000
 
 static float update_weight( float &w, gradient_t& grad, float multp, bool clip, float learning_rate)
 {
@@ -12,10 +12,10 @@ static float update_weight( float &w, gradient_t& grad, float multp, bool clip, 
 	w -= learning_rate  * m * multp +
 		 learning_rate * WEIGHT_DECAY * w;
 		 
-		 if ( w < -1 and clip) 
-		 	w = -1;
-		 else if (w > 1 and clip) 
-		 	w = 1;
+		//  if ( w < -1 and clip) 
+		//  	w = -1;
+		//  else if (w > 1 and clip) 
+		//  	w = 1;
 
 	return w;
 

@@ -57,7 +57,8 @@ struct softmax_layer_t
 	}
 	
 	void activate()
-	{
+	{	
+		// normalize_in();
 
 		float temp1, sum = 0;
 		for ( int tm = 0; tm < in.size.m; tm++ ){
@@ -87,10 +88,20 @@ struct softmax_layer_t
 	
 	void calc_grads( tensor_t<float>& grad_next_layer )
 	{
+		float m = out.size.m;
 		for(int e = 0; e<out.size.m; e++){
+			int idx;
 			for(int i=0; i<out.size.x; i++){
-				grads_in(e,i,0,0) = grad_next_layer(e,i,0,0)*(out(e,i,0,0)*(1-out(e,i,0,0)));
+				if(int(grad_next_layer(e,i,0,0)) == 1){
+					idx = i;
+					grads_in(e,i,0,0) = -(1-out(e,i,0,0))/m;
+				}
 			}
+			for(int i=0; i<out.size.x; i++){
+				if(idx!=i)
+					grads_in(e,i,0,0) = ((out(e,i,0,0))/m);
+				 
+			}	
 		}
 
 		if(debug)

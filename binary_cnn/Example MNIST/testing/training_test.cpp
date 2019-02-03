@@ -13,7 +13,7 @@ int main()
 {
     // srand(7);   
 	vector<layer_t*> layers;
-    tensor_t<float> temp_in(2, 3,3,2), predict(2,3,3,2);
+    tensor_t<float> temp_in(2, 3,3,2), predict(2,4,1,1);
     // Creating image for testing purpose
     // for(int img=0;img<2;img++)
     //     for(int k=0; k<1; k++)
@@ -24,29 +24,31 @@ int main()
 
 
    std::vector<std::vector<std::vector<std::vector<float> > > > vect=
-            {{{{-0.3090,  0.9343, -0.3821},
-            {-1.1669,  0.3636, -0.3156},
-            {-0.5321,  0.2991, -0.3553}},
+            {{{{-0.1782, -0.2595, -0.0145},
+          {-0.3839, -2.9662, -1.0606},
+          {-0.3090,  0.9343,  1.6243}},
 
-            {{ 0.7542,  0.6901, -0.1443},
-            { 1.6120,  1.5671, -0.9388},
-            {-1.2370, -0.5824, -0.6153}}},
+         {{ 0.0016, -0.4375, -2.1085},
+          { 1.1450, -0.3822, -0.3553},
+          { 0.7542,  0.1332,  0.1825}}},
 
 
-            {{{ 1.5496,  0.5989, -0.0832},
-            { 0.5087,  1.1178,  1.1286},
-            { 0.1416, -0.5458, -0.5368}},
+        {{{-0.5146,  0.8005, -0.1259},
+          {-0.9578,  1.7518,  0.9796},
+          { 0.4105,  1.7675, -0.0832}},
 
-            {{ 0.8289, -0.5577, -0.4383},
-            { 1.1572,  0.0889,  0.2659},
-            {-0.1907,  0.3836,  1.9126}}}};
+         {{ 0.5087, -0.8253,  0.1633},
+          { 0.5013,  1.4206,  1.1542},
+          {-1.5366, -0.5577, -0.4383}}}};
     temp_in.from_vector(vect);
 
 
-    print_tensor(temp_in);
+
+
+    // print_tensor(temp_in);
 	
     // Creating dummy prediction data
-    for(int i=0; i<3; i++) 
+    for(int i=0; i<4; i++) 
         for(int img=0;img<2;img++) 
             predict(img,i,0,0) = 0;
     predict(0,3,0,0) = 1;
@@ -57,46 +59,91 @@ int main()
     cout<<"*********input image**************\n";
     print_tensor(temp_in);
 
-	conv_layer_t * layer1 = new conv_layer_t( 1, 2, 2, temp_in.size, true);		
-    prelu_layer_t * layer2 = new prelu_layer_t( layer1->out.size ,true);
+	conv_layer_t * layer1 = new conv_layer_t(1,2,2,temp_in.size,false);	
+    vect = {{{{ 0.0247, -0.2130},
+              { 0.1126,  0.1109}},
+
+             {{-0.1890, -0.0530},
+              {-0.2071,  0.0917}}},
+
+            {{{-0.0952,  0.2484},
+              { 0.2510,  0.0360}},
+
+             {{-0.1507, -0.2077},
+              {-0.0388, -0.0995}}}};
+              
+    layer1->filters.from_vector(vect);
+    cout<<"********conv weights*******\n";
+    print_tensor(layer1->filters);
+
+    prelu_layer_t * layer2 = new prelu_layer_t( layer1->out.size ,false);
 
 	// conv_layer_bin_t * layer3 = new conv_layer_bin_t(1, 2, 1, layer2->out.size );
 	// prelu_layer_t * layer4 = new prelu_layer_t(layer3->out.size);
     // batch_norm_layer_t * layer5 = new batch_norm_layer_t(layer4->out.size);
-    fc_layer_t * layer6 = new fc_layer_t(layer2->out.size, 4,true);
-    prelu_layer_t * layer7 = new prelu_layer_t(layer6->out.size,true);
+    fc_layer_t * layer6 = new fc_layer_t(layer2->out.size, 4,false);
+    vect = 
+        {{{{ 0.1558,  0.0148,  0.0896,  0.170}}},
+        {{{-0.3019,  0.0659,  0.0488, -0.1747}}},
+        {{{ 0.3323,  0.2685,  0.1723, -0.1887}}},
+        {{{-0.2773,  0.0909,  0.3247,  0.3051}}},
+        {{{ 0.2707,  0.1876, -0.0787,  0.3235}}},
+        {{{-0.0614, -0.2735, -0.1970,  0.0407}}},
+        {{{ 0.1819,  0.2517, -0.0890, -0.0612}}},
+        {{{ 0.1378,  0.1217, -0.2155, -0.0456}}}};
+     layer6->weights.from_vector(vect);
+        cout<<"**********fc weights*******\n";
+        print_tensor(layer6->weights);
+
+    // prelu_layer_t * layer7 = new prelu_layer_t(layer6->out.size,true);
     // fc_layer_bin_t * layer8 = new fc_layer_bin_t(layer7->out.size,3);
     // prelu_layer_t * layer9 = new prelu_layer_t(layer8->out.size);
     // scale_layer_t * layer10 = new scale_layer_t(layer9->out.size);
-    softmax_layer_t * layer11 = new softmax_layer_t(layer7->out.size,true);
+    softmax_layer_t * layer11 = new softmax_layer_t(layer6->out.size,false);
     // tensor_t<float> cost(1,1,1,1); 
 
    /*************************************************************************hard coded code****************************************************************************/
     
     vector<float> cost_vec;
     cost_vec.push_back(0);
-    float learning_rate = 0.01;
+    float learning_rate = 0.1;
 
-    for(int i=0; i<1; i++){
+    for(int i=0; i<2; i++){
         layer1->activate(temp_in);
+        cout<<"********conv output/relu input********\n";
+        print_tensor(layer1->out);
+
         layer2->activate(layer1->out);
+        
+        cout<<"********prelu output/fc input********\n";
+        print_tensor(layer2->out);
+        
         // layer3->activate(layer2->out);
         // layer4->activate(layer3->out);
         // layer5->activate(layer4->out);
         layer6->activate(layer2->out);
-        layer7->activate(layer6->out);
+        
+        cout<<"********fc output/softmax input********\n";
+        print_tensor(layer6->out);
+        
+        // layer7->activate(layer6->out);
         // layer8->activate(layer7->out);
         // layer9->activate(layer8->out);
         // layer10->activate(layer9->out);
-        layer11->activate(layer7->out);
-
-        
+        layer11->activate(layer6->out);
+        cout<<"***********softmax output*******\n";
+        print_tensor(layer11->out);
+        float l1 = cross_entropy(layer11->out, predict)(0, 0, 0, 0);
+        float l2 = cross_entropy(layer11->out, predict)(1, 0, 0, 0);
         cout<<"loss for img1 ";
-        cout<<cross_entropy(layer11->out, predict)(0, 0, 0, 0);
+        cout<<l1<<endl;
         cout<<"loss for img 2";
-        cout<<cross_entropy(layer11->out, predict)(1, 0, 0, 0);
-        cost_vec.push_back(cross_entropy(layer11->out, predict)(0, 0, 0, 0));
-        cost_vec.push_back(cross_entropy(layer11->out, predict)(1,0,0,0));
+        cout<<l2<<endl;
+        
+        cout<<"*****loss total ************\n";
+        cout<<((l1+l2)/2)<<endl;
+
+        cost_vec.push_back((l1+l2)/2);
         // int size = 11;
 
         // cross_entropy(layers[size-1]->out, expected);
@@ -114,17 +161,29 @@ int main()
  
  
 
-        layer11->calc_grads(softmax_grads);
+        layer11->calc_grads(predict);
+        cout<<"*********fc grads********\n";
+        print_tensor(layer11->grads_in);
+
         // layer10->calc_grads(layer11->grads_in);
         // layer9->calc_grads(layer10->grads_in); 
         // layer8->calc_grads(layer9->grads_in);
-        layer7->calc_grads(layer11->grads_in);
-        layer6->calc_grads(layer7->grads_in);
+        // layer7->calc_grads(layer11->grads_in);
+        layer6->calc_grads(layer11->grads_in);
+        cout<<"********relu grads *********\n";
+        print_tensor(layer6->grads_in);
         // layer5->calc_grads(layer6->grads_in);
         // layer4->calc_grads(layer5->grads_in);
         // layer3->calc_grads(layer4->grads_in);
         layer2->calc_grads(layer6->grads_in);
+ 
+        cout<<"********conv grads *********\n";
+        print_tensor(layer2->grads_in);
+    
+
         layer1->calc_grads(layer2->grads_in);
+        cout<<"********conv dw *********\n";
+        print_tensor(layer1->filter_grads);
         
         cout<<"************Fix weights**********";
         
@@ -140,7 +199,7 @@ int main()
         // layer4->fix_weights(learning_rate);
         // layer5->fix_weights(learning_rate);
         layer6->fix_weights(learning_rate);
-        layer7->fix_weights(learning_rate);
+        // layer7->fix_weights(learning_rate);
         // layer8->fix_weights(learning_rate);
         // layer9->fix_weights(learning_rate);
         // layer10->fix_weights(learning_rate);

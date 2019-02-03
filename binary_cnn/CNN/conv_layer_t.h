@@ -150,7 +150,7 @@ struct conv_layer_t
 					{
 						float& w = filters(a, i, j, z );
 						gradient_t& grad = filter_grads(a, i, j, z );
-						grad.grad /= in.size.m;
+						// grad.grad /= in.size.m;
 						w = update_weight( w, grad,1,false,learning_rate);
 						update_gradient( grad );
 					}
@@ -206,10 +206,11 @@ struct conv_layer_t
 		{
 			cout<<"*************grads filter**********\n";
 			print_tensor(filter_grads);
-			
+
 			cout<<"*********grads_in for float conv********\n";
 			print_tensor(grads_in);
 		}
 	}
 };
 // #pragma pack(pop)
+		

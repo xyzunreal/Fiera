@@ -97,14 +97,18 @@ struct fc_layer_t
 					for ( int z = 0; z < in.size.z; z++ )
 					{
 						int m = map( { 0, i, j, z } );
+
 						float& w = weights( m, n, 0, 0 );
+						
 						gradient_t grad_sum;
 						gradient_t weight_grad;
+						
 						for ( int e = 0; e < out.size.m; e++ ){			
 							weight_grad = gradients(e, n, 0, 0) * in(e, i, j, z);	// d W = d A(l+1) * A(l)
 							grad_sum = weight_grad + grad_sum;
 						}
-						grad_sum = grad_sum / out.size.m;
+						
+						// grad_sum = grad_sum / out.size.m;
 						w = update_weight( w, grad_sum, 1, false, learning_rate); 
 					}
 			for (int e = 0; e < out.size.m; e++)
@@ -146,7 +150,7 @@ struct fc_layer_t
 		// print_tensor(grad_next_layer);
 		if(debug)
 		{
-			cout<<"**********grads_in for float fc***********\n";
+			cout<<"**********calculated grads_in for float fc***********\n";
 			print_tensor(grads_in);
 		}
 		

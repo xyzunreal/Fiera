@@ -3,7 +3,7 @@
 #include "tensor_bin_t.h"
 #include "optimization_method.h"
 #include "fc_layer.h"
-#include "pool_layer_t.h"
+// #include "pool_layer_t.h"
 #include "prelu_layer_t.h"
 #include "conv_layer_t.h"
 #include "dropout_layer_t.h"
@@ -45,9 +45,9 @@ static void calc_grads( layer_t* layer, tensor_t<float>& grad_next_layer )
 		case layer_type::fc:
 			((fc_layer_t*)layer)->calc_grads( grad_next_layer );
 			return;
-		case layer_type::pool:
-			((pool_layer_t*)layer)->calc_grads( grad_next_layer );
-			return;
+		// case layer_type::pool:
+		// 	((pool_layer_t*)layer)->calc_grads( grad_next_layer );
+		// 	return;
 		default:
 			assert( false );
 	}
@@ -117,9 +117,9 @@ static void activate( layer_t* layer, tensor_t<float>& in )
 		case layer_type::fc:
 			((fc_layer_t*)layer)->activate( in );
 			return;
-		case layer_type::pool:
-			((pool_layer_t*)layer)->activate( in );
-			return;
+		// case layer_type::pool:
+		// 	((pool_layer_t*)layer)->activate( in );
+		// 	return;
 		case layer_type::batch_norm:
 			((batch_norm_layer_t*)layer)->activate(in);
 			return;

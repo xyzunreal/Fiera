@@ -1,10 +1,11 @@
 #pragma once
 #include "point_t.h"
+#include "gradient_t.h"
 #include <cassert>
 #include <vector>
 #include <cmath>
 #include <string.h>
-
+using namespace std;
 // Checks equality of two floating point numbers upto two decimal points.
 bool areEqual(float a,float b) {
 	return trunc(100. * a) == trunc(100. * b);
@@ -61,8 +62,12 @@ struct tensor_t
 	tensor_t<T> operator-( tensor_t<T>& other )
 	{
 		tensor_t<T> clone( *this );
-		for ( int i = 0; i < other.size.x * other.size.y * other.size.z* other.size.m; i++ )
+		
+		for ( int i = 0; i < other.size.x * other.size.y * other.size.z* other.size.m; i++ ){
 			clone.data[i] -= other.data[i];
+		}
+		
+		
 		return clone;
 	}
 
@@ -78,6 +83,10 @@ struct tensor_t
 	T& operator()( int _m, int _x, int _y, int _z)
 	{
 		return this->get(_m, _x, _y, _z);
+	}
+	void operator = (tensor_t<T> t){
+		for(int i=0; i<t.size.x*t.size.y*t.size.m*t.size.z; i++)
+			this->data[i] = t.data[i];
 	}
 
 	T& get(int _m, int _x, int _y, int _z)
@@ -139,6 +148,32 @@ void print_tensor( tensor_t<float>& data )
 			}
 		}
 	}
+}
+
+void print_tensor(tensor_t<gradient_t>& data){
+	int mx = data.size.x;
+	int my = data.size.y;
+	int mz = data.size.z;
+	int mm = data.size.m;
+
+	for(int tm = 0; tm < mm; tm++){
+		
+		printf("[Example %d]\n", tm);
+
+		for ( int z = 0; z < mz; z++ )
+		{
+			printf( "[Dim%d]\n", z );
+			for ( int y = 0; y < my; y++ )
+			{
+				for ( int x = 0; x < mx; x++ )
+				{
+					// indexing changed
+					printf( "%.4f \t", (float)data(tm, x, y, z).grad);
+				}
+				printf( "\n" );
+			}
+		}
+	}	
 }
 
 static tensor_t<float> to_tensor( std::vector<std::vector<std::vector<std::vector<float> > > > data )

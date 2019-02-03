@@ -11,7 +11,7 @@ using namespace std;
 
 int main()
 {
-    tensor_t<float> temp_in(2, 2, 2, 2), weights(2 * 2 * 2, 4, 1, 1), expected_output(2, 4, 1, 1), grad_next_layer(2,4,1,1);
+    tensor_t<float> temp_in(2, 2, 2, 2), weights(2 * 2 * 2, 4, 1, 1), expected_output(2, 4, 1, 1), grad_next_layer(2,4,1,1), diff_weights(2*2*2,4,1,1);
     std::vector<std::vector<std::vector<std::vector<float> > > > vect=
 
         {{{{0.0000, 0.0000},
@@ -56,22 +56,17 @@ int main()
     fc_layer_t * layer = new fc_layer_t( {2, 2, 2, 2}, 4, true);
     layer->in = temp_in;
     
-    cout<<"********IN during testing************\n";
-    print_tensor(layer->in);
-    
+    cout<<"**********old filters ************\n";
+    print_tensor(weights);
     layer->weights = weights;
-    
-    cout<<"*********Weights during testing********\n";
-    print_tensor(layer->weights);
-
     layer->activate();
     layer->calc_grads(grad_next_layer);
-    cout<<"*******grad next layer*********\n";
-    print_tensor(layer->gradients);
-    layer->fix_weights(0.01);
-     
-    cout << "\nExpected output is\n";
-    print_tensor(expected_output);
-    cout << "\nActual output is\n";
-    print_tensor(layer->out);
+
+    layer->fix_weights(1);
+    cout<<"**********new filters************\n";
+    print_tensor(layer->weights);
+
+    diff_weights = layer->weights - weights;
+    cout<<"*********diff weights";
+    print_tensor(diff_weights);
     }
