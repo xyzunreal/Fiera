@@ -150,7 +150,7 @@ struct fc_layer_t
 		// print_tensor(grad_next_layer);
 		if(debug)
 		{
-			cout<<"**********calculated grads_in for float fc***********\n";
+			cout<<"**********grads_in for float fc***********\n";
 			print_tensor(grads_in);
 		}
 		
