@@ -256,7 +256,7 @@ struct conv_layer_bin_t
 				{
 					for ( int y = 0; y < out.size.y; y++ )
 					{
-						point_t mapped = map_to_input( { (uint16_t)x, (uint16_t)y, 0 }, 0 );
+						point_t mapped = map_to_input( { 0, (uint16_t)x, (uint16_t)y, 0 }, 0 );
 						float sum = 0, sum2 = 0;
 						for ( int i = 0; i < extend_filter; i++ )
 							for ( int j = 0; j < extend_filter; j++ )
@@ -348,6 +348,8 @@ struct conv_layer_bin_t
 				}
 		if(debug)
 		{
+			cout<<"*********grads filter*****************\n";
+			print_tensor(filter_grads);
 			cout<<"*********grads_in for conv_bin************\n";
 			print_tensor(grads_in);
 		}
