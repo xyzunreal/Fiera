@@ -108,7 +108,7 @@ int main()
     cost_vec.push_back(0);
     float learning_rate = 0.01;
 
-    for(int i=0; i<100; i++){
+    for(int i=0; i<10; i++){
         layer1->activate(temp_in);
         cout<<"********conv output/relu input********\n";
         print_tensor(layer1->out);
@@ -144,22 +144,6 @@ int main()
         cout<<((l1+l2)/2)<<endl;
 
         cost_vec.push_back((l1+l2)/2);
-        // int size = 11;
-
-        // cross_entropy(layers[size-1]->out, expected);
-        
-        int tm = layer11->out.size.m;
-        int tx = layer11->out.size.x;
-
-        tensor_t<float> softmax_grads(tm,tx,1,1);
-
-        for(int i=0; i<tm; i++)
-            for(int j=0; j<tx; j++)
-                if(int(predict(i,j,0,0)) == 1)
-                    softmax_grads(i,j,0,0) = (-1.0/layer11->out(i,j,0,0));
- 
- 
- 
 
         layer11->calc_grads(predict);
         cout<<"*********fc grads********\n";
@@ -187,11 +171,10 @@ int main()
         print_tensor(layer1->filter_grads);
         
         
-        // float diff_cost = cost_vec[cost_vec.size()-1] - cost_vec[cost_vec.size()-2];
-        
-        // if(diff_cost < 1e-5){
-        //     learning_rate /= 2.0;
-        // }
+        float diff_cost = abs(cost_vec[cost_vec.size()-1] - cost_vec[cost_vec.size()-2]);
+        if(diff_cost < 1e-7){
+            break;
+        }
 
         
         layer1->fix_weights(learning_rate);
