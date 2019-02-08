@@ -59,7 +59,7 @@ int main()
     cout<<"*********input image**************\n";
     print_tensor(temp_in);
 
-	conv_layer_t * layer1 = new conv_layer_t(1,2,2,temp_in.size,false);	
+	conv_layer_bin_t * layer1 = new conv_layer_bin_t(1,2,2,temp_in.size,false);	
     vect = {{{{ 0.0247, -0.2130},
               { 0.1126,  0.1109}},
 
@@ -81,7 +81,7 @@ int main()
 	// conv_layer_bin_t * layer3 = new conv_layer_bin_t(1, 2, 1, layer2->out.size );
 	// prelu_layer_t * layer4 = new prelu_layer_t(layer3->out.size);
     // batch_norm_layer_t * layer5 = new batch_norm_layer_t(layer4->out.size);
-    fc_layer_t * layer6 = new fc_layer_t(layer2->out.size, 4,false);
+    fc_layer_bin_t * layer6 = new fc_layer_bin_t(layer2->out.size, 4,false);
     vect = 
         {{{{ 0.1558,  0.0148,  0.0896,  0.170}}},
         {{{-0.3019,  0.0659,  0.0488, -0.1747}}},
@@ -94,7 +94,8 @@ int main()
      layer6->weights.from_vector(vect);
         cout<<"**********fc weights*******\n";
         print_tensor(layer6->weights);
-
+    
+    scale_layer_t * layer7 = new scale_layer_t(layer6->out.size);
     // prelu_layer_t * layer7 = new prelu_layer_t(layer6->out.size,true);
     // fc_layer_bin_t * layer8 = new fc_layer_bin_t(layer7->out.size,3);
     // prelu_layer_t * layer9 = new prelu_layer_t(layer8->out.size);
@@ -108,7 +109,7 @@ int main()
     cost_vec.push_back(0);
     float learning_rate = 0.01;
 
-    for(int i=0; i<100; i++){
+    for(int i=0; i<1; i++){
         layer1->activate(temp_in);
         cout<<"********conv output/relu input********\n";
         print_tensor(layer1->out);
@@ -126,7 +127,7 @@ int main()
         cout<<"********fc output/softmax input********\n";
         print_tensor(layer6->out);
         
-        // layer7->activate(layer6->out);
+        layer7->activate(layer6->out);
         // layer8->activate(layer7->out);
         // layer9->activate(layer8->out);
         // layer10->activate(layer9->out);
@@ -152,7 +153,7 @@ int main()
         // layer10->calc_grads(layer11->grads_in);
         // layer9->calc_grads(layer10->grads_in); 
         // layer8->calc_grads(layer9->grads_in);
-        // layer7->calc_grads(layer11->grads_in);
+        layer7->calc_grads(layer11->grads_in);
         layer6->calc_grads(layer11->grads_in);
         cout<<"********relu grads *********\n";
         print_tensor(layer6->grads_in);
@@ -187,7 +188,7 @@ int main()
         // layer4->fix_weights(learning_rate);
         // layer5->fix_weights(learning_rate);
         layer6->fix_weights(learning_rate);
-        // layer7->fix_weights(learning_rate);
+        layer7->fix_weights(learning_rate);
         // layer8->fix_weights(learning_rate);
         // layer9->fix_weights(learning_rate);
         // layer10->fix_weights(learning_rate);
