@@ -143,6 +143,12 @@ struct conv_layer_t
 
 	void fix_weights(float learning_rate)
 	{
+		cout<<"*****filter_grads*****\n";
+		print_tensor(filter_grads);
+
+		cout<<"*****filters****\n";
+		print_tensor(filters);
+
 		for ( int a = 0; a < filters.size.m; a++ )
 			for ( int i = 0; i < extend_filter; i++ )
 				for ( int j = 0; j < extend_filter; j++ )
@@ -154,11 +160,12 @@ struct conv_layer_t
 						w = update_weight( w, grad,1,false,learning_rate);
 						update_gradient( grad );
 					}
-		if(debug)
+		if(true)
 		{
 			cout<<"*******new weights for float conv*****\n";
 			print_tensor(filters);
 		}
+		
 	}
 
 	void calc_grads( tensor_t<float>& grad_next_layer )

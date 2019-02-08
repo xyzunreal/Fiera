@@ -176,6 +176,11 @@ void print_tensor(tensor_t<gradient_t>& data){
 	}	
 }
 
+void print_tensor_size(tdsize data){
+	cout<<"*****Size*********\n";
+	cout<<data.m<<" "<<data.x<<" "<<data.y<<" "<<data.z<<endl;
+}
+
 static tensor_t<float> to_tensor( std::vector<std::vector<std::vector<std::vector<float> > > > data )
 {
 	int m = data.size();

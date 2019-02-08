@@ -20,7 +20,7 @@
  * 
  * 	
 */
-
+	
 #pragma pack(push, 1)
 struct prelu_layer_t
 {
@@ -89,13 +89,12 @@ struct prelu_layer_t
 				for ( int j = 0; j < in.size.y; j++ ){
 					for ( int k = 0; k < in.size.z; k++ )
 					{
-						// grads_in( e, i, j, k) = (in( e, i, j, k) < 0) ? (in( tm, i, j, k) * grad_next_layer( tm, i, j, k)) : (0);
-						if(in(e,i,j,k)>0){
+						if(in(e,i,j,k)>0.0){
 							grads_in(e,i,j,k) = grad_next_layer(e,i,j,k);
 						}
-						else if(int(in(e,i,j,k)) == 0){
+						else if(areEqual(in(e,i,j,k),0.0)){
 							grads_in(e,i,j,k) = grad_next_layer(e,i,j,k)*p_relu_zero;
-						}
+					}
 						else{
 							grads_alpha.grad += grad_next_layer(e,i,j,k) * (in(e, i, j, k));
 							grads_in(e,i,j,k) = grad_next_layer(e,i,j,k)*alpha;
@@ -110,6 +109,8 @@ struct prelu_layer_t
 		{
 			cout<<"***********grads_in for prelu********\n";
   	    	print_tensor(grads_in);
+			cout<<"*********grad alpha***********\n";
+			cout<<grads_alpha.grad<<endl;
 		}
 							
 	}

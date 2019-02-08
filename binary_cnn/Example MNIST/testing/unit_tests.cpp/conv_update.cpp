@@ -11,47 +11,27 @@ using namespace std;
 
 int main()
 {
-    tensor_t<float> temp_in(2, 3, 3, 2), filters(2, 2, 2, 2), expected_output(2, 2, 2, 2), grad_next_layer(2, 2, 2, 2), diff_weights(2,2,2,2);
+    tensor_t<float> filter_grads(2, 2, 2, 2), filters(2, 2, 2, 2), expected_output(2, 2, 2, 2), grad_next_layer(2, 2, 2, 2), diff_weights(2,2,2,2);
     std::vector<std::vector<std::vector<std::vector<float> > > > vect=
 
-      {{{{-0.1782, -0.2595, -0.0145},
-          {-0.3839, -2.9662, -1.0606},
-          {-0.3090,  0.9343,  1.6243}},
+      {{{{ 0.1515, -0.3932},
+          {-0.2842, -0.0689}},
 
-         {{ 0.0016, -0.4375, -2.1085},
-          { 1.1450, -0.3822, -0.3553},
-          { 0.7542,  0.1332,  0.1825}}},
+         {{ 0.2915, -0.0537},
+          { 0.0069, -0.0797}}},
 
 
-        {{{-0.5146,  0.8005, -0.1259},
-          {-0.9578,  1.7518,  0.9796},
-          { 0.4105,  1.7675, -0.0832}},
+        {{{-0.0204, -0.2494},
+          { 0.0300, -0.0272}},
 
-         {{ 0.5087, -0.8253,  0.1633},
-          { 0.5013,  1.4206,  1.1542},
-          {-1.5366, -0.5577, -0.4383}}}};
+         {{-0.1886, -0.1701},
+          { 0.2679,  0.1591}}}};
 
-    temp_in.from_vector(vect);
-    cout<<"*********image*****\n\n";
-    print_tensor(temp_in);
+    filter_grads.from_vector(vect);
+    cout<<"*********conv dw*****\n\n";
+    print_tensor(filter_grads);
 
-    vect = {{{{ 0.0000,  0.0000},
-          { 0.1686, -0.0938}},
-
-         {{ 0.0000,  0.0000},
-          { 0.0000,  0.0220}}},
-
-
-        {{{ 0.0000, -0.0775},
-          { 0.0000,  0.0000}},
-
-         {{-0.0039,  0.0734},
-          {-0.0856, -0.0569}}}};
-      
-      grad_next_layer.from_vector(vect);
-      cout<<"**********grad_next_layer**********\n";
-      print_tensor(grad_next_layer);
-
+   
     vect = {{{{ 0.0247, -0.2130},
               { 0.1126,  0.1109}},
 
@@ -82,19 +62,23 @@ int main()
     expected_output.from_vector(vect);
 
 
-    conv_layer_t * layer = new conv_layer_t( 1, 2, 2, temp_in.size, false);
-    layer->in = temp_in;
+    conv_layer_t * layer = new conv_layer_t( 1, 2, 2, {2,3,3,2}, false);
     layer->filters = filters;
-
+    
+    for(int i=0; i<filter_grads.size.m; i++){
+      for(int j=0; j<filter_grads.size.x; j++){
+        for(int k=0; k<filter_grads.size.y; k++){
+          for(int l=0; l<filter_grads.size.z; l++){
+            layer->filter_grads(i,j,k,l).grad = filter_grads(i,j,k,l);      
+          }
+        }
+      }
+    }
     cout<<"**********old filters ************\n";
     print_tensor(filters);
     
-    layer->activate();
-    layer->calc_grads(grad_next_layer);
+    layer->fix_weights(0.01);
 
-
-     
-    layer->fix_weights(1);
     cout<<"**********new filters************\n";
     print_tensor(layer->filters);
 

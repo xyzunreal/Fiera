@@ -106,9 +106,9 @@ int main()
     
     vector<float> cost_vec;
     cost_vec.push_back(0);
-    float learning_rate = 0.1;
+    float learning_rate = 0.01;
 
-    for(int i=0; i<2; i++){
+    for(int i=0; i<100; i++){
         layer1->activate(temp_in);
         cout<<"********conv output/relu input********\n";
         print_tensor(layer1->out);
@@ -179,21 +179,26 @@ int main()
  
         cout<<"********conv grads *********\n";
         print_tensor(layer2->grads_in);
-    
+        cout<<"****** grads for alpha in prelu*********\n";
+        cout<<layer2->grads_alpha.grad<<endl;    
 
         layer1->calc_grads(layer2->grads_in);
         cout<<"********conv dw *********\n";
         print_tensor(layer1->filter_grads);
         
-        cout<<"************Fix weights**********";
         
-        float diff_cost = cost_vec[cost_vec.size()-1] - cost_vec[cost_vec.size()-2];
+        // float diff_cost = cost_vec[cost_vec.size()-1] - cost_vec[cost_vec.size()-2];
         
-        if(diff_cost < 1e-5){
-            learning_rate /= 2.0;
-        }
+        // if(diff_cost < 1e-5){
+        //     learning_rate /= 2.0;
+        // }
 
+        
         layer1->fix_weights(learning_rate);
+        
+        cout<<"************Fix weights**********";
+        print_tensor(layer1->filters);
+
         layer2->fix_weights(learning_rate);
         // layer3->fix_weights(learning_rate);
         // layer4->fix_weights(learning_rate);
