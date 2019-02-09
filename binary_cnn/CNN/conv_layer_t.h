@@ -45,8 +45,8 @@ struct conv_layer_t
 				for ( int j = 0; j < extend_filter; j++){
 					for ( int z = 0; z < in_size.z; z++ ){
 						/**************temporary*************/
-						 filters(a, i, j, z) = pow(-1,i^j)*2+i+j-3;
-						//  filters(a,i, j, z ) =  (1.0f * (rand()-rand())) / float( RAND_MAX );
+						//  filters(a, i, j, z) = pow(-1,i^j)*2+i+j-3;
+						 filters(a,i, j, z ) =  (1.0f * (rand()-rand())) / float( RAND_MAX );
 					}
 				}
 			}
