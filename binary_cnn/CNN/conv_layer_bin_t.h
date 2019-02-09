@@ -167,7 +167,7 @@ struct conv_layer_bin_t
 						
 					}
 				}
-			}
+				}
 		
 		if(debug)
 		{
@@ -186,44 +186,48 @@ struct conv_layer_bin_t
 		// CALCULATE alpha1		
 		for(int e = 0; e<in.size.m; e++){
 			float sum = 0;
-			// tensor_t<float> &tf = filters[filter];
 			for(int x=0; x<in.size.x; x++)
 				for(int y=0; y<in.size.y; y++)
 					for(int z=0; z<in.size.z; z++){
 						sum += abs(in(e,x,y,z));
 				}
 			
+			alpha[e] = sum/(in.size.x*in.size.y*in.size.z);
 			if(debug)
 			{
-				alpha[e] = sum/(in.size.x*in.size.y*in.size.z);
-				cout<<"\nalpha "<<endl;
-				cout<<"\nalpha for"<<e<<"th example is "<<alpha[e]<<endl;
+				cout<<"\nalpha1 for"<<e<<"th example is "<<alpha[e]<<endl;
 			}
 		}
 
 		// CALCULATE alpha2
 		tensor_t<float> temp(in.size.m, in.size.x, in.size.y, in.size.z);
 		for(int e = 0; e<in.size.m; e++){
+			
 			float sum = 0;
-			// tensor_t<float> &tf = filters[filter];
+			
 			for(int x=0; x<in.size.x; x++)
 				for(int y=0; y<in.size.y; y++)
 					for(int z=0; z<in.size.z; z++){
 						temp(e,x,y,z) = in(e,x,y,z) - alpha[e]*(in_bin(e,x,y,z)==1 ? float(1) : float(-1) );
-						// cout<<in(e,x,y,z)<<" "<<alpha[e]*(in_bin(e,x,y,z)==1 ? float(1) : float(-1) )<<endl;
 						in_bin2.data[in_bin2(e,x,y,z)] = temp(e,x,y,z)>=0? 1 : 0;
 						sum += abs(temp(e,x,y,z));
 				}
+
 			alpha2[e] = sum/(in.size.x*in.size.y*in.size.z);
 
 			if(debug)
 			{
-				cout << "\n******in_bin2******";
-				print_tensor_bin(in_bin2);
-				cout<<"\nalpha2"<<endl;
 				cout<<"\nalpha2 for "<<e<<"th example is "<<alpha2[e]<<endl;
 			}
 		}
+
+		//printing in_bin2
+		if(debug)
+		{
+			cout<<"\nin_bin2"<<endl;
+			print_tensor_bin(in_bin2);
+		}
+		
 
 		// CALCULATE al_b
 		for (int e = 0; e < in.size.m; e++)
@@ -233,7 +237,13 @@ struct conv_layer_bin_t
 						al_b(e, x, y, z) = alpha[e] * (in_bin(e, x, y, z) == 1 ? float(1) : float(-1) ) +
 								alpha2[e] * (in_bin2(e, x, y, z) == 1 ? float(1) : float(-1) );
 					}
-		//~ return sum/(filters.size()*);
+		
+		//printing al_b
+		if(debug)
+		{
+			cout<<"\nal_b\n"<<endl;
+			print_tensor(al_b);
+		}
 	}
 
 	

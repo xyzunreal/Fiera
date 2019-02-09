@@ -93,15 +93,15 @@ struct fc_layer_bin_t
     }
 
 	void calculate_alpha(){
-		//cout<<filters.size()<<' '<<filters[0].size.x<<' '<<filters[0].size.y<<' '<<filters[0].size.z<<endl;
 		
 		alpha.resize(in.size.m);
 		alpha2.resize(in.size.m);
 
 		// CALCULATE alpha1		
 		for(int e = 0; e < in.size.m; e++){
+
 			float sum = 0;
-			// tensor_t<float> &tf = filters[filter];
+
 			for(int x = 0; x < in.size.x; x++)
 				for(int y = 0; y < in.size.y; y++)
 					for(int z = 0; z < in.size.z; z++)
@@ -111,32 +111,41 @@ struct fc_layer_bin_t
 			
 			if(debug)
 			{
-				cout<<"alpha "<<endl;
-				cout<<"alpha for"<<e<<"th example is "<<alpha[e]<<endl;
+				cout<<"alpha1 for"<<e<<"th example is "<<alpha[e]<<endl;
 			}
 		}
 
 		// CALCULATE alpha2
+
 		tensor_t<float> temp(in.size.m, in.size.x, in.size.y, in.size.z);
+
 		for(int e = 0; e<in.size.m; e++){
+
 			float sum = 0;
-			// tensor_t<float> &tf = filters[filter];
+
 			for(int x=0; x<in.size.x; x++)
 				for(int y=0; y<in.size.y; y++)
 					for(int z=0; z<in.size.z; z++){
+
 						temp(e,x,y,z) = in(e,x,y,z) - alpha[e]*(in_bin(e,x,y,z)==1 ? float(1) : float(-1) );
 						in_bin2.data[in_bin2(e,x,y,z)] = temp(e,x,y,z)>=0? 1 : 0;
 						sum += abs(temp(e,x,y,z));
+
 				}
+
 			alpha2[e] = sum/(in.size.x*in.size.y*in.size.z);
 
 			if(debug)
 			{
-				cout << "******in_bin2******";
-				print_tensor_bin(in_bin2);
-				cout<<"alpha2"<<endl;
 				cout<<"alpha2 for "<<e<<"th example is "<<alpha2[e]<<endl;
 			}
+		}
+
+		//printing in_bin2
+		if(debug)
+		{
+			cout<<"\nin_bin2\n"<<endl;
+			print_tensor_bin(in_bin2);
 		}
 
 		// CALCULATE al_b
@@ -147,6 +156,13 @@ struct fc_layer_bin_t
 						al_b(e, x, y, z) = alpha[e] * (in_bin(e, x, y, z) == 1 ? float(1) : float(-1) ) +
 								alpha2[e] * (in_bin2(e, x, y, z) == 1 ? float(1) : float(-1) );
 					}
+	
+		//printing al_b
+		if(debug)
+		{
+			cout<<"\nal_b\n"<<endl;
+			print_tensor(al_b);
+		}
 	
 	}
 
@@ -168,16 +184,16 @@ struct fc_layer_bin_t
 
 		if(debug)
 		{
-			cout<<"**********binary weights for fc bin **********";
+			cout<<"**********binary weights for fc bin **********\n";
 	        print_tensor_bin(weights_bin);
-	        cout<<"**********binary inputs for fc bin ************";
+	        cout<<"**********binary inputs for fc bin ************\n";
 	        print_tensor_bin(in_bin);
 		}
         calculate_alpha();
 		
 		for( int e = 0; e < in.size.m; e++)
 			for(int n = 0; n < out.size.x; n++ ){
-				int sum, sum2;
+				float sum=0, sum2=0;
 				for ( int i = 0; i < in.size.x; i++ )
 					for ( int j = 0; j < in.size.y; j++ )
 						for ( int z = 0; z < in.size.z; z++ )
@@ -198,11 +214,7 @@ struct fc_layer_bin_t
 
 		if(debug)
 		{
-			cout<<"********** output before multiplying*******";
-			print_tensor(out);
-
-
-			cout << "*************output of fc bin *************";
+			cout << "*************output of fc bin *************\n";
 			print_tensor(out);
 		}
 	}

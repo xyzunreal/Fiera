@@ -58,7 +58,7 @@ struct softmax_layer_t
 	
 	void activate()
 	{	
-		// normalize_in();
+		normalize_in();
 
 		float temp1, sum = 0;
 		for ( int tm = 0; tm < in.size.m; tm++ ){
