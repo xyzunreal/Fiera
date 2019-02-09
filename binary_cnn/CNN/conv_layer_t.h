@@ -143,11 +143,6 @@ struct conv_layer_t
 
 	void fix_weights(float learning_rate)
 	{
-		// cout<<"*****filter_grads*****\n";
-		// print_tensor(filter_grads);
-
-		// cout<<"*****filters****\n";
-		// print_tensor(filters);
 
 		for ( int a = 0; a < filters.size.m; a++ )
 			for ( int i = 0; i < extend_filter; i++ )
@@ -156,7 +151,7 @@ struct conv_layer_t
 					{
 						float& w = filters(a, i, j, z );
 						gradient_t& grad = filter_grads(a, i, j, z );
-						// grad.grad /= in.size.m;
+						// grad.grad /= in.size.m;    	Pytorch updates weights by adding gradients of all examples not taking their mean
 						w = update_weight( w, grad,1,false,learning_rate);
 						update_gradient( grad );
 					}
@@ -198,7 +193,6 @@ struct conv_layer_t
 								{
 									float w_applied = filters(k, x - minx, y - miny, z );
 									sum_error += w_applied * grad_next_layer(e, i, j, k );
-									//  cout<<w_applied<<' '<<grad_next_layer(e,i,j,k)<<' '<<sum_error<<endl;
 									filter_grads(k, x - minx, y - miny, z ).grad += in(e, x, y, z ) * grad_next_layer(e, i, j, k );
 								}
 							}

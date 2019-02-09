@@ -19,23 +19,19 @@ struct softmax_layer_t
 	tensor_t<float> in;
 	tensor_t<float> out;
 	tensor_t<float> grads_in;
+	bool to_normalize;
 	bool debug;	
-	softmax_layer_t( tdsize in_size, bool debug_flag = false):
+	softmax_layer_t( tdsize in_size, bool to_normalize=true, bool debug_flag = false):
 		in( in_size.m, in_size.x, 1, 1),
 		out( in_size.m, in_size.x, 1, 1 ),
 		grads_in( in_size.m, in_size.x, 1, 1)
 	{
+		this->to_normalize = to_normalize;
 		this->debug = debug_flag;
 	}
 	
 	void activate( tensor_t<float>& in )
 	{	
-		if(debug)
-		{
-			cout<<"flag19\n";
-			print_tensor(in);
-			// cout<<in.size.m<<" "<<in.size.x<<' '<<in.size.y<<" "<<in.size.z<<endl;
-		}
 		this->in = in;
 		activate();
 	}
@@ -52,13 +48,16 @@ struct softmax_layer_t
 
 			for(int i=0; i<in.size.x; i++){
 				in(tm,i,0,0) = (in(tm,i,0,0) - minm)/(maxm-minm);
+			// in(tm,i,0,0) = in(tm,i,0,0) - maxm;
 			}
 		}
 	}
 	
 	void activate()
 	{	
-		normalize_in();
+		if (to_normalize)
+			normalize_in();
+		
 
 		float temp1, sum = 0;
 		for ( int tm = 0; tm < in.size.m; tm++ ){
@@ -66,11 +65,13 @@ struct softmax_layer_t
 			for ( int i = 0; i < in.size.x; i++ )
 			{
 				temp1= in(tm, i, 0, 0);
-				sum+=exp(temp1);
+				// sum += exp(temp1);
+				sum += max(exp(temp1), float(1e-7));
 			}
 		
 			for ( int i = 0; i < in.size.x; i++ )
-				out(tm, i, 0, 0) = exp(in(tm, i, 0, 0))/sum;		
+				// out(tm, i, 0, 0) = exp(in(tm, i, 0, 0);
+				out(tm, i, 0, 0) = max(exp(in(tm, i, 0, 0)), float(1e-7))/sum;		
 		}
 		
 		if(debug)
