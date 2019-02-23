@@ -255,7 +255,7 @@ struct fc_layer_bin_t
 	// CALCULATES BACKWARD PROPOGATION AND SAVES RESULT IN `grads_in`. 
 	
 	{
-		memset( grads_in.data, 0, grads_in.size.x *grads_in.size.y*grads_in.size.z * sizeof( float ) );
+		memset( grads_in.data, 0,  grads_in.size.m * grads_in.size.x *grads_in.size.y*grads_in.size.z * sizeof( float ) );
 		
 		for(int e=0; e<in.size.m; e++)
 			for ( int n = 0; n < out.size.x; n++ )

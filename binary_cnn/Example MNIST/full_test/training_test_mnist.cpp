@@ -9,7 +9,7 @@
 
 using namespace std;
 
-int mini_batch_size = 1;
+int mini_batch_size = 10;
 int num_batches = 6000/mini_batch_size;	
 	
 struct case_t
@@ -89,11 +89,11 @@ int main()
     print_tensor(cases[0].data);
     conv_layer_t * layer1 = new conv_layer_t(1, 3, 8, cases[0].data.size,false,false);		
     prelu_layer_t * layer2 = new prelu_layer_t( layer1->out.size,false,false);
-    batch_norm_layer_t * layerbb = new batch_norm_layer_t(layer2->out.size,false,false);
+    // batch_norm_layer_t * layerbb = new batch_norm_layer_t(layer2->out.size,false,false);
     conv_layer_t * layer3 = new conv_layer_t(1, 3, 16, layer2->out.size,false,false);		
     prelu_layer_t * layer4 = new prelu_layer_t( layer3->out.size,false,false);
-    batch_norm_layer_t * layerb = new batch_norm_layer_t(layer4->out.size,false,false);
-    fc_layer_t * layer5 = new fc_layer_t(layerb->out.size, 10,false,false);
+    // batch_norm_layer_t * layerb = new batch_norm_layer_t(layer4->out.size,false,false);
+    fc_layer_t * layer5 = new fc_layer_t(layer4->out.size, 10,false,false);
     // prelu_layer_t * layer6 = new prelu_layer_t( layer5->out.size,false); 
     // fc_layer_t * layer7 = new fc_layer_t(layer6->out.size, 10, false);
     // scale_layer_t * layerS = new scale_layer_t(layer5->out.size);
@@ -101,25 +101,25 @@ int main()
 
     vector<float> cost_vec;
     cost_vec.push_back(0);
-    float learning_rate = 0.01;
+    float learning_rate = 0.001;
 
 
     for(int epoch = 0; epoch<50; epoch++){
 
         //batch_num<num_batches
-        for(int batch_num = 0; batch_num<1; batch_num++){
+        for(int batch_num = 0; batch_num<3; batch_num++){
                 // cout<<"*************epoch number*********** "<<epoch<<"***********************\n";
                 layer1->activate(cases[batch_num].data);
                 // cout<<"*************epoch number*********** "<<epoch<<"***********************\n";
                 layer2->activate(layer1->out);
-                layerbb->activate(layer2->out);
+                // layerbb->activate(layer2->out);
                 // cout<<"*************epoch number*********** "<<epoch<<"***********************\n";
-                layer3->activate(layerbb->out);
+                layer3->activate(layer2->out);
                 // cout<<"*************epoch number*********** "<<epoch<<"***********************\n";
                 layer4->activate(layer3->out);
-                layerb->activate(layer4->out);
+                // layerb->activate(layer4->out);
                 // cout<<"*************epoch number*********** "<<epoch<<"***********************\n";
-                layer5->activate(layerb->out);
+                layer5->activate(layer4->out);
                 // cout<<"*************epoch number*********** "<<epoch<<"***********************\n";
                 // layer6->activate(layer5->out);
                 // layer7->activate(layer6->out);
@@ -146,10 +146,10 @@ int main()
                 float l1 = cross_entropy(layer8->out, cases[batch_num].out);
                 float l2 = l1;
                 // float l2 = cross_entropy(layer6->out, cases[batch_num].out)(1, 0, 0, 0);
-                cout<<"loss for img1 ";
-                cout<<l1<<endl;
-                cout<<"loss for img 2";
-                cout<<l2<<endl;
+                // cout<<"loss for img1 ";
+                // cout<<l1<<endl;
+                // cout<<"loss for img 2";
+                // cout<<l2<<endl;
                 
                 cout<<"*****loss total ************\n";
                 cout<<((l1+l2)/2)<<endl;
@@ -164,13 +164,13 @@ int main()
                 // layerS->calc_grads(layer8->grads_in);
                 layer5->calc_grads(layer8->grads_in);
                 // cout<<"*************epoch number*********** "<<epoch<<"***********************\n";
-                layerb->calc_grads(layer5->grads_in);
-                layer4->calc_grads(layerb->grads_in);
+                // layerb->calc_grads(layer5->grads_in);
+                layer4->calc_grads(layer5->grads_in);
                 // cout<<"*************epoch number*********** "<<epoch<<"***********************\n";
                 layer3->calc_grads(layer4->grads_in);
                 // cout<<"*************epoch number*********** "<<epoch<<"***********************\n";
-                layerbb->calc_grads(layer3->grads_in);
-                layer2->calc_grads(layerbb->grads_in);
+                // layerbb->calc_grads(layer3->grads_in);
+                layer2->calc_grads(layer3->grads_in);
                 // cout<<"*************epoch number*********** "<<epoch<<"***********************\n";
                 layer1->calc_grads(layer2->grads_in);
                 
@@ -183,12 +183,12 @@ int main()
                 layer1->fix_weights(learning_rate);
                 // cout<<"*************epoch number*********** "<<epoch<<"***********************\n";
                 layer2->fix_weights(learning_rate);
-                layerbb->fix_weights(learning_rate);
+                // layerbb->fix_weights(learning_rate);
                 // cout<<"*************epoch number*********** "<<epoch<<"***********************\n";
                 layer3->fix_weights(learning_rate);
                 // cout<<"*************epoch number*********** "<<epoch<<"***********************\n";
                 layer4->fix_weights(learning_rate);
-                layerb->fix_weights(learning_rate);
+                // layerb->fix_weights(learning_rate);
                 // cout<<"*************epoch number*********** "<<epoch<<"***********************\n";
                 layer5->fix_weights(learning_rate);
                 // cout<<"*************epoch number*********** "<<epoch<<"***********************\n";
