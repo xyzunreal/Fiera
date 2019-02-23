@@ -18,9 +18,9 @@ struct batch_norm_layer_t
     std::vector<float> u_mean;
     std::vector<float> sigma, grads_sigma, grads_mean;
     bool adjust_variance;
-	bool debug;
+	bool debug,clip_gradients_flag;
 
-	batch_norm_layer_t(tdsize in_size, bool debug_flag = false)
+	batch_norm_layer_t(tdsize in_size,bool clip_gradients_flag = true, bool debug_flag = false)
 		:
 		in(in_size.m, in_size.x, in_size.y, in_size.z ),
 		out(in_size.m, in_size.x, in_size.y, in_size.z),
@@ -29,6 +29,7 @@ struct batch_norm_layer_t
 		grads_in_hat(in_size.m, in_size.x, in_size.y, in_size.z)
 	{
 		this->debug = debug_flag;
+		this->clip_gradients_flag = clip_gradients_flag;
 		epsilon = 1e-3;
         gamma = 1;
         beta = 0;
@@ -141,7 +142,11 @@ struct batch_norm_layer_t
 				for(int k=0; k<out.size.x; k++){
 					for(int j=0; j<out.size.y; j++){
 						grads_beta.grad += grad_next_layer(e,k,j,i); 
+						clip_gradients(clip_gradients_flag, grads_beta.grad);
+
 						grads_gamma.grad += grad_next_layer(e,k,j,i)*in_hat(e,k,j,i);
+						clip_gradients(clip_gradients_flag, grads_gamma.grad);
+						
 						grads_in_hat(e,k,j,i) = grad_next_layer(e,k,j,i)*gamma;
 						temp_sigma += (grads_in_hat(e, k, j, i)*(in(e,k,j,i)-u_mean[i])*(-1.0/2.0)*(pow((sigma[i]+epsilon),-3/2)));
 						temp_mean1 += (grads_in_hat(e, k, j, i)*(in(e,k,j,i)-u_mean[i])*(-1.0/sqrt(sigma[i] + epsilon)));
@@ -160,6 +165,7 @@ struct batch_norm_layer_t
 				for(int k=0; k<out.size.x; k++){
 					for(int j=0; j<out.size.y; j++){
 						grads_in(e,j,k,i) = grads_in_hat(e, j, k, i)* (1.0/sqrt(sigma[i]+epsilon)) + grads_sigma[i] * (2.0 * (in(e, j, k, i) - u_mean[i])/ out.size.m ) + grads_mean[i]/out.size.m;
+						clip_gradients(clip_gradients_flag, grads_in(e,j,k,i));
 					}
 				}
 			}

@@ -16,9 +16,9 @@ struct fc_layer_t
 	std::vector<float> input;
 	tensor_t<float> weights;
 	tensor_t<gradient_t> gradients;
-	bool debug;
+	bool debug,clip_gradients_flag;
 
-	fc_layer_t( tdsize in_size, int out_size, bool debug_flag = false )
+	fc_layer_t( tdsize in_size, int out_size,bool clip_gradients_flag=true, bool debug_flag = false )
 		:
 		in( in_size.m, in_size.x, in_size.y, in_size.z ),
 		out( in_size.m, out_size, 1, 1 ),
@@ -28,8 +28,9 @@ struct fc_layer_t
 
 	{
 		this->debug = debug_flag;
+		this->clip_gradients_flag = clip_gradients_flag;
 		int maxval = in_size.x * in_size.y * in_size.z;
-
+	
 		// Weight initialization
 		
 		for ( int i = 0; i < out_size; i++ )
@@ -143,6 +144,7 @@ struct fc_layer_t
 						{
 							int m = map( {0, i, j, z } );
 							grads_in(e, i, j, z ) += grad.grad * weights( m, n,0, 0 );
+							clip_gradients(clip_gradients_flag, grads_in(e,i,j,z));
 						}
 			}
 		

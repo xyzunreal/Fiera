@@ -31,9 +31,10 @@ struct prelu_layer_t
 	float alpha;
 	gradient_t grads_alpha;
 	float p_relu_zero;
-	bool debug;
+	bool debug,clip_gradients_flag;
 
-	prelu_layer_t( tdsize in_size, bool flag_debug = false ):
+
+	prelu_layer_t( tdsize in_size, bool clip_gradients_flag = true, bool flag_debug = false ):
 		in( in_size.m, in_size.x, in_size.y, in_size.z ),
 		out(in_size.m, in_size.x, in_size.y, in_size.z ),
 		grads_in( in_size.m, in_size.x, in_size.y, in_size.z )
@@ -41,7 +42,9 @@ struct prelu_layer_t
 		alpha=0.05;
 		p_relu_zero = 0.5;
 		this->debug=flag_debug;
+		this->clip_gradients_flag = clip_gradients_flag;
 	}
+
 
 
 	void activate( tensor_t<float>& in )
@@ -99,6 +102,8 @@ struct prelu_layer_t
 							grads_alpha.grad += grad_next_layer(e,i,j,k) * (in(e, i, j, k));
 							grads_in(e,i,j,k) = grad_next_layer(e,i,j,k)*alpha;
 						}
+						clip_gradients(clip_gradients_flag, grads_alpha.grad);
+						clip_gradients(clip_gradients_flag, grads_in(e,i,j,k));
 					}
 				}
 			

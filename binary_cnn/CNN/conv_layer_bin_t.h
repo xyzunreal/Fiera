@@ -19,9 +19,9 @@ struct conv_layer_bin_t
 	uint16_t extend_filter;
 	vector<float> alpha;
 	vector<float> alpha2;
-	bool debug; 	
+	bool debug,clip_gradients_flag; 	
 	conv_layer_bin_t( uint16_t stride, uint16_t extend_filter, uint16_t number_filters, tdsize in_size ,
-	bool debug_flag = false)
+	bool clip_gradients_flag = true, bool debug_flag = false)
 		:
 		grads_in(in_size.m, in_size.x, in_size.y, in_size.z),
 		in(in_size.m, in_size.x, in_size.y, in_size.z ),
@@ -46,6 +46,7 @@ struct conv_layer_bin_t
 		this->debug = debug_flag;
 		this->stride = stride;
 		this->extend_filter = extend_filter;
+		this->clip_gradients_flag = clip_gradients_flag;
 		// cout<<"*********flag************\n";
 		assert( (float( in_size.x - extend_filter ) / stride + 1)
 				==
@@ -344,7 +345,7 @@ struct conv_layer_bin_t
 								for ( int k = rn.min_z; k <= rn.max_z; k++ ){
 									
 									filter_grads(k, x - minx, y - miny, z ).grad += al_b(e, x, y, z ) * grad_next_layer(e, i, j, k );
-									
+									clip_gradients(clip_gradients_flag, filter_grads(k, x - minx, y - miny, z ).grad);
 									if(in(e,x,y,z) <= 1){
 										float w_applied = (filters_bin.data[filters_bin(k, x - minx, y - miny, z )] == 1? float(1) : float(-1));
 										sum_error += w_applied * grad_next_layer(e, i, j, k );
@@ -354,6 +355,7 @@ struct conv_layer_bin_t
 							}
 						}
 						grads_in( e, x, y, z ) = sum_error;
+						clip_gradients(clip_gradients_flag, grads_in(e,x,y,z));
 					}
 				}
 		if(debug)

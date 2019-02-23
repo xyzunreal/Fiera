@@ -25,3 +25,12 @@ static void update_gradient( gradient_t& grad )
 {
 	grad.oldgrad = (grad.grad + grad.oldgrad * MOMENTUM);
 }
+
+void clip_gradients(bool chk, float & gradient_value){
+	if(chk and gradient_value > 1e2){
+		gradient_value = 1e2;
+	}
+	else if(chk and gradient_value < -1e2){
+		gradient_value = -1e2;
+	}
+}

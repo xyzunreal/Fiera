@@ -20,14 +20,15 @@ struct softmax_layer_t
 	tensor_t<float> out;
 	tensor_t<float> grads_in;
 	bool to_normalize;
-	bool debug;	
-	softmax_layer_t( tdsize in_size, bool to_normalize=true, bool debug_flag = false):
+	bool debug, clip_gradients_flag;	
+	softmax_layer_t( tdsize in_size, bool to_normalize=true,bool clip_gradients_flag = true, bool debug_flag = false):
 		in( in_size.m, in_size.x, 1, 1),
 		out( in_size.m, in_size.x, 1, 1 ),
 		grads_in( in_size.m, in_size.x, 1, 1)
 	{
 		this->to_normalize = to_normalize;
 		this->debug = debug_flag;
+		this->clip_gradients_flag = clip_gradients_flag;
 	}
 	
 	void activate( tensor_t<float>& in )
@@ -99,12 +100,14 @@ struct softmax_layer_t
 				}
 			}
 			for(int i=0; i<out.size.x; i++){
-				if(idx!=i)
+				if(idx!=i){
 					grads_in(e,i,0,0) = ((out(e,i,0,0))/m);
+				}
+				clip_gradients(clip_gradients_flag, grads_in(e,i,0,0));
 				 
 			}	
 		}
-
+		
 		if(debug)
 		{
 			cout<<"********grads_in for softmax*********\n";

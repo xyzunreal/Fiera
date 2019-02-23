@@ -12,8 +12,8 @@ struct conv_layer_t
 	tensor_t<gradient_t> filter_grads;
 	uint16_t stride;
 	uint16_t extend_filter;
-	bool debug;
-	conv_layer_t( uint16_t stride, uint16_t extend_filter, uint16_t number_filters, tdsize in_size, bool debug_flag=false)
+	bool debug,clip_gradients_flag;
+	conv_layer_t( uint16_t stride, uint16_t extend_filter, uint16_t number_filters, tdsize in_size,bool clip_gradients_flag = true, bool debug_flag=false)
 		:
 		grads_in( in_size.m, in_size.x, in_size.y, in_size.z ),
 		in(in_size.m, in_size.x, in_size.y, in_size.z ),
@@ -29,6 +29,7 @@ struct conv_layer_t
 		this->debug=debug_flag;
 		this->stride = stride;
 		this->extend_filter = extend_filter;
+		this->clip_gradients_flag = clip_gradients_flag;
 		assert( (float( in_size.x - extend_filter ) / stride + 1)
 				==
 				((in_size.x - extend_filter) / stride + 1) );
@@ -194,10 +195,12 @@ struct conv_layer_t
 									float w_applied = filters(k, x - minx, y - miny, z );
 									sum_error += w_applied * grad_next_layer(e, i, j, k );
 									filter_grads(k, x - minx, y - miny, z ).grad += in(e, x, y, z ) * grad_next_layer(e, i, j, k );
+									clip_gradients(clip_gradients_flag, filter_grads(k, x - minx, y - miny, z ).grad);
 								}
 							}
 						}
 						grads_in(e, x, y, z ) = sum_error;
+						clip_gradients(clip_gradients_flag, grads_in(e,x,y,z));
 					}
 				}
 			}

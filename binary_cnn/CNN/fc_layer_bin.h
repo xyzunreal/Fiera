@@ -23,13 +23,13 @@ struct fc_layer_bin_t
     tensor_bin_t out_bin;
     vector<float> alpha;
 	vector<float> alpha2;
-	bool debug;
+	bool debug,clip_gradients_flag;
 	std::vector<float> input;
 	tensor_t<float> weights;
     tensor_bin_t weights_bin;
 	tensor_t<gradient_t> gradients;
 
-	fc_layer_bin_t( tdsize in_size, int out_size, bool debug_flag = false )
+	fc_layer_bin_t( tdsize in_size, int out_size, bool clip_gradients_flag = true, bool debug_flag = false )
 	/**
 	 * Parameters
 	 * ----------
@@ -53,6 +53,7 @@ struct fc_layer_bin_t
 		gradients(in_size.x * in_size.y * in_size.z, out_size, 1, 1)
 	{
 		this->debug = debug_flag;
+		this->clip_gradients_flag = clip_gradients_flag;
 		// WEIGHT INITIALIZATION
 		
 		for ( int i = 0; i < out_size; i++ )
@@ -271,6 +272,8 @@ struct fc_layer_bin_t
 								grads_in(e, i, j, z ) += grad.grad * (weights_bin.data[weights_bin( m, n,0, 0 )] == 1? float(1) : float(-1));
 							else
 								grads_in(e,i,j,z) += 0;
+							
+							clip_gradients(clip_gradients_flag, grads_in(e,i,j,z));
 						}
 			}
 

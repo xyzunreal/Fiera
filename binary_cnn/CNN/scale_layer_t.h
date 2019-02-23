@@ -9,12 +9,12 @@ struct scale_layer_t
     tensor_t<float> in;
     tensor_t<float> out;
     gradient_t grads_scale;
-    bool debug;
+    bool debug,clip_gradients_flag;
 
     float s_param;     // `s_param` REPRESENT SCALE VALUE WHICH IS SINGLE LEARNABLE PARAMETER.
     tensor_t<gradient_t> gradients;
 
-    scale_layer_t(tdsize in_size, bool debug_flag = false)        // EXPECTS 1D INPUT
+    scale_layer_t(tdsize in_size,bool clip_gradients_flag = true, bool debug_flag = false)        // EXPECTS 1D INPUT
         :
         in(in_size.m, in_size.x, 1, 1),
         out(in_size.m, in_size.x, 1, 1),
@@ -24,6 +24,7 @@ struct scale_layer_t
     {
         s_param = 0.001;
         this->debug = debug_flag;    
+        this->clip_gradients_flag = clip_gradients_flag;
     }
 
     void activate( tensor_t<float> & in )
@@ -66,20 +67,23 @@ struct scale_layer_t
     void calc_grads(tensor_t<float>& grad_next_layer)
     {
         grads_scale.grad = 0;
+        
         for(int i=0; i<out.size.m; i++){
             for(int j=0; j<out.size.x; j++){
                 grads_scale.grad += grad_next_layer(i,j,0,0)*in(i,j,0,0); 
                 grads_in(i,j,0,0) = grad_next_layer(i,j,0,0)*s_param;
+                clip_gradients(clip_gradients_flag, grads_scale.grad);
+                clip_gradients(clip_gradients_flag, grads_in(i,j,0,0));
             }
         }
         if(debug)
         {
             cout<<"***********grads_in for scale********\n";
             print_tensor(grads_in);
+            cout<<"***********gradient for s_param*******\n";
+            cout<<grads_scale.grad<<endl;
         }
 
-        cout<<"***********gradient for s_param*******\n";
-        cout<<grads_scale.grad<<endl;
     }
 
 };
