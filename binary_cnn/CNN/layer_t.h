@@ -6,10 +6,8 @@
 struct layer_t
 {
 	layer_type type;
-	tensor_t<float> grads_in;
-	tensor_t<float> in;
-	tensor_t<float> out;
-	tensor_t<float> sfsdf;
-	tensor_bin_t fdfs;
+	tensor_t<double> grads_in;
+	tensor_t<double> in;
+	tensor_t<double> out;
 };
 #pragma pack(pop)

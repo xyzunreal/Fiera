@@ -5,7 +5,7 @@
 
 using namespace std;
 
-// float train( vector<layer_t*>& layers, tensor_t<float>& data, tensor_t<float>& expected )
+// double train( vector<layer_t*>& layers, tensor_t<double>& data, tensor_t<double>& expected )
 // {
 // 	for ( int i = 0; i < layers.size(); i++ )
 // 	{
@@ -15,7 +15,7 @@ using namespace std;
 // 			activate( layers[i], layers[i - 1]->out );
 // 	}
 
-// 	tensor_t<float> grads = layers.back()->out - expected;
+// 	tensor_t<double> grads = layers.back()->out - expected;
 
 // 	for ( int i = layers.size() - 1; i >= 0; i-- )
 // 	{
@@ -30,10 +30,10 @@ using namespace std;
 // 		fix_weights( layers[i] );
 // 	}
 
-// 	float err = 0;
+// 	double err = 0;
 // 	for ( int i = 0; i < grads.size.x * grads.size.y * grads.size.z; i++ )
 // 	{
-// 		float f = expected.data[i];
+// 		double f = expected.data[i];
 // 		if ( f > 0.5 )
 // 			err += abs(grads.data[i]);
 // 	}
@@ -41,7 +41,7 @@ using namespace std;
 // }
 
 
-// void forward( vector<layer_t*>& layers, tensor_t<float>& data )
+// void forward( vector<layer_t*>& layers, tensor_t<double>& data )
 // {
 // 	for ( int i = 0; i < layers.size(); i++ )
 // 	{
@@ -54,8 +54,8 @@ using namespace std;
 
 // struct case_t
 // {
-// 	tensor_t<float> data;
-// 	tensor_t<float> out;
+// 	tensor_t<double> data;
+// 	tensor_t<double> out;
 // };
 
 // uint8_t* read_file( const char* szFile )
@@ -93,7 +93,7 @@ using namespace std;
 	
 // 	for ( int i = 0; i < case_count; i++ )
 // 	{
-// 		case_t c {tensor_t<float>( 28, 28, 1 ), tensor_t<float>( 10, 1, 1 )};
+// 		case_t c {tensor_t<double>( 28, 28, 1 ), tensor_t<double>( 10, 1, 1 )};
 
 // 		uint8_t* img = train_image + 16 + i * (28 * 28);
 
@@ -123,7 +123,7 @@ int main()
 	
 	vector<layer_t*> layers;
 	
-	tensor_t<float> temp_in(1, 5,5,1);
+	tensor_t<double> temp_in(1, 5,5,1);
 	
 	
 	
@@ -134,7 +134,7 @@ int main()
 		}
 	}
 
-    tensor_t<float> t_grads(25, 3,1,1);
+    tensor_t<double> t_grads(25, 3,1,1);
     for (int i=0;i<25;i++)
             for(int j=0;j<3;j++)
                     t_grads(i, j, 0, 0) = pow(-1,i^j)*2+i+j-4;
@@ -166,7 +166,7 @@ int main()
 
 
 
-	//~ float amse = 0;
+	//~ double amse = 0;
 	//~ int ic = 0;
 
 	//~ for ( long ep = 0; ep < 100000; ep++)
@@ -174,7 +174,7 @@ int main()
 //~ //cout<<ep<<endl;
 		//~ for ( auto t : cases )
 		//~ {
-			//~ float xerr = train( layers, t.data, t.out );
+			//~ double xerr = train( layers, t.data, t.out );
 			//~ amse += xerr;
 
 			//~ ep++;
@@ -219,13 +219,13 @@ cout<<"***************";
 
 // 			RGB * rgb = (RGB*)usable;
 
-// 			tensor_t<float> image(28, 28, 1);
+// 			tensor_t<double> image(28, 28, 1);
 // 			for ( int i = 0; i < 28; i++ )
 // 			{
 // 				for ( int j = 0; j < 28; j++ )
 // 				{
 // 					RGB rgb_ij = rgb[i * 28 + j];
-// 					image( j, i, 0 ) = (((float)rgb_ij.r
+// 					image( j, i, 0 ) = (((double)rgb_ij.r
 // 							     + rgb_ij.g
 // 							     + rgb_ij.b)
 // 							    / (3.0f*255.f));
@@ -233,7 +233,7 @@ cout<<"***************";
 // 			}
 
 // 			forward( layers, image );
-// 			tensor_t<float>& out = layers.back()->out;
+// 			tensor_t<double>& out = layers.back()->out;
 // 			cout<<"&&&&&&&&&";
 // 			for ( int i = 0; i < 10; i++ )
 // 			{

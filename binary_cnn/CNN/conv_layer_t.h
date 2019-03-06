@@ -1,14 +1,13 @@
 #pragma once
 #include "layer_t.h"
 
-// #pragma pack(push, 1)
 struct conv_layer_t
 {
 	layer_type type = layer_type::conv;
-	tensor_t<float> grads_in;
-	tensor_t<float> in;
-	tensor_t<float> out;
-	tensor_t<float> filters; 
+	tensor_t<double> grads_in;
+	tensor_t<double> in;
+	tensor_t<double> out;
+	tensor_t<double> filters; 
 	tensor_t<gradient_t> filter_grads;
 	uint16_t stride;
 	uint16_t extend_filter;
@@ -30,11 +29,11 @@ struct conv_layer_t
 		this->stride = stride;
 		this->extend_filter = extend_filter;
 		this->clip_gradients_flag = clip_gradients_flag;
-		assert( (float( in_size.x - extend_filter ) / stride + 1)
+		assert( (double( in_size.x - extend_filter ) / stride + 1)
 				==
 				((in_size.x - extend_filter) / stride + 1) );
 
-		assert( (float( in_size.y - extend_filter ) / stride + 1)
+		assert( (double( in_size.y - extend_filter ) / stride + 1)
 				==
 				((in_size.y - extend_filter) / stride + 1) );
 
@@ -45,9 +44,7 @@ struct conv_layer_t
 			for ( int i = 0; i < extend_filter; i++){
 				for ( int j = 0; j < extend_filter; j++){
 					for ( int z = 0; z < in_size.z; z++ ){
-						/**************temporary*************/
-						//  filters(a, i, j, z) = pow(-1,i^j)*2+i+j-3;
-						 filters(a,i, j, z ) =  (1.0f * (rand()-rand())) / float( RAND_MAX );
+						 filters(a,i, j, z ) =  (1.0f * (rand()-rand())) / double( RAND_MAX );
 					}
 				}
 			}
@@ -74,7 +71,7 @@ struct conv_layer_t
 		int max_x, max_y, max_z;
 	};
 
-	int normalize_range( float f, int max, bool lim_min )
+	int normalize_range( double f, int max, bool lim_min )
 	{
 		if ( f <= 0 )
 			return 0;
@@ -90,8 +87,8 @@ struct conv_layer_t
 
 	range_t map_to_output( int x, int y )
 	{
-		float a = x;
-		float b = y;
+		double a = x;
+		double b = y;
 		return
 		{
 			normalize_range( (a - extend_filter + 1) / stride, out.size.x, true ),
@@ -103,7 +100,7 @@ struct conv_layer_t
 		};
 	}
 
-	void activate( tensor_t<float>& in )
+	void activate( tensor_t<double>& in )
 	{
 		this->in = in;
 		activate();
@@ -120,13 +117,13 @@ struct conv_layer_t
 					{
 						point_t mapped = map_to_input( { 0, (uint16_t)x, (uint16_t)y, 0 }, 0 );
 						
-						float sum = 0;
+						double sum = 0;
 						for ( int i = 0; i < extend_filter; i++ )
 							for ( int j = 0; j < extend_filter; j++ )
 								for ( int z = 0; z < in.size.z; z++ )
 								{
-									float f = filters( filter, i, j, z );
-									float v = in(example, mapped.x + i, mapped.y + j, z );
+									double f = filters( filter, i, j, z );
+									double v = in(example, mapped.x + i, mapped.y + j, z );
 									sum += f*v;
 								}
 						out(example, x, y, filter ) = sum;
@@ -142,7 +139,7 @@ struct conv_layer_t
 		}
 	}
 
-	void fix_weights(float learning_rate)
+	void fix_weights(double learning_rate)
 	{
 
 		for ( int a = 0; a < filters.size.m; a++ )
@@ -150,7 +147,7 @@ struct conv_layer_t
 				for ( int j = 0; j < extend_filter; j++ )
 					for ( int z = 0; z < in.size.z; z++ )
 					{
-						float& w = filters(a, i, j, z );
+						double& w = filters(a, i, j, z );
 						gradient_t& grad = filter_grads(a, i, j, z );
 						// grad.grad /= in.size.m;    	Pytorch updates weights by adding gradients of all examples not taking their mean
 						w = update_weight( w, grad,1,false,learning_rate);
@@ -158,13 +155,13 @@ struct conv_layer_t
 					}
 		if(debug)
 		{
-			cout<<"*******new weights for float conv*****\n";
+			cout<<"*******new weights for double conv*****\n";
 			print_tensor(filters);
 		}
 		
 	}
 
-	void calc_grads( tensor_t<float>& grad_next_layer )
+	void calc_grads( tensor_t<double>& grad_next_layer )
 	{
 		for ( int k = 0; k < filter_grads.size.m; k++ )
 		{
@@ -173,7 +170,6 @@ struct conv_layer_t
 					for ( int z = 0; z < in.size.z; z++ )
 						filter_grads(k, i, j, z ).grad = 0;
 		}
-
 		
 		for(int e=0; e<in.size.m; e++){
 			for ( int x = 0; x < in.size.x; x++ )
@@ -183,7 +179,7 @@ struct conv_layer_t
 					range_t rn = map_to_output( x, y );
 					for ( int z = 0; z < in.size.z; z++ )
 					{
-						float sum_error = 0;
+						double sum_error = 0;
 						for ( int i = rn.min_x; i <= rn.max_x; i++ )
 						{
 							int minx = i * stride;
@@ -192,7 +188,7 @@ struct conv_layer_t
 								int miny = j * stride;
 								for ( int k = rn.min_z; k <= rn.max_z; k++ )
 								{
-									float w_applied = filters(k, x - minx, y - miny, z );
+									double w_applied = filters(k, x - minx, y - miny, z );
 									sum_error += w_applied * grad_next_layer(e, i, j, k );
 									filter_grads(k, x - minx, y - miny, z ).grad += in(e, x, y, z ) * grad_next_layer(e, i, j, k );
 									clip_gradients(clip_gradients_flag, filter_grads(k, x - minx, y - miny, z ).grad);
@@ -211,10 +207,9 @@ struct conv_layer_t
 			cout<<"*************grads filter**********\n";
 			print_tensor(filter_grads);
 
-			cout<<"*********grads_in for float conv********\n";
+			cout<<"*********grads_in for double conv********\n";
 			print_tensor(grads_in);
 		}
 	}
 };
-// #pragma pack(pop)
 		

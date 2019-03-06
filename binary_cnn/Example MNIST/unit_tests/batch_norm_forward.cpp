@@ -11,10 +11,10 @@ using namespace std;
 
 int main()
 {
-    tensor_t<float> in(2, 2, 2, 2), actual_output(2, 2, 2, 2), expected_output(2, 2, 2, 2);
-    float gamma, beta, epsilon;
+    tensor_t<double> in(2, 2, 2, 2), actual_output(2, 2, 2, 2), expected_output(2, 2, 2, 2);
+    double gamma, beta, epsilon;
 
-    std::vector<std::vector<std::vector<std::vector<float> > > > vect=
+    std::vector<std::vector<std::vector<std::vector<double> > > > vect=
         {{{{ 0.4083,  0.4021},
           {-0.0062, -0.0193}},
 

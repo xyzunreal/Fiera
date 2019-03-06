@@ -10,8 +10,8 @@ int num_batches = 6000/64;
 	
 struct case_t
 {
-	tensor_t<float> data;
-	tensor_t<float> out;
+	tensor_t<double> data;
+	tensor_t<double> out;
 };
 
 uint8_t* read_file( const char* szFile )
@@ -47,7 +47,7 @@ vector<case_t> read_test_cases()
 	
     int crnt_count = 0;
 
-	case_t c {tensor_t<float>( mini_batch_size, 28, 28, 1 ), tensor_t<float>(mini_batch_size, 10, 1, 1 )};
+	case_t c {tensor_t<double>( mini_batch_size, 28, 28, 1 ), tensor_t<double>(mini_batch_size, 10, 1, 1 )};
  
     for( int i = 0; i < case_count; i++ )
 {
@@ -98,9 +98,9 @@ int main()
     // scale_layer_t * layer10 = new scale_layer_t(layer7->out.size);
     softmax_layer_t * layer11 = new softmax_layer_t(layer7->out.size,true);
 
-    vector<float> cost_vec;
+    vector<double> cost_vec;
     cost_vec.push_back(0);
-    float learning_rate = 0.01;
+    double learning_rate = 0.01;
 
    
     bool flag = false;
@@ -123,14 +123,14 @@ int main()
                 layer11->activate(layer7->out);
 
                 
-                tensor_t<float> costs = cross_entropy(layer11->out, cases[batch_num].out, false);
-                float costs_avg = 0;
+                tensor_t<double> costs = cross_entropy(layer11->out, cases[batch_num].out, false);
+                double costs_avg = 0;
 
                 for(int e = 0; e<mini_batch_size; e++){
                     costs_avg += costs(e,0,0,0);
                 }
 
-                costs_avg /= (float)mini_batch_size;
+                costs_avg /= (double)mini_batch_size;
             
                 if(isnan(costs_avg)){
                     flag = true;
@@ -147,7 +147,7 @@ int main()
                 int tm = layer11->out.size.m;
                 int tx = layer11->out.size.x;
 
-                tensor_t<float> softmax_grads(tm,tx,1,1);
+                tensor_t<double> softmax_grads(tm,tx,1,1);
 
                 for(int i=0; i<tm; i++){
                     for(int j=0; j<tx; j++){
@@ -171,7 +171,7 @@ int main()
                 layer1->calc_grads(layer2->grads_in);
                 
                 
-                float diff_cost = cost_vec[cost_vec.size()-1] - cost_vec[cost_vec.size()-2];
+                double diff_cost = cost_vec[cost_vec.size()-1] - cost_vec[cost_vec.size()-2];
                 
                 // if(diff_cost < 0.00001){
                 //     learning_rate -= (learning_rate/20.0);

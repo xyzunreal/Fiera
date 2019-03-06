@@ -6,17 +6,17 @@
 struct batch_norm_layer_t
 {
 	layer_type type = layer_type::batch_norm;
-	tensor_t<float> in;
-	tensor_t<float> out;
-	tensor_t<float> in_hat;
-	tensor_t<float> grads_in, grads_in_hat;
-	float epsilon;
-    float gamma;
-    float beta;
+	tensor_t<double> in;
+	tensor_t<double> out;
+	tensor_t<double> in_hat;
+	tensor_t<double> grads_in, grads_in_hat;
+	double epsilon;
+    double gamma;
+    double beta;
 	gradient_t grads_beta;
 	gradient_t grads_gamma;
-    std::vector<float> u_mean;
-    std::vector<float> sigma, grads_sigma, grads_mean;
+    std::vector<double> u_mean;
+    std::vector<double> sigma, grads_sigma, grads_mean;
     bool adjust_variance;
 	bool debug,clip_gradients_flag;
 
@@ -42,7 +42,7 @@ struct batch_norm_layer_t
 
 	
 
-	void activate( tensor_t<float>& in )
+	void activate( tensor_t<double>& in )
 	{
 		this->in = in;
 		activate();
@@ -50,7 +50,7 @@ struct batch_norm_layer_t
 	
 	void cal_mean(){
         for(int i=0; i<in.size.z; i++){
-            float sum = 0;
+            double sum = 0;
             for(int j=0; j<in.size.m; j++){
                 for(int k = 0; k<in.size.x; k++){
                     for(int m = 0; m<in.size.y; m++){
@@ -65,7 +65,7 @@ struct batch_norm_layer_t
 	
 	void cal_sigma(){
          for(int i=0; i<in.size.z; i++){
-            float sum = 0;
+            double sum = 0;
             for(int j=0; j<in.size.m; j++){
                 for(int k = 0; k<in.size.x; k++){
                     for(int m = 0; m<in.size.y; m++){
@@ -110,7 +110,7 @@ struct batch_norm_layer_t
 	
 	
 	
-	void fix_weights(float learning_rate){
+	void fix_weights(double learning_rate){
 		grads_beta.grad /= out.size.m;
 		grads_gamma.grad /= out.size.m;
 		update_weight(beta,grads_beta,1,false, learning_rate);
@@ -126,17 +126,17 @@ struct batch_norm_layer_t
 		}
 	}
 
-	void calc_grads( tensor_t<float>& grad_next_layer)
+	void calc_grads( tensor_t<double>& grad_next_layer)
 	{
 		grads_beta.grad = 0;
 		grads_gamma.grad = 0;
 
 		for(int i=0; i<out.size.z; i++){
 
-			float temp_sigma = 0;
-			float temp_mean = 0;
-			float temp_mean1 = 0;
-			float temp_mean2 = 0;
+			double temp_sigma = 0;
+			double temp_mean = 0;
+			double temp_mean1 = 0;
+			double temp_mean2 = 0;
 
 			for(int e=0; e<out.size.m; e++){
 				for(int k=0; k<out.size.x; k++){

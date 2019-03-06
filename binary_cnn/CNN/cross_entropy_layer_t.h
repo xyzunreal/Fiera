@@ -1,6 +1,3 @@
-/*
-To calculate cross entropy loss
-*/
 
 #pragma once
 #include <math.h>
@@ -11,10 +8,10 @@ To calculate cross entropy loss
 #include "gradient_t.h"
 #include "tensor_bin_t.h"
 using namespace std;
-float cross_entropy(tensor_t<float>& predicted ,tensor_t<float>& actual, bool debug=false){
+double cross_entropy(tensor_t<double>& predicted ,tensor_t<double>& actual, bool debug=false){
         int index;
-        tensor_t<float> temp(predicted.size.m, 1, 1, 1);
-        float cost = 0.0;
+        tensor_t<double> temp(predicted.size.m, 1, 1, 1);
+        double cost = 0.0;
         if(debug)
         {
             cout<<"***********predicted*********";

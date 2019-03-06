@@ -3,8 +3,8 @@
 
 struct gradient_t
 {
-	float grad;
-	float oldgrad;
+	double grad;
+	double oldgrad;
 	gradient_t()
 	{
 		grad = 0;
@@ -19,7 +19,7 @@ struct gradient_t
 		return clone;
 	}
 
-	gradient_t operator/( float num )
+	gradient_t operator/( double num )
 	{
 		gradient_t clone( *this );
 		clone.grad /= num;
@@ -27,7 +27,7 @@ struct gradient_t
 		return clone;
 	}	
 
-	gradient_t operator*( float num )
+	gradient_t operator*( double num )
 	{
 		gradient_t clone( *this );
 		clone.grad *= num;

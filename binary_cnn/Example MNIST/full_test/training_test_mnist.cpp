@@ -14,8 +14,8 @@ int num_batches = 6000/mini_batch_size;
 	
 struct case_t
 {
-	tensor_t<float> data;
-	tensor_t<float> out;
+	tensor_t<double> data;
+	tensor_t<double> out;
 };
 
 uint8_t* read_file( const char* szFile )
@@ -51,7 +51,7 @@ vector<case_t> read_test_cases()
 	
     int crnt_count = 0;
 
-	case_t c {tensor_t<float>( mini_batch_size, 28, 28, 1 ), tensor_t<float>(mini_batch_size, 10, 1, 1 )};
+	case_t c {tensor_t<double>( mini_batch_size, 28, 28, 1 ), tensor_t<double>(mini_batch_size, 10, 1, 1 )};
  
     for( int i = 0; i < case_count; i++ )
 	{
@@ -99,9 +99,9 @@ int main()
     // scale_layer_t * layerS = new scale_layer_t(layer5->out.size);
     softmax_layer_t * layer8 = new softmax_layer_t(layer5->out.size, false, false, false);
 
-    vector<float> cost_vec;
+    vector<double> cost_vec;
     cost_vec.push_back(0);
-    float learning_rate = 0.001;
+    double learning_rate = 0.001;
 
 
     for(int epoch = 0; epoch<50; epoch++){
@@ -131,21 +131,21 @@ int main()
                 // print_tensor(layer5->out);
                 // }
                 
-                // tensor_t<float> costs = cross_entropy(layer6->out, cases[batch_num].out);
-                // float costs_avg = 0;
+                // tensor_t<double> costs = cross_entropy(layer6->out, cases[batch_num].out);
+                // double costs_avg = 0;
 
                 // for(int e = 0; e<mini_batch_size; e++){
                 //     costs_avg += costs(e,0,0,0);
                 // }
 
-                // costs_avg /= (float)mini_batch_size;
+                // costs_avg /= (double)mini_batch_size;
                 
                 // cost_vec.push_back(costs_avg);
                 
 
-                float l1 = cross_entropy(layer8->out, cases[batch_num].out);
-                float l2 = l1;
-                // float l2 = cross_entropy(layer6->out, cases[batch_num].out)(1, 0, 0, 0);
+                double l1 = cross_entropy(layer8->out, cases[batch_num].out);
+                double l2 = l1;
+                // double l2 = cross_entropy(layer6->out, cases[batch_num].out)(1, 0, 0, 0);
                 // cout<<"loss for img1 ";
                 // cout<<l1<<endl;
                 // cout<<"loss for img 2";
@@ -175,7 +175,7 @@ int main()
                 layer1->calc_grads(layer2->grads_in);
                 
                 
-                // float diff_cost = cost_vec[cost_vec.size()-1] - cost_vec[cost_vec.size()-2];
+                // double diff_cost = cost_vec[cost_vec.size()-1] - cost_vec[cost_vec.size()-2];
                 
                 // if ( diff_cost < 0.00001 )     // Stops training if cost decreases very slow
                 //   break;

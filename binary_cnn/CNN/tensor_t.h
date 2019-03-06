@@ -6,8 +6,9 @@
 #include <cmath>
 #include <string.h>
 using namespace std;
+
 // Checks equality of two floating point numbers upto two decimal points.
-bool areEqual(float a,float b) {
+bool areEqual(double a,double b) {
 	return trunc(100. * a) == trunc(100. * b);
 }
 
@@ -17,18 +18,6 @@ struct tensor_t
 	T * data;
 
 	tdsize size;
-
-				/*to be deleted*/
-	tensor_t(int _x, int _y, int _z){
-		data = new T[_x * _y * _z];
-		memset(data,0,sizeof(T)*_x*_y*_z);
-		size.x = _x;
-		size.y = _y;
-		size.z = _z;
-
-	}
-				/*to be deleted*/
-
 
 	tensor_t(int _m, int _x, int _y, int _z)
 	{
@@ -62,12 +51,8 @@ struct tensor_t
 	tensor_t<T> operator-( tensor_t<T>& other )
 	{
 		tensor_t<T> clone( *this );
-		
-		for ( int i = 0; i < other.size.x * other.size.y * other.size.z* other.size.m; i++ ){
+		for ( int i = 0; i < other.size.x * other.size.y * other.size.z* other.size.m; i++ )
 			clone.data[i] -= other.data[i];
-		}
-		
-		
 		return clone;
 	}
 
@@ -76,7 +61,7 @@ struct tensor_t
 		tensor_t<T> t1( *this );	
 		bool equal = false;
 		for ( int i = 0; i < t1.size.x * t1.size.y * t1.size.z* t1.size.m; i++ )
-			if (!areEqual(t1.data[i], t2.data[i]))	return false;   // Cannot use '==' because of precision loss
+			if ( !areEqual( t1.data[i], t2.data[i] ) )	return false;   // Cannot use '==' because of precision loss
 		return true;	
 	}
 
@@ -91,6 +76,7 @@ struct tensor_t
 
 	T& get(int _m, int _x, int _y, int _z)
 	{
+		// data is accessed as ( m, x, y, z )
 		assert( _m >=0 &&_x >= 0 && _y >= 0 && _z >= 0 );
 		assert( _m < size.m && _x < size.x && _y < size.y && _z < size.z );
 
@@ -103,14 +89,14 @@ struct tensor_t
 
 	void from_vector( std::vector<std::vector<std::vector<std::vector<T> > > > data )
 	{
-		// data is [m][z][y][x]
+		// data is saved as [m][z][y][x]
 
 		int m = data.size();
 		int z = data[0].size();
 		int y = data[0][0].size();
 		int x = data[0][0][0].size();
 
-		for(int tm = 0; tm<m; tm++)
+		for( int tm = 0; tm<m; tm++ )
 			for ( int i = 0; i < x; i++ )
 				for ( int j = 0; j < y; j++ )
 					for ( int k = 0; k < z; k++ )
@@ -123,7 +109,7 @@ struct tensor_t
 	}
 };
 
-void print_tensor( tensor_t<float>& data )
+void print_tensor( tensor_t<double>& data )
 {
 	int mx = data.size.x;
 	int my = data.size.y;
@@ -140,10 +126,7 @@ void print_tensor( tensor_t<float>& data )
 			for ( int y = 0; y < my; y++ )
 			{
 				for ( int x = 0; x < mx; x++ )
-				{
-					// indexing changed
-					printf( "%.4f \t", (float)data(tm, x, y, z));
-				}
+					printf( "%.4f \t", (double)data(tm, x, y, z));
 				printf( "\n" );
 			}
 		}
@@ -166,10 +149,7 @@ void print_tensor(tensor_t<gradient_t>& data){
 			for ( int y = 0; y < my; y++ )
 			{
 				for ( int x = 0; x < mx; x++ )
-				{
-					// indexing changed
-					printf( "%.4f \t", (float)data(tm, x, y, z).grad);
-				}
+					printf( "%.4f \t", (double)data(tm, x, y, z).grad);
 				printf( "\n" );
 			}
 		}
@@ -181,14 +161,14 @@ void print_tensor_size(tdsize data){
 	cout<<data.m<<" "<<data.x<<" "<<data.y<<" "<<data.z<<endl;
 }
 
-static tensor_t<float> to_tensor( std::vector<std::vector<std::vector<std::vector<float> > > > data )
+static tensor_t<double> to_tensor( std::vector<std::vector<std::vector<std::vector<double> > > > data )
 {
 	int m = data.size();
 	int z = data[0].size();
 	int y = data[0][0].size();
 	int x = data[0][0][0].size();
 
-	tensor_t<float> t(m, x, y, z );
+	tensor_t<double> t(m, x, y, z );
 
 	for(int tm = 0; tm<m; tm++)
 		for ( int i = 0; i < x; i++ )

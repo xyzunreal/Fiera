@@ -1,40 +1,40 @@
-/*Implement prelu instead of relu activation function
+/*Implement parametric ReLU activation function
    It follows:
-    f(x) = alpha * x	for x < 0
-    f(x) = x		for x >= 0
+    f(x) = alpha * x	if x < 0
+    f(x) = x			if x >= 0
     where alpha is a learnable parameter
 
 */
 #pragma once
 #include "layer_t.h"
 
-
-
-/*
- * referencing paramteric-Relu
- * args::
- * 	in(tensor)::accepts the input layer
- *
- * return:: 
- * 	out(tensor)::layer with elements as max(x,a*x) 
- * 
- * 	
-*/
-	
-#pragma pack(push, 1)
 struct prelu_layer_t
 {
 	layer_type type = layer_type::prelu;
-	tensor_t<float> grads_in;
-	tensor_t<float> in;
-	tensor_t<float> out;
-	float alpha;
+	tensor_t<double> grads_in;
+	tensor_t<double> in;
+	tensor_t<double> out;
+	double alpha;
 	gradient_t grads_alpha;
-	float p_relu_zero;
+	double p_relu_zero;		// Differential of PReLU is undefined at 0. 'p_relu_zero' defines value to be used instead.
 	bool debug,clip_gradients_flag;
 
-
 	prelu_layer_t( tdsize in_size, bool clip_gradients_flag = true, bool flag_debug = false ):
+	/**
+	* 
+	* Parameters
+	* ----------
+	* in_size : (int m, int x, int y, int z)
+	* 		Size of input matrix.
+	*
+	* clip_gradients_flag : bool
+	* 		Whether gradients have to be clipped or not
+	* 
+	* debug_flag : bool
+	* 		Whether to print variables for debugging purpose
+	*
+	**/
+	
 		in( in_size.m, in_size.x, in_size.y, in_size.z ),
 		out(in_size.m, in_size.x, in_size.y, in_size.z ),
 		grads_in( in_size.m, in_size.x, in_size.y, in_size.z )
@@ -47,20 +47,22 @@ struct prelu_layer_t
 
 
 
-	void activate( tensor_t<float>& in )
+	void activate( tensor_t<double>& in )
 	{
 		this->in = in;
 		activate();
 	}
 
 	void activate()
+
+	//  `activate` FORWARD PROPOGATES AND SAVES THE RESULT IN `out` VARIABLE.
 	{
 		for ( int tm = 0; tm < in.size.m; tm++ )
 			for ( int i = 0; i < in.size.x; i++ )
 				for ( int j = 0; j < in.size.y; j++ )
 					for ( int k = 0; k < in.size.z; k++ )
 					{
-						float x = in( tm, i, j, k);
+						double x = in( tm, i, j, k);
 						if ( x < 0 )
 							x = x*alpha;
 						out( tm, i, j, k) = x;
@@ -72,8 +74,9 @@ struct prelu_layer_t
 		}
 	}
 
-	void fix_weights(float learning_rate)
-	{	// grads_alpha contains sum of gradients of alphas for all examples. 
+	void fix_weights(double learning_rate)
+	{
+		// grads_alpha contains sum of gradients of alphas for all examples. 
 		grads_alpha.grad /= out.size.m;
 		alpha = update_weight(alpha,grads_alpha,1,false, learning_rate);
 		update_gradient(grads_alpha);
@@ -85,7 +88,7 @@ struct prelu_layer_t
 		}
 	}
 
-	void calc_grads( tensor_t<float>& grad_next_layer )
+	void calc_grads( tensor_t<double>& grad_next_layer )
 	{
 		for ( int e = 0; e < in.size.m; e++ ){
 			for ( int i = 0; i < in.size.x; i++ ){
@@ -106,7 +109,6 @@ struct prelu_layer_t
 						clip_gradients(clip_gradients_flag, grads_in(e,i,j,k));
 					}
 				}
-			
 			}
 		}
 
@@ -117,7 +119,5 @@ struct prelu_layer_t
 			cout<<"*********grad alpha***********\n";
 			cout<<grads_alpha.grad<<endl;
 		}
-							
 	}
 };
-#pragma pack(pop)

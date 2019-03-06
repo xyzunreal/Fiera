@@ -1,17 +1,16 @@
 #pragma once
 #include "layer_t.h"
-#pragma pack(push, 1)
 
 struct scale_layer_t
 {
     layer_type type = layer_type::scale;
-    tensor_t<float> grads_in;
-    tensor_t<float> in;
-    tensor_t<float> out;
+    tensor_t<double> grads_in;
+    tensor_t<double> in;
+    tensor_t<double> out;
     gradient_t grads_scale;
     bool debug,clip_gradients_flag;
 
-    float s_param;     // `s_param` REPRESENT SCALE VALUE WHICH IS SINGLE LEARNABLE PARAMETER.
+    double s_param;     // scaler learnable parameter
     tensor_t<gradient_t> gradients;
 
     scale_layer_t(tdsize in_size,bool clip_gradients_flag = true, bool debug_flag = false)        // EXPECTS 1D INPUT
@@ -22,12 +21,12 @@ struct scale_layer_t
         gradients(in_size.m, in_size.x, 1, 1)
         
     {
-        s_param = 0.001;
+        s_param = 0.001; 
         this->debug = debug_flag;    
         this->clip_gradients_flag = clip_gradients_flag;
     }
 
-    void activate( tensor_t<float> & in )
+    void activate( tensor_t<double> & in )
     {
         this->in = in;
         activate();
@@ -38,7 +37,6 @@ struct scale_layer_t
 		for (int tm = 0; tm < in.size.m; tm++)
 			for (int i = 0; i < in.size.x; i++){
 				out(tm,i, 0, 0) = s_param * in(tm, i, 0, 0);
-                // cout<<s_param<<' '<<in(tm, i, 0, 0)<<' '<<s_param * in(tm, i, 0, 0)<<endl;
             }
 
         if(debug)
@@ -46,11 +44,9 @@ struct scale_layer_t
             cout<<"*****output for scale***********\n";
             print_tensor(out);
         }
-        // cout<<"************flag********\n";
-	    // cout<<out.size.m<<' '<<out.size.x<<' '<<out.size.y<<" "<<out.size.z<<endl;
     }
 
-    void fix_weights(float learning_rate)
+    void fix_weights(double learning_rate)
     {
         // grads_scale contains sum of gradients of s_param for all examples. 
 		grads_scale.grad /= out.size.m;
@@ -64,18 +60,16 @@ struct scale_layer_t
         }
     }
 
-    void calc_grads(tensor_t<float>& grad_next_layer)
+    void calc_grads(tensor_t<double>& grad_next_layer)
     {
         grads_scale.grad = 0;
-        
-        for(int i=0; i<out.size.m; i++){
+        for(int i=0; i<out.size.m; i++)
             for(int j=0; j<out.size.x; j++){
                 grads_scale.grad += grad_next_layer(i,j,0,0)*in(i,j,0,0); 
                 grads_in(i,j,0,0) = grad_next_layer(i,j,0,0)*s_param;
                 clip_gradients(clip_gradients_flag, grads_scale.grad);
                 clip_gradients(clip_gradients_flag, grads_in(i,j,0,0));
             }
-        }
         if(debug)
         {
             cout<<"***********grads_in for scale********\n";
@@ -87,4 +81,3 @@ struct scale_layer_t
     }
 
 };
-#pragma pack(pop)
