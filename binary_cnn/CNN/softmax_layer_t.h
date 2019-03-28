@@ -10,13 +10,12 @@
 struct softmax_layer_t
 {
 	layer_type type = layer_type::softmax;
-	tensor_t<double> in;
-	tensor_t<double> out;
-	tensor_t<double> grads_in;
-	bool normalize;
-	bool debug;
-	bool clip_gradients_flag;	
-	softmax_layer_t( tdsize in_size, bool normalize=true,bool clip_gradients_flag = true, bool debug_flag = false):
+	tensor_t<float> grads_in;
+	tensor_t<float> in;
+	tensor_t<float> out;
+	bool to_normalize;
+	bool debug, clip_gradients_flag;	
+	softmax_layer_t( tdsize in_size, bool to_normalize=true,bool clip_gradients_flag = true, bool debug_flag = false):
 		in( in_size.m, in_size.x, 1, 1),
 		out( in_size.m, in_size.x, 1, 1 ),
 		grads_in( in_size.m, in_size.x, 1, 1)

@@ -48,7 +48,7 @@ static void calc_grads( layer_t* layer, tensor_t<double>& grad_next_layer )
 	}
 }
 
-static void fix_weights( layer_t* layer ,double learning_rate)
+static void fix_weights( layer_t* layer ,float learning_rate = 0.1)
 {
 	switch ( layer->type )
 	{
