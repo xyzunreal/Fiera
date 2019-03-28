@@ -41,7 +41,7 @@ struct tensor_bin_t
 				 _x );
 	}
 
-	void copy_from( vector < vector < vector < vector < double> > > > data )
+	void copy_from( vector < vector < vector < vector < float> > > > data )
 	{
 		// data is saved as [m][z][y][x]
 

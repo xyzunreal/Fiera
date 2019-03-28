@@ -11,8 +11,8 @@ using namespace std;
 
 int main()
 {
-    tensor_t<double> filter_grads(2, 2, 2, 2), filters(2, 2, 2, 2), expected_output(2, 2, 2, 2), grad_next_layer(2, 2, 2, 2), diff_weights(2,2,2,2);
-    std::vector<std::vector<std::vector<std::vector<double> > > > vect=
+    tensor_t<float> filter_grads(2, 2, 2, 2), filters(2, 2, 2, 2), expected_output(2, 2, 2, 2), grad_next_layer(2, 2, 2, 2), diff_weights(2,2,2,2);
+    std::vector<std::vector<std::vector<std::vector<float> > > > vect=
 
       {{{{ 0.1515, -0.3932},
           {-0.2842, -0.0689}},

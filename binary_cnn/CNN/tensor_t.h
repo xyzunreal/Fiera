@@ -8,7 +8,7 @@
 using namespace std;
 
 // Checks equality of two floating point numbers upto two decimal points.
-bool areEqual(double a,double b) {
+bool areEqual(float a,float b) {
 	return trunc(100. * a) == trunc(100. * b);
 }
 
@@ -109,7 +109,7 @@ struct tensor_t
 	}
 };
 
-void print_tensor( tensor_t<double>& data )
+void print_tensor( tensor_t<float>& data )
 {
 	int mx = data.size.x;
 	int my = data.size.y;
@@ -126,7 +126,7 @@ void print_tensor( tensor_t<double>& data )
 			for ( int y = 0; y < my; y++ )
 			{
 				for ( int x = 0; x < mx; x++ )
-					printf( "%.4f \t", (double)data(tm, x, y, z));
+					printf( "%.4f \t", (float)data(tm, x, y, z));
 				printf( "\n" );
 			}
 		}
@@ -149,7 +149,7 @@ void print_tensor(tensor_t<gradient_t>& data){
 			for ( int y = 0; y < my; y++ )
 			{
 				for ( int x = 0; x < mx; x++ )
-					printf( "%.4f \t", (double)data(tm, x, y, z).grad);
+					printf( "%.4f \t", (float)data(tm, x, y, z).grad);
 				printf( "\n" );
 			}
 		}
@@ -161,14 +161,14 @@ void print_tensor_size(tdsize data){
 	cout<<data.m<<" "<<data.x<<" "<<data.y<<" "<<data.z<<endl;
 }
 
-static tensor_t<double> to_tensor( std::vector<std::vector<std::vector<std::vector<double> > > > data )
+static tensor_t<float> to_tensor( std::vector<std::vector<std::vector<std::vector<float> > > > data )
 {
 	int m = data.size();
 	int z = data[0].size();
 	int y = data[0][0].size();
 	int x = data[0][0][0].size();
 
-	tensor_t<double> t(m, x, y, z );
+	tensor_t<float> t(m, x, y, z );
 
 	for(int tm = 0; tm<m; tm++)
 		for ( int i = 0; i < x; i++ )

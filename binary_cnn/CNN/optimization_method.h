@@ -4,10 +4,10 @@
 #define MOMENTUM 0.6
 #define WEIGHT_DECAY 0.000
 
-static double update_weight( double &w, gradient_t& grad, double multp, bool clip, double learning_rate)
+static float update_weight( float &w, gradient_t& grad, float multp, bool clip, float learning_rate)
 {
 
-	double m = (grad.grad + grad.oldgrad * MOMENTUM);
+	float m = (grad.grad + grad.oldgrad * MOMENTUM);
 	w -= learning_rate  * m * multp +
 		 learning_rate * WEIGHT_DECAY * w;
 		 
@@ -22,7 +22,7 @@ static void update_gradient( gradient_t& grad )
 	grad.oldgrad = (grad.grad + grad.oldgrad * MOMENTUM);
 }
 
-void clip_gradients(bool chk, double & gradient_value){
+void clip_gradients(bool chk, float & gradient_value){
 
 	if(chk and gradient_value > 1e2)
 		gradient_value = 1e2;

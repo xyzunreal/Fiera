@@ -1,3 +1,7 @@
+/*
+To implement softmax 
+*/
+
 #pragma once
 #include <math.h>
 #include <float.h>
@@ -7,6 +11,7 @@
 #include "gradient_t.h"
 #include "tensor_bin_t.h"
 
+#pragma pack(push, 1)
 struct softmax_layer_t
 {
 	layer_type type = layer_type::softmax;
@@ -20,12 +25,12 @@ struct softmax_layer_t
 		out( in_size.m, in_size.x, 1, 1 ),
 		grads_in( in_size.m, in_size.x, 1, 1)
 	{
-		this->normalize = normalize;
+		this->to_normalize = to_normalize;
 		this->debug = debug_flag;
 		this->clip_gradients_flag = clip_gradients_flag;
 	}
 	
-	void activate( tensor_t<double>& in )
+	void activate( tensor_t<float>& in )
 	{	
 		this->in = in;
 		activate();
@@ -34,8 +39,8 @@ struct softmax_layer_t
 	void normalize_in()
 	{
 		for(int tm=0; tm<in.size.m; tm++){
-			double minm = 1e7;
-			double maxm = -1e7;
+			float minm = 1e7;
+			float maxm = -1e7;
 			for(int i=0; i<in.size.x; i++){
 				minm = min(in(tm,i,0,0), minm);
 				maxm = max(in(tm,i,0,0), maxm);
@@ -43,27 +48,30 @@ struct softmax_layer_t
 
 			for(int i=0; i<in.size.x; i++){
 				in(tm,i,0,0) = (in(tm,i,0,0) - minm)/(maxm-minm);
+			// in(tm,i,0,0) = in(tm,i,0,0) - maxm;
 			}
 		}
 	}
 	
 	void activate()
 	{	
-		if (normalize)
+		if (to_normalize)
 			normalize_in();
 		
 
-		double temp1, sum = 0;
+		float temp1, sum = 0;
 		for ( int tm = 0; tm < in.size.m; tm++ ){
 			sum = 0;
 			for ( int i = 0; i < in.size.x; i++ )
 			{
 				temp1= in(tm, i, 0, 0);
-				sum += exp(temp1);
+				// sum += exp(temp1);
+				sum += max(exp(temp1), float(1e-7));
 			}
 		
 			for ( int i = 0; i < in.size.x; i++ )
-				out(tm, i, 0, 0) = exp( in( tm, i, 0, 0 ) ) / sum;
+				// out(tm, i, 0, 0) = exp(in(tm, i, 0, 0);
+				out(tm, i, 0, 0) = max(exp(in(tm, i, 0, 0)), float(1e-7))/sum;		
 		}
 		
 		if(debug)
@@ -74,9 +82,14 @@ struct softmax_layer_t
 	}
 	
 	
-	void calc_grads( tensor_t<double>& grad_next_layer )
+	void fix_weights(float learning_rate)
 	{
-		double m = out.size.m;
+		
+	}
+	
+	void calc_grads( tensor_t<float>& grad_next_layer )
+	{
+		float m = out.size.m;
 		for(int e = 0; e<out.size.m; e++){
 			int idx;
 			for(int i=0; i<out.size.x; i++){
@@ -101,3 +114,4 @@ struct softmax_layer_t
 		}
 	}	
 };
+#pragma pack(pop)

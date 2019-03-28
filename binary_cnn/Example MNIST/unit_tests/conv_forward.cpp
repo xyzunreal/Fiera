@@ -11,8 +11,8 @@ using namespace std;
 
 int main()
 {
-    tensor_t<double> temp_in(2, 3, 3, 2), filters(2, 2, 2, 2), expected_output(2, 2, 2, 2);
-    std::vector<std::vector<std::vector<std::vector<double> > > > vect=
+    tensor_t<float> temp_in(2, 3, 3, 2), filters(2, 2, 2, 2), expected_output(2, 2, 2, 2);
+    std::vector<std::vector<std::vector<std::vector<float> > > > vect=
 
         {{{{-2.9662, -1.0606, -0.3090},
           { 0.9343, -0.3821, -1.1669},

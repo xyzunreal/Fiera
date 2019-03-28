@@ -11,12 +11,12 @@
 struct prelu_layer_t
 {
 	layer_type type = layer_type::prelu;
-	tensor_t<double> grads_in;
-	tensor_t<double> in;
-	tensor_t<double> out;
-	double alpha;
+	tensor_t<float> grads_in;
+	tensor_t<float> in;
+	tensor_t<float> out;
+	float alpha;
 	gradient_t grads_alpha;
-	double p_relu_zero;		// Differential of PReLU is undefined at 0. 'p_relu_zero' defines value to be used instead.
+	float p_relu_zero;		// Differential of PReLU is undefined at 0. 'p_relu_zero' defines value to be used instead.
 	bool debug,clip_gradients_flag;
 
 	prelu_layer_t( tdsize in_size, bool clip_gradients_flag = true, bool flag_debug = false ):
@@ -47,7 +47,7 @@ struct prelu_layer_t
 
 
 
-	void activate( tensor_t<double>& in )
+	void activate( tensor_t<float>& in )
 	{
 		this->in = in;
 		activate();
@@ -62,7 +62,7 @@ struct prelu_layer_t
 				for ( int j = 0; j < in.size.y; j++ )
 					for ( int k = 0; k < in.size.z; k++ )
 					{
-						double x = in( tm, i, j, k);
+						float x = in( tm, i, j, k);
 						if ( x < 0 )
 							x = x*alpha;
 						out( tm, i, j, k) = x;
@@ -74,7 +74,7 @@ struct prelu_layer_t
 		}
 	}
 
-	void fix_weights(double learning_rate)
+	void fix_weights(float learning_rate)
 	{
 		// grads_alpha contains sum of gradients of alphas for all examples. 
 		grads_alpha.grad /= out.size.m;
@@ -88,7 +88,7 @@ struct prelu_layer_t
 		}
 	}
 
-	void calc_grads( tensor_t<double>& grad_next_layer )
+	void calc_grads( tensor_t<float>& grad_next_layer )
 	{
 		for ( int e = 0; e < in.size.m; e++ ){
 			for ( int i = 0; i < in.size.x; i++ ){

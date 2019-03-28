@@ -15,7 +15,7 @@
 //using namespace std;
 
 
-static void calc_grads( layer_t* layer, tensor_t<double>& grad_next_layer )
+static void calc_grads( layer_t* layer, tensor_t<float>& grad_next_layer )
 {
 	switch ( layer->type )
 	{
@@ -78,7 +78,7 @@ static void fix_weights( layer_t* layer ,float learning_rate = 0.1)
 	}
 }
 
-static void activate( layer_t* layer, tensor_t<double>& in )
+static void activate( layer_t* layer, tensor_t<float>& in )
 {
 	switch ( layer->type )
 	{

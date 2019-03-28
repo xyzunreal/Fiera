@@ -13,17 +13,17 @@ int main()
 {
     // srand(7);   
 	vector<layer_t*> layers;
-    tensor_t<double> temp_in(2, 3,3,2), predict(2,4,1,1);
+    tensor_t<float> temp_in(2, 3,3,2), predict(2,4,1,1);
     // Creating image for testing purpose
     // for(int img=0;img<2;img++)
     //     for(int k=0; k<1; k++)
     //         for(int i=0; i<3; i++)
     //             for(int j=0; j<3; j++)
-    //                 temp_in(img, i,j,k) = 1.0f * (rand()) / double( RAND_MAX );
+    //                 temp_in(img, i,j,k) = 1.0f * (rand()) / float( RAND_MAX );
     //                 // temp_in(img, i, j, k) = i*j*k-10;
 
 
-   std::vector<std::vector<std::vector<std::vector<double> > > > vect=
+   std::vector<std::vector<std::vector<std::vector<float> > > > vect=
             {{{{-0.1782, -0.2595, -0.0145},
           {-0.3839, -2.9662, -1.0606},
           {-0.3090,  0.9343,  1.6243}},
@@ -103,11 +103,11 @@ int main()
     // prelu_layer_t * layer9 = new prelu_layer_t(layer8->out.size);
     // scale_layer_t * layer10 = new scale_layer_t(layer9->out.size);
     softmax_layer_t * layer11 = new softmax_layer_t(layer8->out.size,false);
-    // tensor_t<double> cost(1,1,1,1); 
+    // tensor_t<float> cost(1,1,1,1); 
 
    /*************************************************************************hard coded code****************************************************************************/
     
-    vector<double> cost_vec;
+    vector<float> cost_vec;
     cost_vec.push_back(0);
     float learning_rate = 0.1;
 
@@ -138,8 +138,8 @@ int main()
         layer11->activate(layer8->out);
         // cout<<"***********softmax output*******\n";
         // print_tensor(layer11->out);
-        double l1 = cross_entropy(layer11->out, predict);
-        double l2 = cross_entropy(layer11->out, predict);
+        float l1 = cross_entropy(layer11->out, predict);
+        float l2 = cross_entropy(layer11->out, predict);
         cout<<"loss for img1 ";
         cout<<l1<<endl;
         cout<<"loss for img 2";
@@ -182,7 +182,7 @@ int main()
         // print_tensor(layer1->filter_grads);
         
         
-        //~ double diff_cost = abs(cost_vec[cost_vec.size()-1] - cost_vec[cost_vec.size()-2]);
+        //~ float diff_cost = abs(cost_vec[cost_vec.size()-1] - cost_vec[cost_vec.size()-2]);
         //~ if(diff_cost < 1e-7){
             //~ break;
         //~ }
@@ -272,7 +272,7 @@ int main()
 
     //     int tm = layer11->out.size.m;
     //     int tx = layer11->out.size.x;
-    //     tensor_t<double> softmax_grads(tm,tx,1,1);
+    //     tensor_t<float> softmax_grads(tm,tx,1,1);
 
     //     for(int i=0; i<tm; i++)
     //         for(int j=0; j<tx; j++)

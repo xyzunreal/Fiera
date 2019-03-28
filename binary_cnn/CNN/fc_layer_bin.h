@@ -13,18 +13,18 @@ using namespace std;
 struct fc_layer_bin_t
 {
 	layer_type type = layer_type::fc_bin;
-	tensor_t<double> grads_in; 
-	tensor_t<double> in;
-	tensor_t<double> out;
+	tensor_t<float> grads_in; 
+	tensor_t<float> in;
+	tensor_t<float> out;
     tensor_bin_t in_bin;    // AFTER BINARIZATION OF 'in' (1st BINARIZATION)
 	tensor_bin_t in_bin2;	// AFTER BINARIZATION OF 'in_bin' (2nd BINARIZATION)
-	tensor_t<double> al_b;	// α1 * in_bin + α2 * in_bin2
+	tensor_t<float> al_b;	// α1 * in_bin + α2 * in_bin2
     tensor_bin_t out_bin;
-    vector<double> alpha;	// alpha is calculated for each image. 
-	vector<double> alpha2;
+    vector<float> alpha;	// alpha is calculated for each image. 
+	vector<float> alpha2;
 	bool debug,clip_gradients_flag;
-	std::vector<double> input;
-	tensor_t<double> weights;
+	std::vector<float> input;
+	tensor_t<float> weights;
     tensor_bin_t weights_bin;
 	tensor_t<gradient_t> gradients;
 
@@ -65,18 +65,18 @@ struct fc_layer_bin_t
 		for ( int i = 0; i < out_size; i++ )
 			for ( int h = 0; h < in_size.x*in_size.y*in_size.z; h++ )
 			{
-				weights(h,i, 0, 0 ) =  (1.0f * (rand()-rand())) / double( RAND_MAX );  // Generates a random number between -1 and 1 
+				weights(h,i, 0, 0 ) =  (1.0f * (rand()-rand())) / float( RAND_MAX );  // Generates a random number between -1 and 1 
 				weights_bin.data[weights_bin(h, i, 0, 0)] = 0;
 			}
 		if(debug)
 		{
-			cout<<"***********double weights for fc bin ************\n";
+			cout<<"***********float weights for fc bin ************\n";
 			print_tensor(weights);
 		}
 		
 	}
 
-	void activate( tensor_t<double>& in )
+	void activate( tensor_t<float>& in )
 	{
 		this->in = in;
 		activate();
@@ -106,7 +106,7 @@ struct fc_layer_bin_t
 		// CALCULATE alpha1		
 		for(int e = 0; e < in.size.m; e++)
 		{
-			double sum = 0;
+			float sum = 0;
 			for(int x = 0; x < in.size.x; x++)
 				for(int y = 0; y < in.size.y; y++)
 					for(int z = 0; z < in.size.z; z++)
@@ -121,15 +121,15 @@ struct fc_layer_bin_t
 		}
 
 		// CALCULATE alpha2
-		tensor_t<double> temp(in.size.m, in.size.x, in.size.y, in.size.z);
+		tensor_t<float> temp(in.size.m, in.size.x, in.size.y, in.size.z);
 		for(int e = 0; e<in.size.m; e++)
 		{
-			double sum = 0;
+			float sum = 0;
 			for(int x=0; x<in.size.x; x++)
 				for(int y=0; y<in.size.y; y++)
 					for(int z=0; z<in.size.z; z++){
 
-						temp(e,x,y,z) = in(e,x,y,z) - alpha[e]*(in_bin(e,x,y,z)==1 ? double(1) : double(-1) );
+						temp(e,x,y,z) = in(e,x,y,z) - alpha[e]*(in_bin(e,x,y,z)==1 ? float(1) : float(-1) );
 						in_bin2.data[in_bin2(e,x,y,z)] = temp(e,x,y,z)>=0? 1 : 0;
 						sum += abs(temp(e,x,y,z));
 				}
@@ -153,8 +153,8 @@ struct fc_layer_bin_t
 			for(int x=0; x<in.size.x; x++)
 				for(int y=0; y<in.size.y; y++)
 					for(int z=0; z<in.size.z; z++){
-						al_b(e, x, y, z) = alpha[e] * (in_bin(e, x, y, z) == 1 ? double(1) : double(-1) ) +
-								alpha2[e] * (in_bin2(e, x, y, z) == 1 ? double(1) : double(-1) );
+						al_b(e, x, y, z) = alpha[e] * (in_bin(e, x, y, z) == 1 ? float(1) : float(-1) ) +
+								alpha2[e] * (in_bin2(e, x, y, z) == 1 ? float(1) : float(-1) );
 					}
 	
 		if(debug)
@@ -192,7 +192,7 @@ struct fc_layer_bin_t
 		
 		for( int e = 0; e < in.size.m; e++)
 			for(int n = 0; n < out.size.x; n++ ){
-				double sum=0, sum2=0;
+				float sum=0, sum2=0;
 				for ( int i = 0; i < in.size.x; i++ )
 					for ( int j = 0; j < in.size.y; j++ )
 						for ( int z = 0; z < in.size.z; z++ )
@@ -218,7 +218,7 @@ struct fc_layer_bin_t
 		}
 	}
 
-	void fix_weights(double learning_rate)
+	void fix_weights(float learning_rate)
 	{
 		for ( int n = 0; n < out.size.x; n++ )
 		{
@@ -227,7 +227,7 @@ struct fc_layer_bin_t
 					for ( int z = 0; z < in.size.z; z++ )
 					{
 						int m = map( { 0, i, j, z } );
-						double& w = weights( m, n, 0, 0 );
+						float& w = weights( m, n, 0, 0 );
 						gradient_t grad_sum;
 						gradient_t weight_grad;
 						for ( int e = 0; e < out.size.m; e++ ){			
@@ -248,12 +248,12 @@ struct fc_layer_bin_t
 		}
 	}
 
-	void calc_grads( tensor_t<double>& grad_next_layer )
+	void calc_grads( tensor_t<float>& grad_next_layer )
 	
 	// CALCULATES BACKWARD PROPOGATION AND SAVES RESULT IN `grads_in`. 
 	
 	{
-		memset( grads_in.data, 0,  grads_in.size.m * grads_in.size.x *grads_in.size.y*grads_in.size.z * sizeof( double ) );
+		memset( grads_in.data, 0,  grads_in.size.m * grads_in.size.x *grads_in.size.y*grads_in.size.z * sizeof( float ) );
 		
 		for(int e=0; e<in.size.m; e++)
 			for ( int n = 0; n < out.size.x; n++ )
@@ -267,7 +267,7 @@ struct fc_layer_bin_t
 						{
 							int m = map( {0, i, j, z } );
 							if(in(e,i,j,z) <= 1)
-								grads_in(e, i, j, z ) += grad.grad * (weights_bin.data[weights_bin( m, n,0, 0 )] == 1? double(1) : double(-1));
+								grads_in(e, i, j, z ) += grad.grad * (weights_bin.data[weights_bin( m, n,0, 0 )] == 1? float(1) : float(-1));
 							else
 								grads_in(e,i,j,z) += 0;
 							

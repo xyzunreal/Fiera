@@ -9,12 +9,12 @@ int main(){
 
     // vector<layer_t*> layers;
 	
-	tensor_t<double> temp_in(1, 5,5,1);
+	tensor_t<float> temp_in(1, 5,5,1);
 	
 	for(int i=0; i<5; i++){
 		for(int j=0; j<5; j++){
 			int maxval = 25;
-			temp_in(0, i,j,0) = 2.19722f / maxval * (rand()-rand()) / double( RAND_MAX );
+			temp_in(0, i,j,0) = 2.19722f / maxval * (rand()-rand()) / float( RAND_MAX );
 		}
 	}
 	

@@ -4,13 +4,13 @@
 struct scale_layer_t
 {
     layer_type type = layer_type::scale;
-    tensor_t<double> grads_in;
-    tensor_t<double> in;
-    tensor_t<double> out;
+    tensor_t<float> grads_in;
+    tensor_t<float> in;
+    tensor_t<float> out;
     gradient_t grads_scale;
     bool debug,clip_gradients_flag;
 
-    double s_param;     // scaler learnable parameter
+    float s_param;     // scaler learnable parameter
     tensor_t<gradient_t> gradients;
 
     scale_layer_t(tdsize in_size,bool clip_gradients_flag = true, bool debug_flag = false)        // EXPECTS 1D INPUT
@@ -26,7 +26,7 @@ struct scale_layer_t
         this->clip_gradients_flag = clip_gradients_flag;
     }
 
-    void activate( tensor_t<double> & in )
+    void activate( tensor_t<float> & in )
     {
         this->in = in;
         activate();
@@ -46,7 +46,7 @@ struct scale_layer_t
         }
     }
 
-    void fix_weights(double learning_rate)
+    void fix_weights(float learning_rate)
     {
         // grads_scale contains sum of gradients of s_param for all examples. 
 		grads_scale.grad /= out.size.m;
@@ -60,7 +60,7 @@ struct scale_layer_t
         }
     }
 
-    void calc_grads(tensor_t<double>& grad_next_layer)
+    void calc_grads(tensor_t<float>& grad_next_layer)
     {
         grads_scale.grad = 0;
         for(int i=0; i<out.size.m; i++)

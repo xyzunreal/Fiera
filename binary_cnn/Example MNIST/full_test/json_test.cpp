@@ -5,7 +5,7 @@ using json = nlohmann::json;
 int main() {
 json j;
 
-// add a number that is stored as double (note the implicit conversion of j to an object)
+// add a number that is stored as float (note the implicit conversion of j to an object)
 j["pi"] = 3.141;
 
 // add a Boolean that is stored as bool

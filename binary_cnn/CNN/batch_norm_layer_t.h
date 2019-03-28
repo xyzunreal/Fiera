@@ -49,7 +49,7 @@ struct batch_norm_layer_t
 
 	
 
-	void activate( tensor_t<double>& in )
+	void activate( tensor_t<float>& in )
 	{
 		this->in = in;
 		activate();
@@ -57,7 +57,7 @@ struct batch_norm_layer_t
 	
 	void cal_mean(){
         for(int i=0; i<in.size.z; i++){
-            double sum = 0;
+            float sum = 0;
             for(int j=0; j<in.size.m; j++){
                 for(int k = 0; k<in.size.x; k++){
                     for(int m = 0; m<in.size.y; m++){
@@ -72,7 +72,7 @@ struct batch_norm_layer_t
 	
 	void cal_sigma(){
          for(int i=0; i<in.size.z; i++){
-            double sum = 0;
+            float sum = 0;
             for(int j=0; j<in.size.m; j++){
                 for(int k = 0; k<in.size.x; k++){
                     for(int m = 0; m<in.size.y; m++){
@@ -139,7 +139,7 @@ struct batch_norm_layer_t
 		}
 	}
 
-	void calc_grads( tensor_t<double>& grad_next_layer)
+	void calc_grads( tensor_t<float>& grad_next_layer)
 	{
 		// fill(grads_beta.begin(), grads_beta.end(), 0);
 		// fill(grads_gamma.begin(), grads_gamma.end(), 0);
