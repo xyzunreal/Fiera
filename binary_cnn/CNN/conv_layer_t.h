@@ -1,7 +1,7 @@
 #pragma once
 #include "layer_t.h"
 
-// #pragma pack(push, 1)
+#pragma pack(push, 1)
 struct conv_layer_t
 {
 	layer_type type = layer_type::conv;
@@ -216,5 +216,5 @@ struct conv_layer_t
 		}
 	}
 };
-// #pragma pack(pop)
+#pragma pack(pop)
 		

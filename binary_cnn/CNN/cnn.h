@@ -3,7 +3,7 @@
 #include "tensor_bin_t.h"
 #include "optimization_method.h"
 #include "fc_layer.h"
-// #include "pool_layer_t.h"
+
 #include "prelu_layer_t.h"
 #include "conv_layer_t.h"
 #include "dropout_layer_t.h"
@@ -53,7 +53,7 @@ static void calc_grads( layer_t* layer, tensor_t<float>& grad_next_layer )
 	}
 }
 
-static void fix_weights( layer_t* layer ,float learning_rate)
+static void fix_weights( layer_t* layer ,float learning_rate = 0.1)
 {
 	switch ( layer->type )
 	{
