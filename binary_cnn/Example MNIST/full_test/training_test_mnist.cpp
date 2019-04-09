@@ -9,7 +9,7 @@
 
 using namespace std;
 
-int mini_batch_size = 1;
+int mini_batch_size = 64;
 int num_batches = 6000/mini_batch_size;	
 	
 struct case_t
@@ -93,21 +93,21 @@ int main()
     conv_layer_t * layer3 = new conv_layer_t(1, 3, 16, layer2->out.size,false,false);		
     prelu_layer_t * layer4 = new prelu_layer_t( layer3->out.size,false,false);
     // batch_norm_layer_t * layerb = new batch_norm_layer_t(layer4->out.size,false,false);
-    fc_layer_t * layer5 = new fc_layer_t(layer4->out.size, 70,false,false);
-    prelu_layer_t * layer6 = new prelu_layer_t( layer5->out.size,false); 
-    fc_layer_t * layer7 = new fc_layer_t(layer6->out.size, 10, false);
+    fc_layer_t * layer5 = new fc_layer_t(layer4->out.size, 10,false,false);
+    // prelu_layer_t * layer6 = new prelu_layer_t( layer5->out.size,false); 
+    // fc_layer_t * layer7 = new fc_layer_t(layer6->out.size, 10, false);
     // scale_layer_t * layerS = new scale_layer_t(layer5->out.size);
-    softmax_layer_t * layer8 = new softmax_layer_t(layer7->out.size, false, false, false);
+    softmax_layer_t * layer8 = new softmax_layer_t(layer5->out.size, false, false, false);
 
     vector<float> cost_vec;
     cost_vec.push_back(0);
-    float learning_rate = 0.001;
+    float learning_rate = 0.01;
 
 
-    for(int epoch = 0; epoch<5; epoch++){
+    for(int epoch = 0; epoch<50; epoch++){
 
         //batch_num<num_batches
-        for(int batch_num = 0; batch_num<3; batch_num++){
+        for(int batch_num = 0; batch_num<1; batch_num++){
                 // cout<<"*************epoch number*********** "<<epoch<<"***********************\n";
                 layer1->activate(cases[batch_num].data);
                 // cout<<"*************epoch number*********** "<<epoch<<"***********************\n";
@@ -121,10 +121,10 @@ int main()
                 // cout<<"*************epoch number*********** "<<epoch<<"***********************\n";
                 layer5->activate(layer4->out);
                 // cout<<"*************epoch number*********** "<<epoch<<"***********************\n";
-                layer6->activate(layer5->out);
-                layer7->activate(layer6->out);
+                // layer6->activate(layer5->out);
+                // layer7->activate(layer6->out);
                 // layerS->activate(layer5->out);
-                layer8->activate(layer7->out);
+                layer8->activate(layer5->out);
                 // if (epoch>1)
                 // {
                 // cout << "layer6->out\n\n\n\n";
@@ -159,10 +159,10 @@ int main()
                 // cout<<"*************epoch number*********** "<<epoch<<"***********************\n";
                 layer8->calc_grads(cases[batch_num].out);
                 // cout<<"*************epoch number*********** "<<epoch<<"***********************\n";
-                layer7->calc_grads(layer8->grads_in);
-                layer6->calc_grads(layer7->grads_in);
+                // layer7->calc_grads(layer8->grads_in);
+                // layer6->calc_grads(layer7->grads_in);
                 // layerS->calc_grads(layer8->grads_in);
-                layer5->calc_grads(layer6->grads_in);
+                layer5->calc_grads(layer8->grads_in);
                 // cout<<"*************epoch number*********** "<<epoch<<"***********************\n";
                 // layerb->calc_grads(layer5->grads_in);
                 layer4->calc_grads(layer5->grads_in);
@@ -192,8 +192,8 @@ int main()
                 // cout<<"*************epoch number*********** "<<epoch<<"***********************\n";
                 layer5->fix_weights(learning_rate);
                 // cout<<"*************epoch number*********** "<<epoch<<"***********************\n";
-                layer6->fix_weights(learning_rate);
-                layer7->fix_weights(learning_rate);
+                // layer6->fix_weights(learning_rate);
+                // layer7->fix_weights(learning_rate);
                 // layerS->fix_weights(learning_rate);
                 layer8->fix_weights(learning_rate);
         }

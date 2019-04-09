@@ -88,33 +88,33 @@ int main()
 	vector<case_t> cases = read_test_cases();
     print_tensor(cases[0].data);
     conv_layer_t * layer1 = new conv_layer_t(1, 3, 8, cases[0].data.size,false,false);		
-    batch_norm_layer_t * layerbb = new batch_norm_layer_t(layer1->out.size,false,false);
-    prelu_layer_t * layer2 = new prelu_layer_t( layerbb->out.size,false,false);
-    conv_layer_t * layer3 = new conv_layer_t(1, 3, 16, layer2->out.size,false,false);		
+    prelu_layer_t * layer2 = new prelu_layer_t( layer1->out.size,false,false);
+    batch_norm_layer_t * layerbb = new batch_norm_layer_t(layer2->out.size,false,false);
+    conv_layer_t * layer3 = new conv_layer_t(1, 3, 16, layerbb->out.size,false,false);		
     // batch_norm_layer_t * layerb = new batch_norm_layer_t(layer3->out.size,false,false);
     prelu_layer_t * layer4 = new prelu_layer_t( layer3->out.size,false,false);
     // fc_layer_t * layer5 = new fc_layer_t(layer4->out.size, 70,false,false);
     // prelu_layer_t * layer6 = new prelu_layer_t( layer4->out.size,false); 
     fc_layer_t * layer7 = new fc_layer_t(layer4->out.size, 10, false);
     // scale_layer_t * layerS = new scale_layer_t(layer5->out.size);
-    softmax_layer_t * layer8 = new softmax_layer_t(layer7->out.size, false, false, false);
+    softmax_layer_t * layer8 = new softmax_layer_t(layer7->out.size, false  , false, false);
 
     vector<float> cost_vec;
     cost_vec.push_back(0);
-    float learning_rate = 0.001;
+    float learning_rate = 0.1;
 
 
     for(int epoch = 0; epoch<12; epoch++){
 
         //batch_num<num_batches
-        for(int batch_num = 0; batch_num<10; batch_num++){
+        for(int batch_num = 0; batch_num<1; batch_num++){
                 // cout<<"*************epoch number*********** "<<epoch<<"***********************\n";
                 layer1->activate(cases[batch_num].data);
                 // cout<<"*************epoch number*********** "<<epoch<<"***********************\n";
-                layerbb->activate(layer1->out);
-                layer2->activate(layerbb->out);
+                layer2->activate(layer1->out);
+                layerbb->activate(layer2->out);
                 // cout<<"*************epoch number*********** "<<epoch<<"***********************\n";
-                layer3->activate(layer2->out);
+                layer3->activate(layerbb->out);
                 // cout<<"*************epoch number*********** "<<epoch<<"***********************\n";
                 // layerb->activate(layer3->out);
                 layer4->activate(layer3->out);
@@ -155,11 +155,11 @@ int main()
                 // cout<<"*************epoch number*********** "<<epoch<<"***********************\n";
                 layer3->calc_grads(layer4->grads_in);
                 // cout<<"*************epoch number*********** "<<epoch<<"***********************\n";
-                layer2->calc_grads(layer3->grads_in);
-                layerbb->calc_grads(layer2->grads_in);
+                layerbb->calc_grads(layer3->grads_in);
+                layer2->calc_grads(layerbb->grads_in);
                 // cout<<"*************epoch number*********** "<<epoch<<"***********************\n";
                 // cout<<"*************epoch number*********** "<<epoch<<"***********************\n";
-                layer1->calc_grads(layerbb->grads_in);
+                layer1->calc_grads(layer2->grads_in);
                 
                 
                 // float diff_cost = cost_vec[cost_vec.size()-1] - cost_vec[cost_vec.size()-2];
@@ -169,8 +169,8 @@ int main()
                 // cout<<"*************epoch number*********** "<<epoch<<"***********************\n";
                 layer1->fix_weights(learning_rate);
                 // cout<<"*************epoch number*********** "<<epoch<<"***********************\n";
-                layerbb->fix_weights(learning_rate);
                 layer2->fix_weights(learning_rate);
+                layerbb->fix_weights(learning_rate);
                 // cout<<"*************epoch number*********** "<<epoch<<"***********************\n";
                 layer3->fix_weights(learning_rate);
                 // cout<<"*************epoch number*********** "<<epoch<<"***********************\n";

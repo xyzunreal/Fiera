@@ -32,7 +32,7 @@ struct batch_norm_layer_t
 	{
 		this->debug = debug_flag;
 		this->clip_gradients_flag = clip_gradients_flag;
-		epsilon = 1e-3;
+		epsilon = 1e-5;
 		gamma.resize(in.size.z, 1);
 		beta.resize(in.size.z, 0);
         u_mean.resize(in.size.z);
@@ -77,8 +77,8 @@ struct batch_norm_layer_t
                 for(int k = 0; k<in.size.x; k++){
                     for(int m = 0; m<in.size.y; m++){
                         sum += ((in(j,k,m,i) - u_mean[i])*(in(j,k,m,i) - u_mean[i]));
-                    }
-                }
+	                    }
+                }	
             }
             sum /= (in.size.x*in.size.m*in.size.y);
             sigma[i] = sum;
@@ -125,9 +125,9 @@ struct batch_norm_layer_t
 	void fix_weights(float learning_rate){
 		
 		for(int z=0; z<out.size.z; z++){
-			update_weight(beta[z],grads_beta[z],1,false, learning_rate);
+			beta[z] = update_weight(beta[z],grads_beta[z],1,false, learning_rate);
 			update_gradient(grads_beta[z]);
-			update_weight(gamma[z],grads_gamma[z],1,false, learning_rate);
+			gamma[z] = update_weight(gamma[z],grads_gamma[z],1,false, learning_rate);
 			update_gradient(grads_gamma[z]);
 		}
 		if(debug)
@@ -165,7 +165,7 @@ struct batch_norm_layer_t
 						sum += in_hat(e,k,j,z) * grad_next_layer(e,k,j,z);
 						grads_in_hat(e,k,j,z) = grad_next_layer(e,k,j,z)*gamma[z]; 
 						sum1 += grads_in_hat(e,k,j,z)*(in(e,k,j,z) - u_mean[z]); 
-						grads_xmu1(e,k,j,z) = grads_in_hat(e,k,j,z)/sqrt(epsilon+sigma[z]); 
+						grads_xmu1(e,k,j,z) = grad_next_layer(e,k,j,z) * (gamma[z]) /sqrt(epsilon+sigma[z]); 
 					}
 				}
 			}	
@@ -199,7 +199,7 @@ struct batch_norm_layer_t
 				for(int k=0; k<out.size.x; k++){
 					for(int j=0; j<out.size.y; j++){
 						// grads_in(e,k,j,z) = grads_x1(e,k,j,z) + (1.0/out.size.m)*grads_u_mean[z];
-						grads_in(e,k,j,z) = (grads_x1(e,k,j,z) + grads_u_mean[z])/(out.size.m*out.size.x*out.size.y);
+						grads_in(e,k,j,z) = grads_x1(e,k,j,z) + grads_u_mean[z]/(out.size.m*out.size.x*out.size.y);
 					}
 				}
 			}

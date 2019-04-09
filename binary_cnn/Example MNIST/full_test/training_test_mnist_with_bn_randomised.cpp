@@ -101,8 +101,8 @@ int main()
     
     vector<float> cost_vec;
     cost_vec.push_back(0);
-    float learning_rate = 0.1;
-    for(int i=0; i<3; i++){
+    float learning_rate = 0.01;
+    for(int i=0; i<2; i++){
         layer1->activate(temp_in);
         cout<<"********conv output/relu input********\n";
         print_tensor(layer1->out);
@@ -186,9 +186,11 @@ int main()
 
         
         layer1->fix_weights(learning_rate);
-        
-        // cout<<"************Fix weights**********";
-        // print_tensor(layer1->filters);
+        cout << "conv weights grad";
+        print_tensor(layer1->filter_grads);
+        cout<<"********conv weights *************";
+        print_tensor(layer1->filters);
+
         layer2->fix_weights(learning_rate);
         layerb->fix_weights(learning_rate);
         // layer3->fix_weights(learning_rate);
