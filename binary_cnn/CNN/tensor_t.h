@@ -5,6 +5,8 @@
 #include <vector>
 #include <cmath>
 #include <string.h>
+#include <fstream>
+
 using namespace std;
 
 // Checks equality of two floating point numbers upto two decimal points.
@@ -101,6 +103,21 @@ struct tensor_t
 				for ( int j = 0; j < y; j++ )
 					for ( int k = 0; k < z; k++ )
 						get( tm, i, j, k) = data[tm][k][j][i];
+	}
+
+	tensor_t<float> get_batch(int batch_size, int batch_num){
+
+		tensor_t<float> t(batch_size , this->size.x, this->size.y, this->size.z );	
+		int start = batch_num * batch_size;
+		int end = ( batch_num + 1 ) * batch_size;
+
+		for(int tm = start; tm < end; tm++)
+			for ( int i = 0; i < this->size.x; i++ )
+				for ( int j = 0; j < this->size.y; j++ )
+					for ( int k = 0; k < this->size.z; k++ )
+						t( tm, i, j, k) = data[tm][k][j][i];
+		
+		return t;
 	}
 
 	~tensor_t()

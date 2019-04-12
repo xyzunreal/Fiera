@@ -14,8 +14,8 @@ struct batch_norm_layer_t
 	float epsilon;
 	vector<gradient_t> grads_beta;
 	vector<gradient_t> grads_gamma;
-    std::vector<float> u_mean, gamma, beta, grads_sqrtvar,grads_var,grads_u_mean;
-    std::vector<float> sigma, grads_sigma, grads_mean;
+    vector<float> u_mean, gamma, beta, grads_sqrtvar,grads_var,grads_u_mean;
+    vector<float> sigma, grads_sigma, grads_mean;
     bool adjust_variance;
 	bool debug,clip_gradients_flag;
 

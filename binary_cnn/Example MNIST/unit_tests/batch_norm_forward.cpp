@@ -12,7 +12,8 @@ using namespace std;
 int main()
 {
     tensor_t<float> in(2, 2, 2, 2), actual_output(2, 2, 2, 2), expected_output(2, 2, 2, 2);
-    float gamma, beta, epsilon;
+    vector<float> gamma = {0.0731}, beta = {0.7204};
+    float epsilon;
 
     std::vector<std::vector<std::vector<std::vector<float> > > > vect=
         {{{{ 0.4083,  0.4021},
@@ -44,8 +45,6 @@ int main()
           {-0.0261,  0.1619}}}};
     expected_output.from_vector(vect);
 
-    beta = 0.7204;
-    gamma = 0.0731;
     epsilon = 1e-5;
 
     batch_norm_layer_t * layer = new batch_norm_layer_t({2, 2, 2, 2});
@@ -73,7 +72,4 @@ int main()
         cout << "\n Sigma \n";
         for (int i=0;i<layer->sigma.size();i++)
             cout<< layer->sigma[i] << "  ";
-        
-        cout << "\n Gamma\t" << gamma;
-        cout << "\n beta\t" << beta;
 }

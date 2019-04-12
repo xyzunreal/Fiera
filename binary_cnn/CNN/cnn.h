@@ -11,7 +11,9 @@
 #include "softmax_layer_t.h"
 #include "cross_entropy_layer_t.h"
 #include "batch_norm_layer_t.h"
+#include "../Libraries/json.hpp"
 
+using json = nlohmann::json;
 //using namespace std;
 
 
@@ -105,6 +107,39 @@ static void activate( layer_t* layer, tensor_t<float>& in )
 			return;
 		case layer_type::batch_norm:
 			((batch_norm_layer_t*)layer)->activate(in);
+			return;
+		default:
+			assert( false );
+	}
+}
+
+static void save_layer( layer_t* layer, json& model )
+{
+	switch ( layer->type )
+	{
+		case layer_type::conv:
+			((conv_layer_t*)layer)->save_layer( model );
+			return;
+		 case layer_type::scale:
+			 ((scale_layer_t*)layer)->save_layer( model );
+			 return;
+		case layer_type::conv_bin:
+			((conv_layer_bin_t*)layer)->save_layer( model );
+			return;
+		case layer_type::softmax:
+			((softmax_layer_t*)layer)->save_layer( model );
+			return;
+		case layer_type::fc_bin:
+			((fc_layer_bin_t*)layer)->save_layer( model );
+			return;
+		case layer_type::batch_norm:
+			((batch_norm_layer_t *)layer)->save_layer( model );
+			return;
+		case layer_type::prelu:
+			((prelu_layer_t*)layer)->save_layer( model );
+			return;
+		case layer_type::fc:
+			((fc_layer_t*)layer)->save_layer( model );
 			return;
 		default:
 			assert( false );
