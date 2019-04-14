@@ -282,4 +282,13 @@ struct fc_layer_bin_t
 			print_tensor(grads_in);
 		}	
 	}
+
+	void save_layer( json& model ){
+		model["layers"].push_back( {
+			{ "layer_type", "fc_bin" },
+			{ "in_size", {in.size.x, in.size.y, in.size.z, in.size.m} },
+			{ "out_size", out.size.x },
+			{ "clip_gradients", clip_gradients_flag}
+		} );
+	}
 };

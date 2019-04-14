@@ -120,4 +120,13 @@ struct prelu_layer_t
 			cout<<grads_alpha.grad<<endl;
 		}
 	}
+
+	void save_layer( json& model ){
+		model["layers"].push_back( {
+			{ "layer_type", "prelu" },
+			{ "in_size", {in.size.x, in.size.y, in.size.z, in.size.m} },
+			{ "alpha", alpha},
+			{ "clip_gradients", clip_gradients_flag}
+		} );
+	}
 };

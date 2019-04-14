@@ -212,6 +212,17 @@ struct conv_layer_t
 			print_tensor(grads_in);
 		}
 	}
+
+	void save_layer( json& model ){
+		model["layers"].push_back( {
+			{ "layer_type", "conv" },
+			{ "stride", stride },
+			{ "extend_filter", extend_filter },
+			{ "number_filters", filters.size.m },
+			{ "in_size", {in.size.x, in.size.y, in.size.z, in.size.m} },
+			{ "clip_gradients", clip_gradients_flag}
+		} );
+	}
 };
 #pragma pack(pop)
 		

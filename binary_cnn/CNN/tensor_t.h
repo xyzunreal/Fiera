@@ -1,5 +1,6 @@
 #pragma once
 #include "point_t.h"
+#include "../Libraries/json.hpp"
 #include "gradient_t.h"
 #include <cassert>
 #include <vector>
@@ -8,6 +9,7 @@
 #include <fstream>
 
 using namespace std;
+using json = nlohmann::json;
 
 // Checks equality of two floating point numbers upto two decimal points.
 bool areEqual(float a,float b) {

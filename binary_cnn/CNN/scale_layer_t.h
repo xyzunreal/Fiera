@@ -80,4 +80,12 @@ struct scale_layer_t
 
     }
 
+	void save_layer( json& model ){
+		model["layers"].push_back( {
+			{ "layer_type", "scale" },
+			{ "in_size", {in.size.x, in.size.y, in.size.z, in.size.m} },
+			{ "clip_gradients", clip_gradients_flag}
+		} );
+	}
+
 };

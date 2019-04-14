@@ -20,8 +20,7 @@ struct conv_layer_bin_t
 	vector<float> alpha;
 	vector<float> alpha2;
 	bool debug,clip_gradients_flag; 	
-	conv_layer_bin_t( uint16_t stride, uint16_t extend_filter, uint16_t number_filters, tdsize in_size ,
-	bool clip_gradients_flag = true, bool debug_flag = false)
+	conv_layer_bin_t( uint16_t stride, uint16_t extend_filter, uint16_t number_filters, tdsize in_size, bool clip_gradients_flag = true, bool debug_flag = false)
 		:
 		grads_in(in_size.m, in_size.x, in_size.y, in_size.z),
 		in(in_size.m, in_size.x, in_size.y, in_size.z ),
@@ -343,6 +342,17 @@ struct conv_layer_bin_t
 			cout<<"*********grads_in for conv_bin************\n";
 			print_tensor(grads_in);
 		}
+	}
+
+	void save_layer( json& model ){
+		model["layers"].push_back( {
+			{ "layer_type", "conv_bin" },
+			{ "stride", stride },
+			{ "extend_filter", extend_filter },
+			{ "number_filters", filters.size.m },
+			{ "in_size", {in.size.x, in.size.y, in.size.z, in.size.m} },
+			{ "clip_gradients", clip_gradients_flag}
+		} );
 	}
 };
 #pragma pack(pop)

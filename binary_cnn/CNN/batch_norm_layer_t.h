@@ -252,5 +252,13 @@ struct batch_norm_layer_t
 			print_tensor(grads_in);
 		}	
 	}
+
+	void save_layer( json& model ){
+		model["layers"].push_back( {
+			{ "layer_type", "batch_norm2D" },
+			{ "in_size", {in.size.x, in.size.y, in.size.z, in.size.m} },
+			{ "clip_gradients", clip_gradients_flag}
+		} );
+	}
 };
 #pragma pack(pop)

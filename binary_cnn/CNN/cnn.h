@@ -11,11 +11,6 @@
 #include "softmax_layer_t.h"
 #include "cross_entropy_layer_t.h"
 #include "batch_norm_layer_t.h"
-#include "../Libraries/json.hpp"
-
-using json = nlohmann::json;
-//using namespace std;
-
 
 static void calc_grads( layer_t* layer, tensor_t<float>& grad_next_layer )
 {

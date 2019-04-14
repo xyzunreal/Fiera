@@ -112,6 +112,15 @@ struct softmax_layer_t
 			cout<<"********grads_in for softmax*********\n";
 			print_tensor(grads_in);
 		}
+	}
+
+	void save_layer( json& model ){
+		model["layers"].push_back( {
+			{ "layer_type", "softmax" },
+			{ "in_size", {in.size.x, in.size.y, in.size.z, in.size.m} },
+			{ "to_normalize", to_normalize },
+			{ "clip_gradients", clip_gradients_flag}
+		} );
 	}	
 };
 #pragma pack(pop)
