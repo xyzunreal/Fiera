@@ -1,3 +1,4 @@
+#pragma once
 #include <cassert>
 #include <cstdint>
 #include <string.h>
@@ -12,6 +13,7 @@
 
 using namespace std;
 
+#pragma pack(push, 1)
 class Model{
 
     vector<layer_t* > layers;
@@ -29,8 +31,10 @@ class Model{
             for ( int epoch = 0; epoch < epochs; ++epoch){
                 for(int batch_num = 0; batch_num<num_of_batches; batch_num++)
                 {
+                    cout<< "before getbatch";
                     tensor_t<float> input_batch = input.get_batch(batch_size, batch_num);
                     tensor_t<float> output_batch = output.get_batch(batch_size, batch_num);
+                    cout << "after getbatch";
 
                     // Forward propogate
                     for ( int i = 0; i < layers.size(); i++ )
@@ -101,12 +105,13 @@ class Model{
     // }
 };
 
+#pragma pack(pop)
 
 int main()
 {
 	// vector<layer_t*> layers;
     tensor_t<float> temp_in(2, 3,3,2), predict(2,4,1,1);
-    
+    cout << "Running"; 
     vector< vector< vector< vector< float> > > > vect=
           {{{{-0.0145, -0.3839, -2.9662},
           {-1.0606, -0.3090,  0.9343},

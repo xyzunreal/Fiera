@@ -117,8 +117,7 @@ struct tensor_t
 			for ( int i = 0; i < this->size.x; i++ )
 				for ( int j = 0; j < this->size.y; j++ )
 					for ( int k = 0; k < this->size.z; k++ )
-						t( tm, i, j, k) = data[tm][k][j][i];
-		
+						t( tm - start, i, j, k) = this->get(tm, i, j, k);
 		return t;
 	}
 

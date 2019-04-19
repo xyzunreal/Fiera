@@ -35,7 +35,7 @@ struct fc_layer_t
 		
 		for ( int i = 0; i < out_size; i++ )
 			for ( int h = 0; h < in_size.x*in_size.y*in_size.z; h++ )
-				weights(h,i, 0, 0 ) =  (1.0f * (rand()-rand())) / float( RAND_MAX );  // Generates a random number between -1 and 1 
+				weights(h,i, 0, 0 ) =  (1.0f * (rand()-rand())) / (float( RAND_MAX )*10);  // Generates a random number between -1 and 1 
 		
 		if(debug)
 		{

@@ -101,7 +101,7 @@ int main()
 
     vector<float> cost_vec;
     cost_vec.push_back(0);
-    float learning_rate = 0.1;
+    float learning_rate = 0.01;
 
 
     for(int epoch = 0; epoch<12; epoch++){
