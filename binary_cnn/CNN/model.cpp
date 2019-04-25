@@ -1,4 +1,4 @@
-#pragma once
+// #pragma once
 #include <cassert>
 #include <cstdint>
 #include <string.h>
@@ -28,13 +28,15 @@ class Model{
             int num_of_batches = input.size.m / batch_size ;
             float loss;
 
+            
             for ( int epoch = 0; epoch < epochs; ++epoch){
                 for(int batch_num = 0; batch_num<num_of_batches; batch_num++)
                 {
-                    cout<< "before getbatch";
+                    // cout<< "before getbatch";
                     tensor_t<float> input_batch = input.get_batch(batch_size, batch_num);
                     tensor_t<float> output_batch = output.get_batch(batch_size, batch_num);
-                    cout << "after getbatch";
+                    
+
 
                     // Forward propogate
                     for ( int i = 0; i < layers.size(); i++ )
@@ -51,11 +53,14 @@ class Model{
                     // Backpropogation
                     for ( int i = layers.size() - 1; i >= 0; i-- )
                     {
-                        if ( i == layers.size() - 1 )
+                       
+                        if ( i == layers.size() - 1 ){
                             calc_grads( layers[i], output_batch);
-                        else
+                        }
+                        else{               
                             calc_grads( layers[i], layers[i + 1]->grads_in );
-                    }
+                        }
+                     }
 
                     // Update weights
                     for ( int i = 0; i < layers.size(); i++ )
@@ -111,7 +116,6 @@ int main()
 {
 	// vector<layer_t*> layers;
     tensor_t<float> temp_in(2, 3,3,2), predict(2,4,1,1);
-    cout << "Running"; 
     vector< vector< vector< vector< float> > > > vect=
           {{{{-0.0145, -0.3839, -2.9662},
           {-1.0606, -0.3090,  0.9343},
@@ -162,7 +166,7 @@ int main()
     layers.push_back((layer_t *) layer11);
 
     Model model(layers);
-    model.train(temp_in, predict, 1, 10);
+    model.train(temp_in, predict, 2, 100);
 
     cout<<"**************cost*************\n";
     for(int i=0; i<cost_vec.size(); i++){

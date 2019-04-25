@@ -70,6 +70,9 @@ static void fix_weights( layer_t* layer ,float learning_rate = 0.1)
 		case layer_type::batch_norm:
 			((batch_norm_layer_t *)layer)->fix_weights(learning_rate);
 			return;
+		case layer_type::softmax:
+			((softmax_layer_t*)layer)->fix_weights(learning_rate);
+			return;
 		default:
 			assert( false );
 	}

@@ -8,6 +8,7 @@
 #pragma once
 #include "layer_t.h"
 
+#pragma pack(push, 1)
 struct prelu_layer_t
 {
 	layer_type type = layer_type::prelu;
@@ -111,7 +112,7 @@ struct prelu_layer_t
 				}
 			}
 		}
-
+		
 		if(debug)
 		{
 			cout<<"***********grads_in for prelu********\n";
@@ -130,3 +131,4 @@ struct prelu_layer_t
 		} );
 	}
 };
+#pragma pack(pop)

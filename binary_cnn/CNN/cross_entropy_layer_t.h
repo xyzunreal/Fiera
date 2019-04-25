@@ -20,6 +20,8 @@ float cross_entropy(tensor_t<float>& predicted ,tensor_t<float>& actual, bool de
             cout<<"***********actual***********";
             print_tensor(actual);
         }
+
+        
         for(int e=0; e < predicted.size.m; e++){
             for ( int i = 0; i < predicted.size.x; i++ ){
                 if( int(actual(e,i, 0, 0)) == 1){

@@ -164,6 +164,7 @@ struct conv_layer_t
 
 	void calc_grads( tensor_t<float>& grad_next_layer )
 	{
+		
 		for ( int k = 0; k < filter_grads.size.m; k++ )
 		{
 			for ( int i = 0; i < extend_filter; i++ )

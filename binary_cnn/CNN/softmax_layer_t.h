@@ -74,6 +74,9 @@ struct softmax_layer_t
 				out(tm, i, 0, 0) = max(exp(in(tm, i, 0, 0)), float(1e-7))/sum;		
 		}
 		
+		// cout<<"input size softmax\n";
+		// print_tensor_size(in.size);
+
 		if(debug)
 		{		
 			cout<<"********output for softmax ********\n";
