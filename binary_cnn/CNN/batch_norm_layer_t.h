@@ -260,5 +260,13 @@ struct batch_norm_layer_t
 			{ "clip_gradients", clip_gradients_flag}
 		} );
 	}
+
+	void print_layer(){
+		cout << "\n\n Batch Normalization Layer : \t";
+		cout << "\n\t in_size:\t";
+		print_tensor_size(in.size);
+		cout << "\n\t out_size:\t";
+		print_tensor_size(out.size);
+	}
 };
 #pragma pack(pop)

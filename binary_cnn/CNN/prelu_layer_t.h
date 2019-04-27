@@ -101,7 +101,7 @@ struct prelu_layer_t
 						}
 						else if(areEqual(in(e,i,j,k),0.0)){
 							grads_in(e,i,j,k) = grad_next_layer(e,i,j,k)*p_relu_zero;
-					}
+						}
 						else{
 							grads_alpha.grad += grad_next_layer(e,i,j,k) * (in(e, i, j, k));
 							grads_in(e,i,j,k) = grad_next_layer(e,i,j,k)*alpha;
@@ -129,6 +129,14 @@ struct prelu_layer_t
 			{ "alpha", alpha},
 			{ "clip_gradients", clip_gradients_flag}
 		} );
+	}
+	void print_layer(){
+		cout << "\n\n PReLU Layer : \t";
+		cout << "\n\t in_size:\t";
+		print_tensor_size(in.size);
+		cout << "\n\t out_size:\t";
+		print_tensor_size(out.size);
+		cout << "\n\t alpha:\t\t" << alpha;
 	}
 };
 #pragma pack(pop)

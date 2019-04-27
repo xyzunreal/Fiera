@@ -88,4 +88,14 @@ struct scale_layer_t
 		} );
 	}
 
+	void print_layer(){
+		cout << "\n\n Scale Layer : \t";
+		cout << "\n\t in_size:\t";
+		print_tensor_size(in.size);
+		cout << "\n\t out_size:\t";
+		print_tensor_size(out.size);
+		cout << "\n\t scale parameter:\t" << s_param;
+	}
+
+
 };

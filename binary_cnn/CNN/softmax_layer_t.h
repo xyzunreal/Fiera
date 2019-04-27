@@ -120,10 +120,18 @@ struct softmax_layer_t
 	void save_layer( json& model ){
 		model["layers"].push_back( {
 			{ "layer_type", "softmax" },
-			{ "in_size", {in.size.x, in.size.y, in.size.z, in.size.m} },
+			{ "in_size", {in.size.m, in.size.x, in.size.y, in.size.z} },
 			{ "to_normalize", to_normalize },
 			{ "clip_gradients", clip_gradients_flag}
 		} );
 	}	
+
+	void print_layer(){
+		cout << "\n\n Softmax Layer : \t";
+		cout << "\n\t in_size:\t";
+		print_tensor_size(in.size);
+		cout << "\n\t out_size:\t";
+		print_tensor_size(out.size);
+	}
 };
 #pragma pack(pop)

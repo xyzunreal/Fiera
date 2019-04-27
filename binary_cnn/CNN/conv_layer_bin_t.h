@@ -350,9 +350,19 @@ struct conv_layer_bin_t
 			{ "stride", stride },
 			{ "extend_filter", extend_filter },
 			{ "number_filters", filters.size.m },
-			{ "in_size", {in.size.x, in.size.y, in.size.z, in.size.m} },
+			{ "in_size", {in.size.m, in.size.x, in.size.y, in.size.z} },
 			{ "clip_gradients", clip_gradients_flag}
 		} );
+	}
+
+	void print_layer(){
+		cout << "\n\n Conv Binary Layer : \t";
+		cout << "\n\t in_size:\t";
+		print_tensor_size(in.size);
+		cout << "\n\t Filter Size:\t";
+		print_tensor_size(filters.size);
+		cout << "\n\t out_size:\t";
+		print_tensor_size(out.size);
 	}
 };
 #pragma pack(pop)

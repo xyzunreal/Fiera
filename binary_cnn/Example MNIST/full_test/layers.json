@@ -1,0 +1,53 @@
+{
+    "config": [
+        null
+    ],
+    "layers": [
+        {
+            "clip_gradients": false,
+            "extend_filter": 2,
+            "in_size": [
+                2,
+                3,
+                3,
+                2
+            ],
+            "layer_type": "conv",
+            "number_filters": 2,
+            "stride": 1
+        },
+        {
+            "alpha": 0.04716339707374573,
+            "clip_gradients": false,
+            "in_size": [
+                2,
+                2,
+                2,
+                2
+            ],
+            "layer_type": "prelu"
+        },
+        {
+            "clip_gradients": true,
+            "in_size": [
+                2,
+                2,
+                2,
+                2
+            ],
+            "layer_type": "fc",
+            "out_size": 4
+        },
+        {
+            "clip_gradients": true,
+            "in_size": [
+                2,
+                4,
+                1,
+                1
+            ],
+            "layer_type": "softmax",
+            "to_normalize": false
+        }
+    ]
+}
