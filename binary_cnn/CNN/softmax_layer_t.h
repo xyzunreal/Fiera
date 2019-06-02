@@ -126,6 +126,12 @@ struct softmax_layer_t
 		} );
 	}	
 
+	void save_layer_weight( string fileName ){
+	}
+
+	void load_layer_weight(string fileName){
+
+	}
 	void print_layer(){
 		cout << "\n\n Softmax Layer : \t";
 		cout << "\n\t in_size:\t";

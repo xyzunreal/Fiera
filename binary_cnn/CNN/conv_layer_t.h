@@ -225,6 +225,38 @@ struct conv_layer_t
 		} );
 	}
 
+	void save_layer_weight( string fileName ){
+		ofstream file(fileName);
+		int m = filters.size.m;
+		int x = filters.size.x;
+		int y = filters.size.y;
+		int z = filters.size.z;
+		int array_size = m*x*y*z;
+		
+		vector<float> data;
+		for ( int i = 0; i < array_size; i++ )
+			data.push_back(filters.data[i]);	
+		json weights = { 
+			{ "type", "conv" },
+			{ "size", array_size},
+			{ "data", data}
+		};
+		file << weights << endl;
+		file.close();
+	}
+
+	void load_layer_weight(string fileName){
+		ifstream file(fileName);
+		json weights;
+		file >> weights;
+		assert(weights["type"] == "conv");
+		vector<float> data = weights["data"];
+		int size  = weights["size"];
+		for (int i = 0; i < size; i++)
+			this->filters.data[i] = data[i];
+		file.close();
+	}
+
 	void print_layer(){
 		cout << "\n\n Conv Layer : \t";
 		cout << "\n\t in_size:\t";

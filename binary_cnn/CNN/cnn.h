@@ -143,6 +143,72 @@ static void save_layer( layer_t* layer, json& model )
 			assert( false );
 	}
 }
+
+static void save_layer_weight( layer_t* layer, string fileName )
+{
+	switch ( layer->type )
+	{
+		case layer_type::conv:
+			((conv_layer_t*)layer)->save_layer_weight( fileName );
+			return;
+		 case layer_type::scale:
+			 ((scale_layer_t*)layer)->save_layer_weight( fileName );
+			 return;
+		case layer_type::conv_bin:
+			((conv_layer_bin_t*)layer)->save_layer_weight( fileName );
+			return;
+		case layer_type::softmax:
+			((softmax_layer_t*)layer)->save_layer_weight( fileName );
+			return;
+		case layer_type::fc_bin:
+			((fc_layer_bin_t*)layer)->save_layer_weight( fileName );
+			return;
+		case layer_type::batch_norm:
+			((batch_norm_layer_t *)layer)->save_layer_weight( fileName );
+			return;
+		case layer_type::prelu:
+			((prelu_layer_t*)layer)->save_layer_weight( fileName );
+			return;
+		case layer_type::fc:
+			((fc_layer_t*)layer)->save_layer_weight( fileName );
+			return;
+		default:
+			assert( false );
+	}
+}
+
+static void load_layer_weight( layer_t* layer, string fileName )
+{
+	switch ( layer->type )
+	{
+		case layer_type::conv:
+			((conv_layer_t*)layer)->load_layer_weight( fileName );
+			return;
+		 case layer_type::scale:
+			 ((scale_layer_t*)layer)->load_layer_weight( fileName );
+			 return;
+		case layer_type::conv_bin:
+			((conv_layer_bin_t*)layer)->load_layer_weight( fileName );
+			return;
+		case layer_type::softmax:
+			((softmax_layer_t*)layer)->load_layer_weight( fileName );
+			return;
+		case layer_type::fc_bin:
+			((fc_layer_bin_t*)layer)->load_layer_weight( fileName );
+			return;
+		case layer_type::batch_norm:
+			((batch_norm_layer_t *)layer)->load_layer_weight( fileName );
+			return;
+		case layer_type::prelu:
+			((prelu_layer_t*)layer)->load_layer_weight( fileName );
+			return;
+		case layer_type::fc:
+			((fc_layer_t*)layer)->load_layer_weight( fileName );
+			return;
+		default:
+			assert( false );
+	}
+}
 static void print_layer( layer_t* layer )
 {
 	switch ( layer->type )

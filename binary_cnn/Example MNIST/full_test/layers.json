@@ -25,7 +25,8 @@
                 2,
                 2
             ],
-            "layer_type": "prelu"
+            "layer_type": "prelu",
+            "prelu_zero": 0.5
         },
         {
             "clip_gradients": true,

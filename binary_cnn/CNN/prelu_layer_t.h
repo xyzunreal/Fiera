@@ -17,7 +17,7 @@ struct prelu_layer_t
 	tensor_t<float> out;
 	float alpha;
 	gradient_t grads_alpha;
-	float p_relu_zero;		// Differential of PReLU is undefined at 0. 'p_relu_zero' defines value to be used instead.
+	float prelu_zero;		// Differential of PReLU is undefined at 0. 'p_relu_zero' defines value to be used instead.
 	bool debug,clip_gradients_flag;
 
 	prelu_layer_t( tdsize in_size, bool clip_gradients_flag = true, bool flag_debug = false ):
@@ -41,7 +41,7 @@ struct prelu_layer_t
 		grads_in( in_size.m, in_size.x, in_size.y, in_size.z )
 	{
 		alpha=0.05;
-		p_relu_zero = 0.5;
+		prelu_zero = 0.5;
 		this->debug=flag_debug;
 		this->clip_gradients_flag = clip_gradients_flag;
 	}
@@ -100,7 +100,7 @@ struct prelu_layer_t
 							grads_in(e,i,j,k) = grad_next_layer(e,i,j,k);
 						}
 						else if(areEqual(in(e,i,j,k),0.0)){
-							grads_in(e,i,j,k) = grad_next_layer(e,i,j,k)*p_relu_zero;
+							grads_in(e,i,j,k) = grad_next_layer(e,i,j,k)*prelu_zero;
 						}
 						else{
 							grads_alpha.grad += grad_next_layer(e,i,j,k) * (in(e, i, j, k));
@@ -127,8 +127,16 @@ struct prelu_layer_t
 			{ "layer_type", "prelu" },
 			{ "in_size", {in.size.x, in.size.y, in.size.z, in.size.m} },
 			{ "alpha", alpha},
+			{ "prelu_zero", prelu_zero},
 			{ "clip_gradients", clip_gradients_flag}
 		} );
+	}
+
+	void save_layer_weight( string fileName ){
+	}
+
+	void load_layer_weight(string fileName){
+		
 	}
 	void print_layer(){
 		cout << "\n\n PReLU Layer : \t";

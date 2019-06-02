@@ -88,6 +88,22 @@ struct scale_layer_t
 		} );
 	}
 
+    void save_layer_weight( string fileName ){
+        ofstream file(fileName);
+        json weights;
+        weights["scale_param"] = s_param;
+        file << weights;
+        file.close();
+    }
+
+	void load_layer_weight(string fileName){
+        ifstream file(fileName);
+        json weights;
+        file >> weights;
+        this->s_param = weights["scale_param"];
+        file.close();
+	}
+
 	void print_layer(){
 		cout << "\n\n Scale Layer : \t";
 		cout << "\n\t in_size:\t";

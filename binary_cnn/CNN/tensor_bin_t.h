@@ -24,7 +24,6 @@ struct tensor_bin_t
 
 	int operator()(int _m, int _x, int _y, int _z)
 	{
-		
 		return this->get(_m, _x, _y, _z);
 	}
 

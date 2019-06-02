@@ -35,7 +35,7 @@ int main()
     prelu_layer_t * layer2 = new prelu_layer_t( layer1->out.size, false, false);
     fc_layer_t * layer3 = new fc_layer_t(layer2->out.size, 4);
     softmax_layer_t * layer4 = new softmax_layer_t(layer3->out.size,false);
-   
+
     layers.push_back((layer_t *) layer1);
     layers.push_back((layer_t *) layer2);
     layers.push_back((layer_t *) layer3);
@@ -45,8 +45,13 @@ int main()
     model.train(temp_in, predict, 2, 10);
     model.summary();
     model.save_model("layers.json");
+    // Model model;
     model.load_model("layers.json");
-    model.summary();
+    model.save_weights("weights");
+    model.load_weights("weights");
+    model.train(temp_in, predict, 2, 10);
+    model.save_weights("weights_after_training");
+    model.load_weights("weights_after_training");
     model.train(temp_in, predict, 2, 10);
     return 0;
 }

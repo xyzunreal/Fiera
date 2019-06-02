@@ -162,6 +162,38 @@ struct fc_layer_t
 		} );
 	}
 
+	void save_layer_weight( string fileName ){
+		vector<float> data;
+		int m = weights.size.m;
+		int x = weights.size.x;
+		int y = weights.size.y;
+		int z = weights.size.z;
+		int array_size = m * x * y * z;
+		for ( int i = 0; i < m * x * y * z; i++ )
+			data.push_back(weights.data[i]);
+
+		ofstream file(fileName);
+		json weight = { 
+			{ "type", "fc" },
+			{ "size", array_size },
+			{ "data", data}
+		};
+		file << weight << endl;
+		file.close();
+	}
+
+	void load_layer_weight(string fileName){
+		ifstream file(fileName);
+		json weight;
+		file >> weight;
+		assert(weight["type"] == "fc");
+		vector<float> data = weight["data"];
+		int size  = weight["size"];
+		for (int i = 0; i < size; i++)
+			this->weights.data[i] = data[i];
+		file.close();
+	}
+
 	void print_layer(){
 		cout << "\n\n FC Layer : \t";
 		cout << "\n\t in_size:\t";

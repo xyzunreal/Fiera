@@ -260,6 +260,28 @@ struct batch_norm_layer_t
 			{ "clip_gradients", clip_gradients_flag}
 		} );
 	}
+	
+	void save_layer_weight( string fileName ){
+		ofstream file(fileName);
+		json weights = {
+			{ "epsilon", epsilon },
+			{ "beta", beta },
+			{ "gamma", gamma }
+		};
+		file << weights;
+	}
+
+	void load_layer_weight(string fileName){
+		ifstream file(fileName);
+		json weights;
+		file >> weights;
+		this->epsilon = weights["epsilon"];
+		vector<float> beta = weights["beta"];
+		vector<float> gamma = weights["gamma"];
+		this->beta = beta;
+		this->gamma = gamma;
+		file.close();
+	}
 
 	void print_layer(){
 		cout << "\n\n Batch Normalization Layer : \t";
