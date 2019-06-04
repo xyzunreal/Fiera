@@ -10,6 +10,7 @@
 
 using namespace std;
 
+#pragma pack(push, 1)
 struct fc_layer_bin_t
 {
 	layer_type type = layer_type::fc_bin;
@@ -332,3 +333,4 @@ struct fc_layer_bin_t
 		print_tensor_size(out.size);
 	}
 };
+#pragma pack(pop)

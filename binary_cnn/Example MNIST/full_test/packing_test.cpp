@@ -10,10 +10,10 @@ vector<uint8_t> pack(bitset<bitsetsize> input){
     int shiftCounter = 0;
     vector<uint8_t> output;
     // auto start = std::chrono::high_resolution_clock::now();
-    for (int i = 0; i< input.size(); i++){
+    for (int i = 0; i < input.size(); i++){
         if (input[i])
             OutByte |= (1 << shiftCounter);
-        shiftCounter++;
+        shiftCounter ++;
         if (shiftCounter > 7)
         {
             output.push_back(OutByte);

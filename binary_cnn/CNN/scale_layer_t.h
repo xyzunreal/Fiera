@@ -1,6 +1,7 @@
 #pragma once
 #include "layer_t.h"
 
+#pragma pack(push, 1)
 struct scale_layer_t
 {
     layer_type type = layer_type::scale;
@@ -115,3 +116,4 @@ struct scale_layer_t
 
 
 };
+#pragma pack(pop)
