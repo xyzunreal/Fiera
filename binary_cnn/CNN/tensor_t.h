@@ -23,6 +23,9 @@ struct tensor_t
 
 	tdsize size;
 
+	tensor_t(){
+	}
+	
 	tensor_t(int _m, int _x, int _y, int _z)
 	{
 		data = new T[_x * _y * _z * _m];
@@ -31,6 +34,16 @@ struct tensor_t
 		size.x = _x;
 		size.y = _y;
 		size.z = _z;
+	}
+
+	tensor_t(tdsize sz)
+	{
+		data = new T[sz.x * sz.y * sz.z * sz.m];
+		memset(data,0,sizeof(T)*sz.x*sz.y*sz.z*sz.m);
+		size.m = sz.m;
+		size.x = sz.x;
+		size.y = sz.y;
+		size.z = sz.z;
 	}
 
 	tensor_t( const tensor_t& other )
@@ -73,17 +86,32 @@ struct tensor_t
 	{
 		return this->get(_m, _x, _y, _z);
 	}
+
 	void operator = (tensor_t<T> t){
+		if(t.size.m != size.m or t.size.x != size.x or t.size.y != size.y or t.size.z != size.z){
+			data = new T[t.size.m * t.size.x * t.size.y * t.size.z];
+			memset(data,0,sizeof(T)*t.size.m * t.size.x * t.size.y * t.size.z);
+			size.m = t.size.m ;
+			size.x = t.size.x ;
+			size.y = t.size.y;
+			size.z = t.size.z;
+		}
 		for(int i=0; i<t.size.x*t.size.y*t.size.m*t.size.z; i++)
 			this->data[i] = t.data[i];
 	}
 
+	void resize(tdsize sz){
+		this->size = sz;
+		data = new T[size.m * size.x * size.y * size.z];
+		memset(data,0,sizeof(T)*size.m * size.x * size.y * size.z);	
+	}	
+
 	T& get(int _m, int _x, int _y, int _z)
 	{
 		// data is accessed as ( m, x, y, z )
-		assert( _m >=0 &&_x >= 0 && _y >= 0 && _z >= 0 );
-		assert( _m < size.m && _x < size.x && _y < size.y && _z < size.z );
-
+		// assert( _m >=0 &&_x >= 0 && _y >= 0 && _z >= 0 );
+		// assert( _m < size.m && _x < size.x && _y < size.y && _z < size.z );
+		
 		return data[
 			_m * (size.x * size.y * size.z) +
 				_z * (size.x * size.y) +
@@ -100,11 +128,15 @@ struct tensor_t
 		int y = data[0][0].size();
 		int x = data[0][0][0].size();
 
+	// cout<<m<<' '<<z<<" "<<y<<' '<<x<<endl;
+	// print_tensor_size(this->size);
+
 		for( int tm = 0; tm<m; tm++ )
 			for ( int i = 0; i < x; i++ )
 				for ( int j = 0; j < y; j++ )
 					for ( int k = 0; k < z; k++ )
 						get( tm, i, j, k) = data[tm][k][j][i];
+
 	}
 
 	tensor_t<float> get_batch(int batch_size, int batch_num){

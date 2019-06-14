@@ -32,6 +32,7 @@ float cross_entropy(tensor_t<float>& predicted ,tensor_t<float>& actual, bool de
             temp(e,0,0,0) = (-log(predicted(e,index,0,0)));
             cost += temp(e,0,0,0);
         }
+        
      
         return cost;
     }

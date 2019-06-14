@@ -5,36 +5,27 @@
 struct scale_layer_t
 {
     layer_type type = layer_type::scale;
-    tensor_t<float> grads_in;
     tensor_t<float> in;
-    tensor_t<float> out;
     gradient_t grads_scale;
+    tdsize in_size;
+    tdsize out_size;
     bool debug,clip_gradients_flag;
-
     float s_param;     // scaler learnable parameter
-    tensor_t<gradient_t> gradients;
 
     scale_layer_t(tdsize in_size,bool clip_gradients_flag = true, bool debug_flag = false)        // EXPECTS 1D INPUT
-        :
-        in(in_size.m, in_size.x, 1, 1),
-        out(in_size.m, in_size.x, 1, 1),
-        grads_in(in_size.m, in_size.x, 1, 1),
-        gradients(in_size.m, in_size.x, 1, 1)
-        
     {
         s_param = 0.001; 
+        this->in_size = in_size;
+        this->out_size = in_size;
         this->debug = debug_flag;    
         this->clip_gradients_flag = clip_gradients_flag;
     }
 
-    void activate( tensor_t<float> & in )
+    tensor_t<float> activate(tensor_t<float> in, bool train)
     {
-        this->in = in;
-        activate();
-    }
+        if (train) this->in = in;
 
-    void activate()
-    {
+        tensor_t<float> out(in.size.m, in.size.x, 1, 1);
 		for (int tm = 0; tm < in.size.m; tm++)
 			for (int i = 0; i < in.size.x; i++){
 				out(tm,i, 0, 0) = s_param * in(tm, i, 0, 0);
@@ -45,12 +36,13 @@ struct scale_layer_t
             cout<<"*****output for scale***********\n";
             print_tensor(out);
         }
+
+        return out;
     }
 
     void fix_weights(float learning_rate)
     {
         // grads_scale contains sum of gradients of s_param for all examples. 
-		grads_scale.grad /= out.size.m;
 		s_param = update_weight(s_param,grads_scale,1,false, learning_rate);
 		update_gradient(grads_scale);
        
@@ -61,11 +53,18 @@ struct scale_layer_t
         }
     }
 
-    void calc_grads(tensor_t<float>& grad_next_layer)
+    tensor_t<float> calc_grads(tensor_t<float>& grad_next_layer)
     {
+        assert(in.size > 0);
         grads_scale.grad = 0;
-        for(int i=0; i<out.size.m; i++)
-            for(int j=0; j<out.size.x; j++){
+
+        int m = grad_next_layer.size.m;
+
+        tensor_t<float> grads_in(m, out_size.x, 1, 1);
+
+
+        for(int i=0; i < m; i++)
+            for(int j=0; j<out_size.x; j++){
                 grads_scale.grad += grad_next_layer(i,j,0,0)*in(i,j,0,0); 
                 grads_in(i,j,0,0) = grad_next_layer(i,j,0,0)*s_param;
                 clip_gradients(clip_gradients_flag, grads_scale.grad);
@@ -79,12 +78,14 @@ struct scale_layer_t
             cout<<grads_scale.grad<<endl;
         }
 
+        return grads_in;
+
     }
 
 	void save_layer( json& model ){
 		model["layers"].push_back( {
 			{ "layer_type", "scale" },
-			{ "in_size", {in.size.x, in.size.y, in.size.z, in.size.m} },
+			{ "in_size", {in_size.m, in_size.x, in_size.y, in_size.z} },
 			{ "clip_gradients", clip_gradients_flag}
 		} );
 	}
@@ -108,9 +109,9 @@ struct scale_layer_t
 	void print_layer(){
 		cout << "\n\n Scale Layer : \t";
 		cout << "\n\t in_size:\t";
-		print_tensor_size(in.size);
+		print_tensor_size(in_size);
 		cout << "\n\t out_size:\t";
-		print_tensor_size(out.size);
+		print_tensor_size(out_size);
 		cout << "\n\t scale parameter:\t" << s_param;
 	}
 

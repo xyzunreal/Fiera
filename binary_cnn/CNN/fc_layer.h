@@ -1,3 +1,8 @@
+
+
+
+
+
 #pragma once
 #include <math.h>
 #include <float.h>
@@ -10,110 +15,98 @@
 struct fc_layer_t
 {
 	layer_type type = layer_type::fc;
-	tensor_t<float> grads_in;
 	tensor_t<float> in;
-	tensor_t<float> out;
-	std::vector<float> input;
 	tensor_t<float> weights;
-	tensor_t<gradient_t> gradients;
-	bool debug,clip_gradients_flag;
+	tensor_t<gradient_t> weights_grad;
+	tdsize in_size, out_size;
+	bool train = false;
+	bool debug, clip_gradients_flag;
 
-	fc_layer_t( tdsize in_size, int out_size,bool clip_gradients_flag=true, bool debug_flag = false )
+	fc_layer_t( tdsize in_size, tdsize out_size,  bool clip_gradients_flag=false, bool debug_flag = false )
 		:
-		in( in_size.m, in_size.x, in_size.y, in_size.z ),
-		out( in_size.m, out_size, 1, 1 ),
-		grads_in( in_size.m, in_size.x, in_size.y, in_size.z ),
-		weights( in_size.x*in_size.y*in_size.z, out_size, 1, 1 ),
-		gradients(in_size.m, out_size, 1, 1)
-
+		weights( in_size.x*in_size.y*in_size.z, out_size.x, 1, 1 )
 	{
+
+		this->in_size = in_size;
+		this->out_size = out_size;
 		this->debug = debug_flag;
 		this->clip_gradients_flag = clip_gradients_flag;
 		int maxval = in_size.x * in_size.y * in_size.z;
 	
 		// Weight initialization
 		
-		for ( int i = 0; i < out_size; i++ )
-			for ( int h = 0; h < in_size.x*in_size.y*in_size.z; h++ )
-				weights(h,i, 0, 0 ) =  (1.0f * (rand()-rand())) / (float( RAND_MAX )*10);  // Generates a random number between -1 and 1 
+		for ( int i = 0; i < out_size.x; i++ )
+			for ( int h = 0; h < in_size.x * in_size.y * in_size.z; h++ )
+				weights( h, i, 0, 0 ) =  ( 1.0f * (rand()-rand())) / (float( RAND_MAX ) * 10);  // Generates a random number between -1 and 1 
 		
 		if(debug)
 		{
 			cout << "********weights for fc************\n";
 			print_tensor(weights);
 		}
-	}
 
-	void activate( tensor_t<float>& in )
-	{
-		this->in = in;
-		activate();
 	}
 
 	int map( point_t d )
 	//  Maps weight unit to corresponding input unit.
 	{
-		return d.m * (in.size.x * in.size.y * in.size.z) +
-			d.z * (in.size.x * in.size.y) +
-			d.y * (in.size.x) +
+		return d.m * (in_size.x * in_size.y * in_size.z) +
+			d.z * (in_size.x * in_size.y) +
+			d.y * (in_size.x) +
 			d.x;
 	}
 
-	void activate()
+	tensor_t<float> activate( tensor_t<float>& in, bool train )
 	/* 
 	 * `activate` activates (forward propogate) the fc layer.
 	 * It saves the result after propogation in `out` variable.
 	 */
 	{
-		for ( int e = 0; e < in.size.m; e++)
-			for ( int n = 0; n < out.size.x; n++ )
+		
+		if ( train ) this->in = in;  	// Only save `in` while training to save RAM during inference
+		tensor_t<float> out( in.size.m, weights.size.x, 1, 1 );
+		for ( int e = 0; e < in.size.m; e++){
+			for ( int n = 0; n < weights.size.x; n++ )
 			{
 				float inputv = 0;
 
-				for ( int z = 0; z < in.size.z; z++ )
-					for ( int j = 0; j < in.size.y; j++ )
+				for ( int z = 0; z < in.size.z; z++ ){
+					for ( int j = 0; j < in.size.y; j++ ){
 						for ( int i = 0; i < in.size.x; i++ )
 						{
 							int m = map( { 0 , i, j, z } );
-							inputv += in( e, i, j, z ) * weights(m, n, 0, 0 );
-						}
-
+							inputv += in( e, i, j, z ) * weights(m, n, 0, 0 ); 
+						}	
+					}
+				}
 				out( e, n, 0, 0 ) = inputv;
+			}
+		
 		}
+
 		
 		if(debug)
 		{
 			cout<<"*******output for fc**********\n";
 			print_tensor(out);
 		}
+		return out;
 	}
 
 	void fix_weights(float learning_rate)
 	{
-		for ( int n = 0; n < out.size.x; n++ )
-		{
-			for ( int i = 0; i < in.size.x; i++ )
-				for ( int j = 0; j < in.size.y; j++ )
-					for ( int z = 0; z < in.size.z; z++ )
+		for ( int n = 0; n < weights.size.x; n++ )
+			for ( int i = 0; i < in_size.x; i++ )
+				for ( int j = 0; j < in_size.y; j++ )
+					for ( int z = 0; z < in_size.z; z++ )
 					{
 						int m = map( { 0, i, j, z } );
-
 						float& w = weights( m, n, 0, 0 );
 						
-						gradient_t grad_sum;
-						gradient_t weight_grad;
-						
-						for ( int e = 0; e < out.size.m; e++ ){			
-							weight_grad = gradients(e, n, 0, 0) * in(e, i, j, z);	// d W = d A(l+1) * A(l)
-							grad_sum = weight_grad + grad_sum;
-						}
-						
-						// grad_sum = grad_sum / out.size.m;
-						w = update_weight( w, grad_sum, 1, false, learning_rate); 
+						gradient_t& grad = weights_grad( m, n, 0, 0 ) ;
+						w = update_weight( w, grad, 1, false, learning_rate);
+						update_gradient( grad );
 					}
-			for (int e = 0; e < out.size.m; e++)
-				update_gradient( gradients(e, n, 0, 0) );
-		}
 
 		if(debug)
 		{
@@ -122,42 +115,44 @@ struct fc_layer_t
 		}
 	}
 
-	void calc_grads( tensor_t<float>& grad_next_layer )
+	tensor_t<float> calc_grads( tensor_t<float>& grad_next_layer )
 	
 	// Calculates backward propogation and saves result in `grads_in`. 
 	{
-		memset( grads_in.data, 0, grads_in.size.x *grads_in.size.y*grads_in.size.z * grads_in.size.m * sizeof( float ) );
-		
-		for(int e=0; e<in.size.m; e++)
-			for ( int n = 0; n < out.size.x; n++ )
-			{
-				gradient_t& grad = gradients(e,n,0,0);
-				grad.grad = grad_next_layer(e, n, 0, 0 );
+		assert(in.size > 0);
+		tensor_t<float> grads_in( grad_next_layer.size.m, in_size.x, in_size.y, in_size.z );
+		weights_grad.resize(weights.size);
 
-				for ( int i = 0; i < in.size.x; i++ )
-					for ( int j = 0; j < in.size.y; j++ )
-						for ( int z = 0; z < in.size.z; z++ )
+		for(int e=0; e<grad_next_layer.size.m; e++)
+			for ( int n = 0; n < weights.size.x; n++ )
+			{
+
+				for ( int i = 0; i < in_size.x; i++ )
+					for ( int j = 0; j < in_size.y; j++ )
+						for ( int z = 0; z < in_size.z; z++ )
 						{
+							
 							int m = map( {0, i, j, z } );
-							grads_in(e, i, j, z ) += grad.grad * weights( m, n,0, 0 );
-							clip_gradients(clip_gradients_flag, grads_in(e,i,j,z));
+							grads_in( e, i, j, z ) += grad_next_layer(e, n, 0, 0 ) * weights( m, n,0, 0 );
+							weights_grad( m, n, 0, 0 ).grad += grad_next_layer( e, n, 0, 0 ) * in( e, i, j, z );
+							clip_gradients(clip_gradients_flag, grads_in( e,i,j,z ));
 						}
 			}
-		
+				
 		if(debug)
 		{
 			cout<<"**********grads_in for float fc***********\n";
 			print_tensor(grads_in);
 		}
-		
+		return grads_in;	
 
 	}
 	
 	void save_layer( json& model ){
 		model["layers"].push_back( {
 			{ "layer_type", "fc" },
-			{ "in_size", {in.size.m, in.size.x, in.size.y, in.size.z} },
-			{ "out_size", out.size.x },
+			{ "in_size", {in_size.m, in_size.x, in_size.y, in_size.z} },
+			{ "out_size", {out_size.m, out_size.x, out_size.y, out_size.z} },
 			{ "clip_gradients", clip_gradients_flag}
 		} );
 	}
@@ -169,7 +164,7 @@ struct fc_layer_t
 		int y = weights.size.y;
 		int z = weights.size.z;
 		int array_size = m * x * y * z;
-		for ( int i = 0; i < m * x * y * z; i++ )
+		for ( int i = 0; i < array_size; i++ )
 			data.push_back(weights.data[i]);
 
 		ofstream file(fileName);
@@ -197,9 +192,9 @@ struct fc_layer_t
 	void print_layer(){
 		cout << "\n\n FC Layer : \t";
 		cout << "\n\t in_size:\t";
-		print_tensor_size(in.size);
+		print_tensor_size(in_size);
 		cout << "\n\t out_size:\t";
-		print_tensor_size(out.size);
+		print_tensor_size(out_size);
 	}
 };
 #pragma pack(pop)

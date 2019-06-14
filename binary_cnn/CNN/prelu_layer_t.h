@@ -12,15 +12,15 @@
 struct prelu_layer_t
 {
 	layer_type type = layer_type::prelu;
-	tensor_t<float> grads_in;
 	tensor_t<float> in;
-	tensor_t<float> out;
 	float alpha;
 	gradient_t grads_alpha;
 	float prelu_zero;		// Differential of PReLU is undefined at 0. 'p_relu_zero' defines value to be used instead.
 	bool debug,clip_gradients_flag;
+	tdsize in_size;
+	tdsize out_size;
 
-	prelu_layer_t( tdsize in_size, bool clip_gradients_flag = true, bool flag_debug = false ):
+	prelu_layer_t( tdsize in_size, bool clip_gradients_flag = true, bool flag_debug = false )
 	/**
 	* 
 	* Parameters
@@ -35,29 +35,22 @@ struct prelu_layer_t
 	* 		Whether to print variables for debugging purpose
 	*
 	**/
-	
-		in( in_size.m, in_size.x, in_size.y, in_size.z ),
-		out(in_size.m, in_size.x, in_size.y, in_size.z ),
-		grads_in( in_size.m, in_size.x, in_size.y, in_size.z )
 	{
 		alpha=0.05;
 		prelu_zero = 0.5;
+		this->in_size = in_size;
+		this->out_size = in_size;
 		this->debug=flag_debug;
 		this->clip_gradients_flag = clip_gradients_flag;
 	}
 
-
-
-	void activate( tensor_t<float>& in )
-	{
-		this->in = in;
-		activate();
-	}
-
-	void activate()
+	tensor_t<float> activate(tensor_t<float>& in, bool train)
 
 	//  `activate` FORWARD PROPOGATES AND SAVES THE RESULT IN `out` VARIABLE.
 	{
+		if (train) this->in = in;
+		tensor_t<float> out(in.size.m, in_size.x, in_size.y, in_size.z);
+
 		for ( int tm = 0; tm < in.size.m; tm++ )
 			for ( int i = 0; i < in.size.x; i++ )
 				for ( int j = 0; j < in.size.y; j++ )
@@ -73,12 +66,13 @@ struct prelu_layer_t
 			cout<<"********output for prelu*****\n";
 			print_tensor(out);
 		}
+		return out;
 	}
 
 	void fix_weights(float learning_rate)
 	{
 		// grads_alpha contains sum of gradients of alphas for all examples. 
-		grads_alpha.grad /= out.size.m;
+		// grads_alpha.grad /= out.size.m;
 		alpha = update_weight(alpha,grads_alpha,1,false, learning_rate);
 		update_gradient(grads_alpha);
 		
@@ -89,8 +83,14 @@ struct prelu_layer_t
 		}
 	}
 
-	void calc_grads( tensor_t<float>& grad_next_layer )
+	tensor_t<float> calc_grads( tensor_t<float>& grad_next_layer )
 	{
+		assert(in.size > 0);
+		tensor_t<float> grads_in(grad_next_layer.size.m, in_size.x, in_size.y, in_size.z);
+ 
+
+
+	
 		for ( int e = 0; e < in.size.m; e++ ){
 			for ( int i = 0; i < in.size.x; i++ ){
 				for ( int j = 0; j < in.size.y; j++ ){
@@ -120,12 +120,13 @@ struct prelu_layer_t
 			cout<<"*********grad alpha***********\n";
 			cout<<grads_alpha.grad<<endl;
 		}
+		return grads_in;
 	}
 
 	void save_layer( json& model ){
 		model["layers"].push_back( {
 			{ "layer_type", "prelu" },
-			{ "in_size", {in.size.x, in.size.y, in.size.z, in.size.m} },
+			{ "in_size", {in_size.x, in_size.y, in_size.z, in_size.m} },
 			{ "alpha", alpha},
 			{ "prelu_zero", prelu_zero},
 			{ "clip_gradients", clip_gradients_flag}
@@ -141,9 +142,9 @@ struct prelu_layer_t
 	void print_layer(){
 		cout << "\n\n PReLU Layer : \t";
 		cout << "\n\t in_size:\t";
-		print_tensor_size(in.size);
+		print_tensor_size(in_size);
 		cout << "\n\t out_size:\t";
-		print_tensor_size(out.size);
+		print_tensor_size(out_size);
 		cout << "\n\t alpha:\t\t" << alpha;
 	}
 };

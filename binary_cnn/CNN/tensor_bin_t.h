@@ -21,10 +21,23 @@ struct tensor_bin_t
 		this->size = other.size;
 		this->data = other.data;
 	}
+	tensor_bin_t(){
+		
+	}
+
+	void resize(tdsize sz){
+		this->size = sz;
+		data = 0;
+	}	
 
 	int operator()(int _m, int _x, int _y, int _z)
 	{
 		return this->get(_m, _x, _y, _z);
+	}
+
+	void operator = (tensor_bin_t & other){
+		this->size = other.size;
+		this->data = other.data;
 	}
 
 	int get( int _m, int _x, int _y, int _z)

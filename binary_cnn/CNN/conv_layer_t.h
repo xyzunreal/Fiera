@@ -5,29 +5,24 @@
 struct conv_layer_t
 {
 	layer_type type = layer_type::conv;
-	tensor_t<float> grads_in;
 	tensor_t<float> in;
-	tensor_t<float> out;
 	tensor_t<float> filters; 
+	tdsize in_size, out_size;
 	tensor_t<gradient_t> filter_grads;
 	uint16_t stride;
-	uint16_t extend_filter;
+	uint16_t extend_filter, number_filters;
 	bool debug,clip_gradients_flag;
 	conv_layer_t( uint16_t stride, uint16_t extend_filter, uint16_t number_filters, tdsize in_size,bool clip_gradients_flag = true, bool debug_flag=false)
 		:
-		grads_in( in_size.m, in_size.x, in_size.y, in_size.z ),
-		in(in_size.m, in_size.x, in_size.y, in_size.z ),
-		out(in_size.m,
-		(in_size.x - extend_filter) / stride + 1,
-			(in_size.y - extend_filter) / stride + 1,
-			number_filters
-		),
 		filters(number_filters, extend_filter, extend_filter, in_size.z),
 		filter_grads(number_filters, extend_filter, extend_filter, in_size.z)
 
 	{	
+		this->number_filters = number_filters;
 		this->debug=debug_flag;
 		this->stride = stride;
+		this->in_size = in_size;
+		this->out_size =  {in_size.m, (in_size.x - extend_filter) / stride + 1, (in_size.y - extend_filter) / stride + 1, number_filters};		
 		this->extend_filter = extend_filter;
 		this->clip_gradients_flag = clip_gradients_flag;
 		assert( (float( in_size.x - extend_filter ) / stride + 1)
@@ -92,23 +87,23 @@ struct conv_layer_t
 		float b = y;
 		return
 		{
-			normalize_range( (a - extend_filter + 1) / stride, out.size.x, true ),
-			normalize_range( (b - extend_filter + 1) / stride, out.size.y, true ),
+			normalize_range( (a - extend_filter + 1) / stride, out_size.x, true ),
+			normalize_range( (b - extend_filter + 1) / stride, out_size.y, true ),
 			0,
-			normalize_range( a / stride, out.size.x, false ),
-			normalize_range( b / stride, out.size.y, false ),
+			normalize_range( a / stride, out_size.x, false ),
+			normalize_range( b / stride, out_size.y, false ),
 			(int)filters.size.m - 1,
 		};
 	}
 
-	void activate( tensor_t<float>& in )
+	tensor_t<float> activate(tensor_t<float>& in, bool train)
 	{
-		this->in = in;
-		activate();
-	}
+		
 
-	void activate()
-	{
+		if (train) this->in = in;
+
+		tensor_t<float> out(in.size.m, (in_size.x - extend_filter) / stride + 1, (in_size.y - extend_filter) / stride + 1, number_filters );
+
 		for(int example = 0; example<in.size.m; example++){
 			for ( int filter = 0; filter < filters.size.m; filter++ )
 			{
@@ -138,6 +133,9 @@ struct conv_layer_t
 			cout<<"*********out for convolution*************\n";
 			print_tensor(out);
 		}
+		
+
+		return out;
 	}
 
 	void fix_weights(float learning_rate)
@@ -146,7 +144,7 @@ struct conv_layer_t
 		for ( int a = 0; a < filters.size.m; a++ )
 			for ( int i = 0; i < extend_filter; i++ )
 				for ( int j = 0; j < extend_filter; j++ )
-					for ( int z = 0; z < in.size.z; z++ )
+					for ( int z = 0; z < in_size.z; z++ )
 					{
 						float& w = filters(a, i, j, z );
 						gradient_t& grad = filter_grads(a, i, j, z );
@@ -162,9 +160,10 @@ struct conv_layer_t
 		
 	}
 
-	void calc_grads( tensor_t<float>& grad_next_layer )
+	tensor_t<float> calc_grads( tensor_t<float>& grad_next_layer )
 	{
-		
+		assert(in.size > 0);
+		tensor_t<float> grads_in( grad_next_layer.size.m, in_size.x, in_size.y, in_size.z );
 		for ( int k = 0; k < filter_grads.size.m; k++ )
 		{
 			for ( int i = 0; i < extend_filter; i++ )
@@ -173,7 +172,7 @@ struct conv_layer_t
 						filter_grads(k, i, j, z ).grad = 0;
 		}
 		
-		for(int e=0; e<in.size.m; e++){
+		for(int e=0; e < in.size.m; e++){
 			for ( int x = 0; x < in.size.x; x++ )
 			{
 				for ( int y = 0; y < in.size.y; y++ )
@@ -212,6 +211,8 @@ struct conv_layer_t
 			cout<<"*********grads_in for float conv********\n";
 			print_tensor(grads_in);
 		}
+
+		return grads_in;
 	}
 
 	void save_layer( json& model ){
@@ -220,7 +221,7 @@ struct conv_layer_t
 			{ "stride", stride },
 			{ "extend_filter", extend_filter },
 			{ "number_filters", filters.size.m },
-			{ "in_size", {in.size.m, in.size.x, in.size.y, in.size.z} },
+			{ "in_size", {in_size.m, in_size.x, in_size.y, in_size.z} },
 			{ "clip_gradients", clip_gradients_flag}
 		} );
 	}
@@ -260,11 +261,11 @@ struct conv_layer_t
 	void print_layer(){
 		cout << "\n\n Conv Layer : \t";
 		cout << "\n\t in_size:\t";
-		print_tensor_size(in.size);
+		print_tensor_size(in_size);
 		cout << "\n\t Filter Size:\t";
 		print_tensor_size(filters.size);
 		cout << "\n\t out_size:\t";
-		print_tensor_size(out.size);
+		print_tensor_size(out_size);
 	}
 };
 #pragma pack(pop)

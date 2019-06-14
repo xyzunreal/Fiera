@@ -12,34 +12,26 @@
 #include "cross_entropy_layer_t.h"
 #include "batch_norm_layer_t.h"
 
-static void calc_grads( layer_t* layer, tensor_t<float>& grad_next_layer )
+static tensor_t<float> calc_grads( layer_t* layer, tensor_t<float>& grad_next_layer )
 {
 	switch ( layer->type )
 	{
 		case layer_type::conv:
-			((conv_layer_t*)layer)->calc_grads( grad_next_layer );
-			return;
+			return ((conv_layer_t*)layer)->calc_grads( grad_next_layer );
 		 case layer_type::scale:
-			 ((scale_layer_t*)layer)->calc_grads( grad_next_layer );
-			 return;
+			 return ((scale_layer_t*)layer)->calc_grads( grad_next_layer );
 		case layer_type::conv_bin:
-			((conv_layer_bin_t*)layer)->calc_grads( grad_next_layer );
-			return;
+			return ((conv_layer_bin_t*)layer)->calc_grads( grad_next_layer );
 		case layer_type::softmax:
-			((softmax_layer_t*)layer)->calc_grads( grad_next_layer );
-			return;
+			return ((softmax_layer_t*)layer)->calc_grads( grad_next_layer );
 		case layer_type::fc_bin:
-			((fc_layer_bin_t*)layer)->calc_grads( grad_next_layer );
-			return;
+			return ((fc_layer_bin_t*)layer)->calc_grads( grad_next_layer );
 		case layer_type::batch_norm:
-			((batch_norm_layer_t *)layer)->calc_grads(grad_next_layer);
-			return;
+			return ((batch_norm_layer_t *)layer)->calc_grads(grad_next_layer);
 		case layer_type::prelu:
-			((prelu_layer_t*)layer)->calc_grads( grad_next_layer );
-			return;
+			return ((prelu_layer_t*)layer)->calc_grads( grad_next_layer );
 		case layer_type::fc:
-			((fc_layer_t*)layer)->calc_grads( grad_next_layer );
-			return;
+			return ((fc_layer_t*)layer)->calc_grads( grad_next_layer );
 		default:
 			assert( false );
 	}
@@ -78,34 +70,26 @@ static void fix_weights( layer_t* layer ,float learning_rate = 0.1)
 	}
 }
 
-static void activate( layer_t* layer, tensor_t<float>& in )
+static tensor_t<float> activate( layer_t* layer, tensor_t<float>& in, bool train)
 {
-	switch ( layer->type )
+	switch (layer->type)
 	{
 		case layer_type::conv:
-			((conv_layer_t*)layer)->activate( in );
-			return;
+			return ((conv_layer_t*)layer)->activate(in, train );
 		case layer_type::scale:
-			((scale_layer_t*)layer)->activate( in );
-			return;
+			return ((scale_layer_t*)layer)->activate( in, train );
 		case layer_type::conv_bin:
-			((conv_layer_bin_t*)layer)->activate( in );
-			return;
+			return ((conv_layer_bin_t*)layer)->activate( in, train );
 		case layer_type::softmax:
-			((softmax_layer_t*)layer)->activate( in );
-			return;
+			return ((softmax_layer_t*)layer)->activate( in, train);
 		case layer_type::prelu:
-			((prelu_layer_t*)layer)->activate( in );
-			return;
+			return ((prelu_layer_t*)layer)->activate( in, train );
 		case layer_type::fc_bin:
-			((fc_layer_bin_t*)layer)->activate( in );
-			return;
+			return ((fc_layer_bin_t*)layer)->activate( in, train );
 		case layer_type::fc:
-			((fc_layer_t*)layer)->activate( in );
-			return;
+			return ((fc_layer_t*)layer)->activate( in, train);
 		case layer_type::batch_norm:
-			((batch_norm_layer_t*)layer)->activate(in);
-			return;
+			return ((batch_norm_layer_t*)layer)->activate(in, train);
 		default:
 			assert( false );
 	}

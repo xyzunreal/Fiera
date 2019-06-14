@@ -11,5 +11,26 @@ struct point_t
 		y = j[2];
 		z = j[3];
 	}
+
+	bool operator >(int i){
+		if (m > i && x > i && y > i && z > i)
+			return true;
+		else
+			return false;
+	}
+
+	bool operator <(int i){
+		if (m < i && x < i && y < i && z < i)
+			return true;
+		else
+			return false;
+	}
+
+	void operator = (point_t size){
+		m = size.m;
+		x = size.x;
+		y = size.y;
+		z = size.z;
+	}
 };
 typedef point_t tdsize;

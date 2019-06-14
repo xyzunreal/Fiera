@@ -12,7 +12,7 @@ using namespace std;
 int main()
 {
     tensor_t<float> in(2, 2, 2, 2), actual_output(2, 2, 2, 2), expected_output(2, 2, 2, 2);
-    vector<float> gamma = {0.0731}, beta = {0.7204};
+    vector<float> gamma = {0.0731,0.7204}, beta = {0,0};
     float epsilon;
 
     std::vector<std::vector<std::vector<std::vector<float> > > > vect=
@@ -48,12 +48,13 @@ int main()
     epsilon = 1e-5;
 
     batch_norm_layer_t * layer = new batch_norm_layer_t({2, 2, 2, 2});
-    layer->in = in;
+    // layer->in = in;
     layer->gamma = gamma;
     layer->beta = beta;
     layer->epsilon = epsilon;
     layer->adjust_variance = false;
-    layer->activate();
+    layer->activate(in, true); 
+    
 
     if (layer->out == expected_output) 
         cout << "Batch Norm working correctly";

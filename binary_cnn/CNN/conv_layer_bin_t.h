@@ -5,43 +5,27 @@
 struct conv_layer_bin_t
 {
 	layer_type type = layer_type::conv_bin;
-	tensor_t<float> grads_in;
 	tensor_t<float> in;
-	tensor_t<float> out;
-	tensor_bin_t in_bin; 		// 1st BINARIZATION (h1)
-	tensor_bin_t in_bin2;		// 2nd BINARIZATION (h2)
 	tensor_t<float> al_b; 			// α1 * h1 + α2 * h2
-	tensor_bin_t out_bin;
 	tensor_t<float> filters; 
 	tensor_bin_t filters_bin; 
 	tensor_t<gradient_t> filter_grads;
 	uint16_t stride;
-	uint16_t extend_filter;
+	uint16_t extend_filter, number_filters;
+	tdsize in_size, out_size;
 	vector<float> alpha;
 	vector<float> alpha2;
 	bool debug,clip_gradients_flag; 	
 	conv_layer_bin_t( uint16_t stride, uint16_t extend_filter, uint16_t number_filters, tdsize in_size, bool clip_gradients_flag = true, bool debug_flag = false)
 		:
-		grads_in(in_size.m, in_size.x, in_size.y, in_size.z),
-		in(in_size.m, in_size.x, in_size.y, in_size.z ),
-		out(in_size.m,
-		(in_size.x - extend_filter) / stride + 1,
-			(in_size.y - extend_filter) / stride + 1,
-			number_filters
-		),
-		in_bin(in_size.m, in_size.x, in_size.y, in_size.z),
-		in_bin2(in_size.m, in_size.x, in_size.y, in_size.z),
-		al_b(in_size.m, in_size.x, in_size.y, in_size.z),
-		out_bin(in_size.m,
-		(in_size.x - extend_filter) / stride + 1,
-			(in_size.y - extend_filter) / stride + 1,
-			number_filters
-		),
 		filters(number_filters, extend_filter, extend_filter, in_size.z),
 		filter_grads(number_filters, extend_filter, extend_filter, in_size.z),
 		filters_bin(number_filters, extend_filter, extend_filter, in_size.z)
 
 	{
+		this->number_filters = number_filters;
+		this->out_size =  {in_size.m, (in_size.x - extend_filter) / stride + 1, (in_size.y - extend_filter) / stride + 1, number_filters};
+		this->in_size = in_size;
 		this->debug = debug_flag;
 		this->stride = stride;
 		this->extend_filter = extend_filter;
@@ -111,27 +95,20 @@ struct conv_layer_bin_t
 		float b = y;
 		return
 		{
-			normalize_range( (a - extend_filter + 1) / stride, out.size.x, true ),
-			normalize_range( (b - extend_filter + 1) / stride, out.size.y, true ),
+			normalize_range( (a - extend_filter + 1) / stride, out_size.x, true ),
+			normalize_range( (b - extend_filter + 1) / stride, out_size.y, true ),
 			0,
-			normalize_range( a / stride, out.size.x, false ),
-			normalize_range( b / stride, out.size.y, false ),
+			normalize_range( a / stride, out_size.x, false ),
+			normalize_range( b / stride, out_size.y, false ),
 			(int)filters.size.m - 1,
 		};
 	}
 
-	void activate( tensor_t<float>& in )
-	{
-		this->in = in;
-		activate();
-	}
-	
-	
-	void binarize(){
+	tensor_bin_t binarize(tensor_t<float> in){
 		
-		// binarizes weights
+		tensor_bin_t in_bin(in.size.m, in_size.x, in_size.y, in_size.z );
+
 		for(int filter = 0; filter<filters.size.m; filter++){
-			
 			for(int x=0; x< filters.size.x; x++){
 				for(int y=0; y< filters.size.y; y++){
 					for(int z=0; z< filters.size.z; z++){
@@ -149,38 +126,31 @@ struct conv_layer_bin_t
 		
 		//binarizes in 
 		for(int example = 0; example<in.size.m; example++)
-			for(int x=0; x<in.size.x; x++){
-				for(int y=0; y<in.size.y; y++){
-					for(int z=0; z<in.size.z; z++){
+			for(int x=0; x<in.size.x; x++)
+				for(int y=0; y<in.size.y; y++)
+					for(int z=0; z<in.size.z; z++)
 						in_bin.data[in_bin(example,x,y,z)] = in(example,x,y,z)>=0 ? 1 : 0;
-						
-					}
-				}
-				}
 		
-		if(debug)
-		{
-			cout<<"\n******binarize input**************"<<endl;
-			print_tensor_bin(in_bin);
-		}
+		return in_bin;
 		
 	}
 	
-	void cal_mean(){
+	tensor_bin_t calculate_alpha(tensor_t<float> in, tensor_bin_t in_bin ){
 	
 		alpha.resize(in.size.m);
 		alpha2.resize(in.size.m);
 
 		// CALCULATE alpha1		
-		for(int e = 0; e<in.size.m; e++){
+		for(int e = 0; e<in.size.m; e++)
+		{
 			float sum = 0;
 			for(int x=0; x<in.size.x; x++)
 				for(int y=0; y<in.size.y; y++)
-					for(int z=0; z<in.size.z; z++){
+					for(int z=0; z<in.size.z; z++)
 						sum += abs(in(e,x,y,z));
-				}
 			
 			alpha[e] = sum/(in.size.x*in.size.y*in.size.z);
+
 			if(debug)
 			{
 				cout<<"\nalpha1 for"<<e<<"th example is "<<alpha[e]<<endl;
@@ -188,9 +158,11 @@ struct conv_layer_bin_t
 		}
 
 		// CALCULATE alpha2
+
+		tensor_bin_t in_bin2(in.size.m, in_size.x, in_size.y, in_size.z);
 		tensor_t<float> temp(in.size.m, in.size.x, in.size.y, in.size.z);
+
 		for(int e = 0; e<in.size.m; e++){
-			
 			float sum = 0;
 			
 			for(int x=0; x<in.size.x; x++)
@@ -199,7 +171,7 @@ struct conv_layer_bin_t
 						temp(e,x,y,z) = in(e,x,y,z) - alpha[e]*(in_bin(e,x,y,z)==1 ? float(1) : float(-1) );
 						in_bin2.data[in_bin2(e,x,y,z)] = temp(e,x,y,z)>=0? 1 : 0;
 						sum += abs(temp(e,x,y,z));
-				}
+					}
 
 			alpha2[e] = sum/(in.size.x*in.size.y*in.size.z);
 
@@ -214,9 +186,13 @@ struct conv_layer_bin_t
 			cout<<"\nin_bin2"<<endl;
 			print_tensor_bin(in_bin2);
 		}
+		return in_bin2;
+	}
 		
-
+	tensor_t<float> calculate_al_b(tensor_bin_t in_bin, tensor_bin_t in_bin2){
 		// CALCULATE al_b
+
+		tensor_t<float> al_b(in_bin.size.m, in_size.x, in_size.y, in_size.z);
 		for (int e = 0; e < in.size.m; e++)
 			for(int x=0; x<in.size.x; x++)
 				for(int y=0; y<in.size.y; y++)
@@ -230,20 +206,27 @@ struct conv_layer_bin_t
 			cout<<"\nal_b\n"<<endl;
 			print_tensor(al_b);
 		}
+		return al_b;
 	}
 
 	
-	void activate()
+	tensor_t<float> activate(tensor_t<float> in, bool train)
 	{
-		//binarize filters and in 
-		binarize();
+		if (train) this->in = in;
 
-		//initialize alpha 
-		cal_mean();
+		tensor_t<float> out(in.size.m, (in_size.x - extend_filter) / stride + 1, (in_size.y - extend_filter) / stride + 1, number_filters );
+
+		//binarize filters and in 
+        tensor_bin_t in_bin = binarize(in);
+		//initialize alpha and calculate in_bin2
+        tensor_bin_t in_bin2 = calculate_alpha(in, in_bin);
+		tensor_t<float> al_b = 	calculate_al_b(in_bin, in_bin2);
+
+		if(train) this->al_b = al_b;
+		
 
 		//calculating binary convolution
-		for(int example = 0; example<in.size.m; example++){
-		
+		for(int example = 0; example<in.size.m; example++)
 			for ( int filter = 0; filter < filters_bin.size.m; filter++ )
 				for ( int x = 0; x < out.size.x; x++ )
 					for ( int y = 0; y < out.size.y; y++ ){
@@ -265,7 +248,6 @@ struct conv_layer_bin_t
 						out(example, x,y,filter) += alpha2[example]*(2*sum2 - extend_filter*extend_filter*in.size.z);
 						
 					}
-				}
 			
 		
 
@@ -274,10 +256,9 @@ struct conv_layer_bin_t
 			cout<<"*********output for conv_bin*********\n";
 			print_tensor(out);
 		}
+		return out;
 
-	}
-	
-	
+	}	
 	
 	void fix_weights(float learning_rate){
 		for ( int a = 0; a < filters.size.m; a++ )
@@ -287,7 +268,7 @@ struct conv_layer_bin_t
 					{
 						float& w = filters(a, i, j, z );
 						gradient_t& grad = filter_grads(a, i, j, z );
-						grad.grad /= in.size.m;
+						// grad.grad /= in.size.m;
 						w = update_weight( w, grad, 1, true, learning_rate);
 						update_gradient(grad);
 					}
@@ -298,8 +279,10 @@ struct conv_layer_bin_t
 		}
 	}
 
-	void calc_grads( tensor_t<float>& grad_next_layer)
+	tensor_t<float> calc_grads( tensor_t<float>& grad_next_layer)
 	{
+		tensor_t<float> grads_in(grad_next_layer.size.m, in_size.x, in_size.y, in_size.z);
+
 		for ( int k = 0; k < filter_grads.size.m; k++ )
 		{
 			for ( int i = 0; i < extend_filter; i++ )
@@ -342,6 +325,7 @@ struct conv_layer_bin_t
 			cout<<"*********grads_in for conv_bin************\n";
 			print_tensor(grads_in);
 		}
+		return grads_in;
 	}
 
 	void save_layer( json& model ){
@@ -391,11 +375,11 @@ struct conv_layer_bin_t
 	void print_layer(){
 		cout << "\n\n Conv Binary Layer : \t";
 		cout << "\n\t in_size:\t";
-		print_tensor_size(in.size);
+		print_tensor_size(in_size);
 		cout << "\n\t Filter Size:\t";
 		print_tensor_size(filters.size);
 		cout << "\n\t out_size:\t";
-		print_tensor_size(out.size);
+		print_tensor_size(out_size);
 	}
 };
 #pragma pack(pop)
