@@ -1,8 +1,3 @@
-
-
-
-
-
 #pragma once
 #include <math.h>
 #include <float.h>
@@ -65,20 +60,16 @@ struct fc_layer_t
 		
 		if ( train ) this->in = in;  	// Only save `in` while training to save RAM during inference
 		tensor_t<float> out( in.size.m, weights.size.x, 1, 1 );
+		int xyz = in.size.x * in.size.y * in.size.z;
 		for ( int e = 0; e < in.size.m; e++){
+			int exyz = e*xyz;
 			for ( int n = 0; n < weights.size.x; n++ )
 			{
 				float inputv = 0;
-
-				for ( int z = 0; z < in.size.z; z++ ){
-					for ( int j = 0; j < in.size.y; j++ ){
-						for ( int i = 0; i < in.size.x; i++ )
+						for ( int i = 0; i < xyz; i++ )
 						{
-							int m = map( { 0 , i, j, z } );
-							inputv += in( e, i, j, z ) * weights(m, n, 0, 0 ); 
+							inputv += in.data[exyz +i] * weights.data[ weights.size.x*i + n]; 
 						}	
-					}
-				}
 				out( e, n, 0, 0 ) = inputv;
 			}
 		
@@ -123,22 +114,21 @@ struct fc_layer_t
 		tensor_t<float> grads_in( grad_next_layer.size.m, in_size.x, in_size.y, in_size.z );
 		weights_grad.resize(weights.size);
 
-		for(int e=0; e<grad_next_layer.size.m; e++)
+		int xyz = in.size.x * in.size.y * in.size.z;
+		for(int e=0; e<grad_next_layer.size.m; e++){
+			int exyz = e*xyz;
+			int en = e*weights.size.x;
 			for ( int n = 0; n < weights.size.x; n++ )
 			{
-
-				for ( int i = 0; i < in_size.x; i++ )
-					for ( int j = 0; j < in_size.y; j++ )
-						for ( int z = 0; z < in_size.z; z++ )
+				int enn = en + n;
+				for ( int i = 0; i < xyz; i++ )
 						{
-							
-							int m = map( {0, i, j, z } );
-							grads_in( e, i, j, z ) += grad_next_layer(e, n, 0, 0 ) * weights( m, n,0, 0 );
-							weights_grad( m, n, 0, 0 ).grad += grad_next_layer( e, n, 0, 0 ) * in( e, i, j, z );
-							clip_gradients(clip_gradients_flag, grads_in( e,i,j,z ));
+							grads_in.data[ exyz + i ] += grad_next_layer.data[enn] * weights.data[ weights.size.x*i + n ];
+							weights_grad.data[ weights.size.x*i + n ].grad += grad_next_layer.data[enn] * in.data[ exyz + i ];
+							// clip_gradients(clip_gradients_flag, grads_in.data[ exyz + i ]);
 						}
 			}
-				
+		}	
 		if(debug)
 		{
 			cout<<"**********grads_in for float fc***********\n";

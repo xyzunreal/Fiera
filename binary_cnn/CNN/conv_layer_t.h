@@ -192,12 +192,12 @@ struct conv_layer_t
 									float w_applied = filters(k, x - minx, y - miny, z );
 									sum_error += w_applied * grad_next_layer(e, i, j, k );
 									filter_grads(k, x - minx, y - miny, z ).grad += in(e, x, y, z ) * grad_next_layer(e, i, j, k );
-									clip_gradients(clip_gradients_flag, filter_grads(k, x - minx, y - miny, z ).grad);
+									// clip_gradients(clip_gradients_flag, filter_grads(k, x - minx, y - miny, z ).grad);
 								}
 							}
 						}
 						grads_in(e, x, y, z ) = sum_error;
-						clip_gradients(clip_gradients_flag, grads_in(e,x,y,z));
+						// clip_gradients(clip_gradients_flag, grads_in(e,x,y,z));
 					}
 				}
 			}
