@@ -34,11 +34,11 @@ struct fc_layer_t
 			for ( int h = 0; h < in_size.x * in_size.y * in_size.z; h++ )
 				weights( h, i, 0, 0 ) =  ( 1.0f * (rand()-rand())) / (float( RAND_MAX ) * 10);  // Generates a random number between -1 and 1 
 		
-		if(debug)
-		{
-			cout << "********weights for fc************\n";
-			print_tensor(weights);
-		}
+		// if(debug)
+		// {
+		// 	cout << "********weights for fc************\n";
+		// 	print_tensor(weights);
+		// }
 
 	}
 
@@ -66,21 +66,18 @@ struct fc_layer_t
 			for ( int n = 0; n < weights.size.x; n++ )
 			{
 				float inputv = 0;
-						for ( int i = 0; i < xyz; i++ )
-						{
-							inputv += in.data[exyz +i] * weights.data[ weights.size.x*i + n]; 
-						}	
+				for ( int i = 0; i < xyz; i++ )
+					inputv += in.data[exyz +i] * weights.data[ weights.size.x*i + n]; 
 				out( e, n, 0, 0 ) = inputv;
 			}
 		
 		}
-
 		
-		if(debug)
-		{
-			cout<<"*******output for fc**********\n";
-			print_tensor(out);
-		}
+		// if(debug)
+		// {
+		// 	cout<<"*******output for fc**********\n";
+		// 	print_tensor(out);
+		// }
 		return out;
 	}
 
@@ -99,11 +96,11 @@ struct fc_layer_t
 						update_gradient( grad );
 					}
 
-		if(debug)
-		{
-			cout<<"*******new weights for float fc*****\n";
-			print_tensor(weights);
-		}
+		// if(debug)
+		// {
+		// 	cout<<"*******new weights for float fc*****\n";
+		// 	print_tensor(weights);
+		// }
 	}
 
 	tensor_t<float> calc_grads( tensor_t<float>& grad_next_layer )
@@ -129,11 +126,11 @@ struct fc_layer_t
 						}
 			}
 		}	
-		if(debug)
-		{
-			cout<<"**********grads_in for float fc***********\n";
-			print_tensor(grads_in);
-		}
+		// if(debug)
+		// {
+		// 	cout<<"**********grads_in for float fc***********\n";
+		// 	print_tensor(grads_in);
+		// }
 		return grads_in;	
 
 	}

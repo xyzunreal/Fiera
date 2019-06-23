@@ -52,11 +52,11 @@ struct conv_layer_bin_t
 				}
 			}
 		}
-		if(debug)
-		{
-			cout<<"\n******weights for conv_bin********\n"<<endl;
-			print_tensor(filters);
-		}
+		// if(debug)
+		// {
+		// 	cout<<"\n******weights for conv_bin********\n"<<endl;
+		// 	print_tensor(filters);
+		// }
 
 
 	}
@@ -118,11 +118,11 @@ struct conv_layer_bin_t
 				}
 			}
 		}
-		if(debug)
-		{
-			cout<<"\n************ binarized weights **********\n";
-			print_tensor_bin(filters_bin);
-		}
+		// if(debug)
+		// {
+		// 	cout<<"\n************ binarized weights **********\n";
+		// 	print_tensor_bin(filters_bin);
+		// }
 		
 		//binarizes in 
 		for(int example = 0; example<in.size.m; example++)
@@ -151,10 +151,10 @@ struct conv_layer_bin_t
 			
 			alpha[e] = sum/(in.size.x*in.size.y*in.size.z);
 
-			if(debug)
-			{
-				cout<<"\nalpha1 for"<<e<<"th example is "<<alpha[e]<<endl;
-			}
+			// if(debug)
+			// {
+			// 	cout<<"\nalpha1 for"<<e<<"th example is "<<alpha[e]<<endl;
+			// }
 		}
 
 		// CALCULATE alpha2
@@ -175,17 +175,17 @@ struct conv_layer_bin_t
 
 			alpha2[e] = sum/(in.size.x*in.size.y*in.size.z);
 
-			if(debug)
-			{
-				cout<<"\nalpha2 for "<<e<<"th example is "<<alpha2[e]<<endl;
-			}
+			// if(debug)
+			// {
+			// 	cout<<"\nalpha2 for "<<e<<"th example is "<<alpha2[e]<<endl;
+			// }
 		}
 
-		if(debug)
-		{
-			cout<<"\nin_bin2"<<endl;
-			print_tensor_bin(in_bin2);
-		}
+		// if(debug)
+		// {
+		// 	cout<<"\nin_bin2"<<endl;
+		// 	print_tensor_bin(in_bin2);
+		// }
 		return in_bin2;
 	}
 		
@@ -201,21 +201,19 @@ struct conv_layer_bin_t
 								alpha2[e] * (in_bin2(e, x, y, z) == 1 ? float(1) : float(-1) );
 					}
 		
-		if(debug)
-		{
-			cout<<"\nal_b\n"<<endl;
-			print_tensor(al_b);
-		}
+		// if(debug)
+		// {
+		// 	cout<<"\nal_b\n"<<endl;
+		// 	print_tensor(al_b);
+		// }
 		return al_b;
 	}
 
 	
-	tensor_t<float> activate(tensor_t<float> in, bool train)
+	tensor_t<float> activate(tensor_t<float> in, bool train = false)
 	{
 		if (train) this->in = in;
-
 		tensor_t<float> out(in.size.m, (in_size.x - extend_filter) / stride + 1, (in_size.y - extend_filter) / stride + 1, number_filters );
-
 		//binarize filters and in 
         tensor_bin_t in_bin = binarize(in);
 		//initialize alpha and calculate in_bin2
@@ -224,7 +222,6 @@ struct conv_layer_bin_t
 
 		if(train) this->al_b = al_b;
 		
-
 		//calculating binary convolution
 		for(int example = 0; example<in.size.m; example++)
 			for ( int filter = 0; filter < filters_bin.size.m; filter++ )
@@ -250,12 +247,11 @@ struct conv_layer_bin_t
 					}
 			
 		
-
-		if(debug)
-		{
-			cout<<"*********output for conv_bin*********\n";
-			print_tensor(out);
-		}
+		// if(debug)
+		// {
+		// 	cout<<"*********output for conv_bin*********\n";
+		// 	print_tensor(out);
+		// }
 		return out;
 
 	}	
@@ -272,11 +268,11 @@ struct conv_layer_bin_t
 						w = update_weight( w, grad, 1, true, learning_rate);
 						update_gradient(grad);
 					}
-		if(debug)
-		{
-			cout<<"\n*******new weights for conv_bin*****\n";
-			print_tensor(filters);
-		}
+		// if(debug)
+		// {
+		// 	cout<<"\n*******new weights for conv_bin*****\n";
+		// 	print_tensor(filters);
+		// }
 	}
 
 	tensor_t<float> calc_grads( tensor_t<float>& grad_next_layer)
@@ -306,7 +302,7 @@ struct conv_layer_bin_t
 									
 									filter_grads(k, x - minx, y - miny, z ).grad += al_b(e, x, y, z ) * grad_next_layer(e, i, j, k );
 									clip_gradients(clip_gradients_flag, filter_grads(k, x - minx, y - miny, z ).grad);
-									if(in(e,x,y,z) <= 1){
+									if(fabs(in(e,x,y,z)) <= 1){
 										float w_applied = (filters_bin.data[filters_bin(k, x - minx, y - miny, z )] == 1? float(1) : float(-1));
 										sum_error += w_applied * grad_next_layer(e, i, j, k );
 									}
@@ -318,13 +314,13 @@ struct conv_layer_bin_t
 						clip_gradients(clip_gradients_flag, grads_in(e,x,y,z));
 					}
 				}
-		if(debug)
-		{
-			cout<<"*********grads filter*****************\n";
-			print_tensor(filter_grads);
-			cout<<"*********grads_in for conv_bin************\n";
-			print_tensor(grads_in);
-		}
+		// if(debug)
+		// {
+		// 	cout<<"*********grads filter*****************\n";
+		// 	print_tensor(filter_grads);
+		// 	cout<<"*********grads_in for conv_bin************\n";
+		// 	print_tensor(grads_in);
+		// }
 		return grads_in;
 	}
 
@@ -334,7 +330,7 @@ struct conv_layer_bin_t
 			{ "stride", stride },
 			{ "extend_filter", extend_filter },
 			{ "number_filters", filters.size.m },
-			{ "in_size", {in.size.m, in.size.x, in.size.y, in.size.z} },
+			{ "in_size", {in_size.m, in_size.x, in_size.y, in_size.z} },
 			{ "clip_gradients", clip_gradients_flag}
 		} );
 	}

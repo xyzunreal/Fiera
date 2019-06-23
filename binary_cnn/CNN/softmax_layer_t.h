@@ -70,11 +70,11 @@ struct softmax_layer_t
 				out(tm, i, 0, 0) = max(exp(in(tm, i, 0, 0)), float(1e-7))/sum;	
 		}
 
-		if(debug)
-		{		
-			cout<<"********output for softmax ********\n";
-			print_tensor(out);
-		}
+		// if(debug)
+		// {		
+		// 	cout<<"********output for softmax ********\n";
+		// 	print_tensor(out);
+		// }
 
 		if (train) this->out = out;
 		
@@ -111,11 +111,11 @@ struct softmax_layer_t
 			}	
 		}
 		
-		if(debug)
-		{
-			cout<<"********grads_in for softmax*********\n";
-			print_tensor(grads_in);
-		}
+		// if(debug)
+		// {
+		// 	cout<<"********grads_in for softmax*********\n";
+		// 	print_tensor(grads_in);
+		// }
 
 		return grads_in;
 	}
@@ -130,6 +130,10 @@ struct softmax_layer_t
 	}	
 
 	void save_layer_weight( string fileName ){
+		ofstream file(fileName);
+		json j = {{"type", "softmax"}};
+		file << j;
+		file.close();
 	}
 
 	void load_layer_weight(string fileName){

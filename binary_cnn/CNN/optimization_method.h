@@ -11,8 +11,8 @@ static float update_weight( float &w, gradient_t& grad, float multp, bool clip, 
 	w -= learning_rate  * m * multp +
 		 learning_rate * WEIGHT_DECAY * w;
 		 
-		 if ( w < -1 and clip) 	  w = -1;
-		 else if (w > 1 and clip) w = 1;
+		 if ( w < -1 and clip) 	  w = -1.0;
+		 else if (w > 1 and clip) w = 1.0;
 	return w;
 
 }

@@ -2,6 +2,7 @@
 **/a.out
 **/.gitignore
 **/*.txt
-**/weights*
 **/*.swo
 **/*.swp
+**/build/*
+**/*.weights

@@ -61,11 +61,11 @@ struct prelu_layer_t
 							x = x*alpha;
 						out( tm, i, j, k) = x;
 					}
-		if(debug)
-		{
-			cout<<"********output for prelu*****\n";
-			print_tensor(out);
-		}
+		// if(debug)
+		// {
+		// 	cout<<"********output for prelu*****\n";
+		// 	print_tensor(out);
+		// }
 		return out;
 	}
 
@@ -76,11 +76,11 @@ struct prelu_layer_t
 		alpha = update_weight(alpha,grads_alpha,1,false, learning_rate);
 		update_gradient(grads_alpha);
 		
-		if(debug)
-		{
-			cout<<"*******updated alpha for prelu*****\n";
-			cout<<alpha<<endl;
-		}
+		// if(debug)
+		// {
+		// 	cout<<"*******updated alpha for prelu*****\n";
+		// 	cout<<alpha<<endl;
+		// }
 	}
 
 	tensor_t<float> calc_grads( tensor_t<float>& grad_next_layer )
@@ -113,20 +113,20 @@ struct prelu_layer_t
 			}
 		}
 		
-		if(debug)
-		{
-			cout<<"***********grads_in for prelu********\n";
-  	    	print_tensor(grads_in);
-			cout<<"*********grad alpha***********\n";
-			cout<<grads_alpha.grad<<endl;
-		}
+		// if(debug)
+		// {
+		// 	cout<<"***********grads_in for prelu********\n";
+  	    // 	print_tensor(grads_in);
+		// 	cout<<"*********grad alpha***********\n";
+		// 	cout<<grads_alpha.grad<<endl;
+		// }
 		return grads_in;
 	}
 
 	void save_layer( json& model ){
 		model["layers"].push_back( {
 			{ "layer_type", "prelu" },
-			{ "in_size", {in_size.x, in_size.y, in_size.z, in_size.m} },
+			{ "in_size", {in_size.m, in_size.x, in_size.y, in_size.z} },
 			{ "alpha", alpha},
 			{ "prelu_zero", prelu_zero},
 			{ "clip_gradients", clip_gradients_flag}
@@ -134,6 +134,10 @@ struct prelu_layer_t
 	}
 
 	void save_layer_weight( string fileName ){
+		ofstream file(fileName);
+		json j = {{"type", "prelu"}};
+		file << j;
+		file.close();
 	}
 
 	void load_layer_weight(string fileName){

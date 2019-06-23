@@ -20,7 +20,7 @@ template<typename T>
 struct tensor_t
 {
 	T * data;
-
+	// static int ccount, dcount;
 	tdsize size;
 
 	tensor_t(){
@@ -28,6 +28,7 @@ struct tensor_t
 	
 	tensor_t(int _m, int _x, int _y, int _z)
 	{
+		// ccount+=1;
 		data = new T[_x * _y * _z * _m];
 		memset(data,0,sizeof(T)*_x*_y*_z*_m);
 		size.m = _m;
@@ -38,6 +39,7 @@ struct tensor_t
 
 	tensor_t(tdsize sz)
 	{
+		// ccount++;
 		data = new T[sz.x * sz.y * sz.z * sz.m];
 		memset(data,0,sizeof(T)*sz.x*sz.y*sz.z*sz.m);
 		size.m = sz.m;
@@ -48,6 +50,7 @@ struct tensor_t
 
 	tensor_t( const tensor_t& other )
 	{
+		// ccount++;
 		data = new T[other.size.x *other.size.y *other.size.z * other.size.m];
 		memcpy(
 			this->data,
@@ -88,6 +91,7 @@ struct tensor_t
 	}
 
 	void operator = (tensor_t<T> t){
+		// ccount++;
 		if(t.size.m != size.m or t.size.x != size.x or t.size.y != size.y or t.size.z != size.z){
 			data = new T[t.size.m * t.size.x * t.size.y * t.size.z];
 			memset(data,0,sizeof(T)*t.size.m * t.size.x * t.size.y * t.size.z);
@@ -155,6 +159,7 @@ struct tensor_t
 
 	~tensor_t()
 	{
+		// dcount++;
 		delete[] data;
 	}
 };

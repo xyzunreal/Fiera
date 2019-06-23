@@ -4,7 +4,7 @@
     ],
     "layers": [
         {
-            "clip_gradients": false,
+            "clip_gradients": true,
             "extend_filter": 8,
             "in_size": [
                 -1,
@@ -17,13 +17,13 @@
             "stride": 1
         },
         {
-            "alpha": 0.05000000074505806,
-            "clip_gradients": false,
+            "alpha": 11.874155044555664,
+            "clip_gradients": true,
             "in_size": [
+                -1,
                 21,
                 21,
-                12,
-                -1
+                12
             ],
             "layer_type": "prelu",
             "prelu_zero": 0.5
@@ -39,26 +39,26 @@
             "layer_type": "batch_norm2D"
         },
         {
-            "clip_gradients": false,
+            "clip_gradients": true,
             "extend_filter": 5,
             "in_size": [
-                0,
-                0,
-                0,
-                0
+                -1,
+                21,
+                21,
+                12
             ],
-            "layer_type": "conv_bin",
+            "layer_type": "conv",
             "number_filters": 15,
             "stride": 1
         },
         {
-            "alpha": 0.05000000074505806,
-            "clip_gradients": false,
+            "alpha": 17.75489616394043,
+            "clip_gradients": true,
             "in_size": [
+                -1,
                 17,
                 17,
-                15,
-                -1
+                15
             ],
             "layer_type": "prelu",
             "prelu_zero": 0.5
@@ -74,26 +74,26 @@
             "layer_type": "batch_norm2D"
         },
         {
-            "clip_gradients": false,
+            "clip_gradients": true,
             "extend_filter": 5,
             "in_size": [
-                0,
-                0,
-                0,
-                0
+                -1,
+                17,
+                17,
+                15
             ],
-            "layer_type": "conv_bin",
+            "layer_type": "conv",
             "number_filters": 20,
             "stride": 1
         },
         {
-            "alpha": 0.05000000074505806,
-            "clip_gradients": false,
+            "alpha": 1.8060497045516968,
+            "clip_gradients": true,
             "in_size": [
+                -1,
                 13,
                 13,
-                20,
-                -1
+                20
             ],
             "layer_type": "prelu",
             "prelu_zero": 0.5
@@ -109,26 +109,26 @@
             "layer_type": "batch_norm2D"
         },
         {
-            "clip_gradients": false,
+            "clip_gradients": true,
             "extend_filter": 5,
             "in_size": [
-                0,
-                0,
-                0,
-                0
+                -1,
+                13,
+                13,
+                20
             ],
-            "layer_type": "conv_bin",
+            "layer_type": "conv",
             "number_filters": 30,
             "stride": 1
         },
         {
-            "alpha": 0.05000000074505806,
-            "clip_gradients": false,
+            "alpha": 28.10675811767578,
+            "clip_gradients": true,
             "in_size": [
+                -1,
                 9,
                 9,
-                30,
-                -1
+                30
             ],
             "layer_type": "prelu",
             "prelu_zero": 0.5
@@ -144,14 +144,14 @@
             "layer_type": "batch_norm2D"
         },
         {
-            "clip_gradients": true,
+            "clip_gradients": false,
             "in_size": [
                 -1,
                 9,
                 9,
                 30
             ],
-            "layer_type": "fc_bin",
+            "layer_type": "fc",
             "out_size": [
                 -1,
                 108,
@@ -184,7 +184,7 @@
                 1
             ],
             "layer_type": "softmax",
-            "to_normalize": false
+            "to_normalize": true
         }
     ]
 }

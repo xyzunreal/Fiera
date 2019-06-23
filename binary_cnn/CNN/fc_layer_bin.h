@@ -60,11 +60,11 @@ struct fc_layer_bin_t
 				weights(h,i, 0, 0 ) =  (1.0f * (rand()-rand())) / float( RAND_MAX );  // Generates a random number between -1 and 1 
 				weights_bin.data[weights_bin(h, i, 0, 0)] = 0;
 			}
-		if(debug)
-		{
-			cout<<"***********float weights for fc bin ************\n";
-			print_tensor(weights);
-		}
+		// if(debug)
+		// {
+		// 	cout<<"***********float weights for fc bin ************\n";
+		// 	print_tensor(weights);
+		// }
 		
 	}
 
@@ -103,10 +103,10 @@ struct fc_layer_bin_t
 			
 			alpha[e] = sum/(in.size.x*in.size.y*in.size.z);
 			
-			if(debug)
-			{
-				cout<<"alpha1 for"<<e<<"th example is "<<alpha[e]<<endl;
-			}
+			// if(debug)
+			// {
+			// 	cout<<"alpha1 for"<<e<<"th example is "<<alpha[e]<<endl;
+			// }
 		}
 
 		// CALCULATE alpha2
@@ -127,17 +127,17 @@ struct fc_layer_bin_t
 
 			alpha2[e] = sum/(in.size.x*in.size.y*in.size.z);
 
-			if(debug)
-			{
-				cout<<"alpha2 for "<<e<<"th example is "<<alpha2[e]<<endl;
-			}
+			// if(debug)
+			// {
+			// 	cout<<"alpha2 for "<<e<<"th example is "<<alpha2[e]<<endl;
+			// }
 		}
 
-		if(debug)
-		{
-			cout<<"\nin_bin2\n"<<endl;
-			print_tensor_bin(in_bin2);
-		}
+		// if(debug)
+		// {
+		// 	cout<<"\nin_bin2\n"<<endl;
+		// 	print_tensor_bin(in_bin2);
+		// }
 		return in_bin2;
 	}
 	tensor_t<float> calculate_al_b(tensor_bin_t in_bin, tensor_bin_t in_bin2){
@@ -152,11 +152,11 @@ struct fc_layer_bin_t
 								alpha2[e] * (in_bin2(e, x, y, z) == 1 ? float(1) : float(-1) );
 					}
 	
-		if(debug)
-		{
-			cout<<"\nal_b\n"<<endl;
-			print_tensor(al_b);
-		}
+		// if(debug)
+		// {
+		// 	cout<<"\nal_b\n"<<endl;
+		// 	print_tensor(al_b);
+		// }
 		return al_b;
 	
 	}
@@ -180,13 +180,13 @@ struct fc_layer_bin_t
 		tensor_t<float> out( in.size.m, weights.size.x, 1, 1 );
         tensor_bin_t in_bin = binarize(in);
 
-		if(debug)
-		{
-			cout<<"**********binary weights for fc bin **********\n";
-	        print_tensor_bin(weights_bin);
-	        cout<<"**********binary inputs for fc bin ************\n";
-	        print_tensor_bin(in_bin);
-		}
+		// if(debug)
+		// {
+		// 	cout<<"**********binary weights for fc bin **********\n";
+	    //     print_tensor_bin(weights_bin);
+	    //     cout<<"**********binary inputs for fc bin ************\n";
+	    //     print_tensor_bin(in_bin);
+		// }
         tensor_bin_t in_bin2 = calculate_alpha(in, in_bin);
 		tensor_t<float> al_b = 	calculate_al_b(in_bin, in_bin2);
 
@@ -213,11 +213,11 @@ struct fc_layer_bin_t
 			}
 
 
-		if(debug)
-		{
-			cout << "*************output of fc bin *************\n";
-			print_tensor(out);
-		}
+		// if(debug)
+		// {
+		// 	cout << "*************output of fc bin *************\n";
+		// 	print_tensor(out);
+		// }
 
 		return out;
 	}
@@ -238,11 +238,11 @@ struct fc_layer_bin_t
 					}
 
 
-		if(debug)
-		{
-			cout<<"*******new weights for fc_bin*****\n";
-			print_tensor(weights);
-		}
+		// if(debug)
+		// {
+		// 	cout<<"*******new weights for fc_bin*****\n";
+		// 	print_tensor(weights);
+		// }
 	}
 
 	tensor_t<float> calc_grads( tensor_t<float>& grad_next_layer )
@@ -264,7 +264,7 @@ struct fc_layer_bin_t
 						for ( int z = 0; z < in_size.z; z++ )
 						{
 							int m = map( {0, i, j, z } );
-							if(in(e,i,j,z) <= 1)
+							if(fabs(in(e,i,j,z)) <= 1)
 								grads_in(e, i, j, z ) += grad_next_layer(e, n, 0, 0) * (weights_bin.data[weights_bin( m, n,0, 0 )] == 1? float(1) : float(-1));
 							else
 								grads_in(e,i,j,z) += 0;
@@ -277,10 +277,10 @@ struct fc_layer_bin_t
 
 
 
-		if(debug){	
-			cout<<"*********grads_in for fc bin***********\n";
-			print_tensor(grads_in);
-		}	
+		// if(debug){	
+		// 	cout<<"*********grads_in for fc bin***********\n";
+		// 	print_tensor(grads_in);
+		// }	
 
 		return grads_in;
 	}

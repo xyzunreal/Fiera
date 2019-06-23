@@ -128,11 +128,11 @@ struct conv_layer_t
 			}
 		}
 
-		if(debug)
-		{
-			cout<<"*********out for convolution*************\n";
-			print_tensor(out);
-		}
+		// if(debug)
+		// {
+		// 	cout<<"*********out for convolution*************\n";
+		// 	print_tensor(out);
+		// }
 		
 
 		return out;
@@ -152,11 +152,11 @@ struct conv_layer_t
 						w = update_weight( w, grad,1,false,learning_rate);
 						update_gradient( grad );
 					}
-		if(debug)
-		{
-			cout<<"*******new weights for float conv*****\n";
-			print_tensor(filters);
-		}
+		// if(debug)
+		// {
+		// 	cout<<"*******new weights for float conv*****\n";
+		// 	print_tensor(filters);
+		// }
 		
 	}
 
@@ -203,14 +203,14 @@ struct conv_layer_t
 			}
 		}
 		
-		if(debug)
-		{
-			cout<<"*************grads filter**********\n";
-			print_tensor(filter_grads);
+		// if(debug)
+		// {
+		// 	cout<<"*************grads filter**********\n";
+		// 	print_tensor(filter_grads);
 
-			cout<<"*********grads_in for float conv********\n";
-			print_tensor(grads_in);
-		}
+		// 	cout<<"*********grads_in for float conv********\n";
+		// 	print_tensor(grads_in);
+		// }
 
 		return grads_in;
 	}

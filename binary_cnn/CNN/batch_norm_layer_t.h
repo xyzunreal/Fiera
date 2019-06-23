@@ -92,10 +92,10 @@ struct batch_norm_layer_t
 		
 		// in_hat = in*gamma + beta
 
-		if(debug){
-			cout<<"\n**********output for batchnorm************\n";
-			print_tensor(out);
-		}
+		// if(debug){
+		// 	cout<<"\n**********output for batchnorm************\n";
+		// 	print_tensor(out);
+		// }
 
 		if(train) {
 			this->out = out;
@@ -198,11 +198,11 @@ struct batch_norm_layer_t
 			}
 		}
 
-		if(debug)
-		{
-			cout<<"\n*********grads_in for batch_norm************\n";
-			print_tensor(grads_in);
-		}
+		// if(debug)
+		// {
+		// 	cout<<"\n*********grads_in for batch_norm************\n";
+		// 	print_tensor(grads_in);
+		// }
 
 		return grads_in;	
 	}

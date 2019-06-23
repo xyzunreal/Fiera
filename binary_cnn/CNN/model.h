@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <string.h>
 #include <cstdio>
+#include <ctime>
 #include <iostream>
 #include <fstream>
 #include <algorithm>
@@ -17,88 +18,90 @@ using namespace std;
 class Model{
 
     vector<layer_t* > layers;
+    int epochs=0;
+    int batch_size;
+    int num_of_batches;
+    float loss;
+    float learning_rate;
+
     public:
         Model(vector<layer_t *> layers){
             this->layers = layers;
         }
         Model(){}
 
-        void train( tensor_t<float> input, tensor_t<float> output, int batch_size, int epochs=1, float lr = 0.02, string optimizer="Momentum", bool debug=false ){
+        float Step_decay(float epoch){
+            float drop = 0.5;
+            float epoch_drop = 1;
+
+            float n_learning_rate = learning_rate*pow(drop, floor((1+epoch)/epoch_drop)); 
+            return n_learning_rate;
+        }
+        void train( tensor_t<float> input, tensor_t<float> output, int batch_size, int epochs=1, float lr = 0.02, string optimizer="Momentum", string lr_schedule = "Step_decay", bool debug=false ){
         //TODO: Check layers are not empty
         
-            int num_of_batches = input.size.m / batch_size ;
-            cout<<input.size.m<<endl;
-            cout<<batch_size<<endl;
-            cout << "No of batches" << num_of_batches << endl;
-            float loss;
+            this->epochs += epochs;
+            this->batch_size = batch_size;
+            this->num_of_batches = input.size.m / batch_size ;
+            this->learning_rate = lr;
 
+            cout<<"Total images: " << input.size.m<<endl;
+            cout<<"batch_size: " << batch_size<<endl;
 
+            // tensor_t<float> input_batch = input.get_batch(batch_size, 0);
+            // tensor_t<float> output_batch = output.get_batch(batch_size, 0);
             for ( int epoch = 0; epoch < epochs; ++epoch){
                 for(int batch_num = 0; batch_num<num_of_batches; batch_num++)
                 {
+                    auto start = std::chrono::high_resolution_clock::now();
                     tensor_t<float> input_batch = input.get_batch(batch_size, batch_num);
                     tensor_t<float> output_batch = output.get_batch(batch_size, batch_num);
                     tensor_t<float> out;
 
-
-
                     // Forward propogate
                     for ( int i = 0; i < layers.size(); i++ )
                     {
-                        auto start = std::chrono::high_resolution_clock::now();
-                        
-                        cout<<"For layer "<<i<<" forward pass"<<endl;
-                        cout<<"input size: ";
-                        
-                        // cout<<"output size: ";
-                        // print_tensor_size(layers[i]->out.size);
-                        // cout<<endl;
-
                         if ( i == 0 )
                             out = activate( layers[i], input_batch, true);
                         else
                             out = activate( layers[i], out, true);
-                        print_tensor_size(layers[i]->in.size);
-                        cout<<endl;
-                        
-                        auto finish = std::chrono::high_resolution_clock::now();
-                        std::chrono::duration<double> elapsed = finish - start;
-                        std::cout << "Elapsed time: " << elapsed.count() << " s\n";
-
                     }
-                    
 
                     // Calculate Loss
-                    loss = cross_entropy(out, output_batch, debug);
+                    this->loss = cross_entropy(out, output_batch, debug);
                     
-                    cout <<"loss for epoch: "<< epoch << " and batch: " << batch_num << "is " << loss << endl;
+                    cout <<"loss for epoch: "<< epoch << "/" << epochs << " and batch: " << batch_num << "/" << num_of_batches << " is " << loss << endl;
                     // Backpropogation
                     tensor_t<float> grads_in;
 
                     for ( int i = layers.size() - 1; i >= 0; i-- )
                     {
-                        auto start = std::chrono::high_resolution_clock::now();
+                       // auto start = std::chrono::high_resolution_clock::now();
 
                         if ( i == layers.size() - 1 )
                             grads_in = calc_grads( layers[i], output_batch);
                         else
                             grads_in = calc_grads( layers[i], grads_in );
                         
-                        cout<<"For layer "<<i<<" backward pass"<<endl;
-                        auto finish = std::chrono::high_resolution_clock::now();
-                        std::chrono::duration<double> elapsed = finish - start;
-                        std::cout << "Elapsed time: " << elapsed.count() << " s\n";
+                       // cout<<"For layer "<<i<<" backward pass"<<endl;
+                        // auto finish = std::chrono::high_resolution_clock::now();
+                        // std::chrono::duration<double> elapsed = finish - start;
+                        // std::cout << "Elapsed time: " << elapsed.count() << " s\n";
                      }
                     
             
+                    float n_lr = Step_decay(epoch);
 
                     // Update weights
                     for ( int i = 0; i < layers.size(); i++ )
-                        fix_weights( layers[i], lr);
+                        fix_weights( layers[i], n_lr);
 
-
+                    if (!(batch_num % 10)){ 
+                        auto finish = std::chrono::high_resolution_clock::now();
+                        std::chrono::duration<double> elapsed = finish - start;
+                        cout << "Estimated time: " << elapsed.count() / 60.0 * ((num_of_batches - batch_num + 1) + num_of_batches * (epochs - epoch + 1)) <<" minutes" << endl;
+                    }
                 }
-                cout<<"Loss after epoch "<<epoch<<" : "<< loss <<endl;
             }
         }
 
@@ -110,10 +113,12 @@ class Model{
             for ( int i = 0; i < layers.size(); i++ )
             {
                 // cout<<"flag6 "<<layers.size()<<endl;
-                if ( i == 0 )
+                if ( i == 0 ){
                     out = activate( layers[i], input_batch, false);
-                else
+                }
+                else{
                     out = activate( layers[i], out, false);
+                }
             }
 
             if (measure_time)
@@ -199,6 +204,12 @@ class Model{
                 cout << "Deleting previous stored layers \n" << endl;
                 layers.clear();
             }
+
+            struct stat buffer;
+            if (!stat (fileName.c_str(), &buffer) == 0) {
+                cout << "File not found: " << fileName << endl;
+                exit(0);
+            }
             ifstream file(fileName);
             json model;
             file >> model;
@@ -272,29 +283,71 @@ class Model{
         }
 
         void save_weights( string folderName ){
+            assert(layers.size() > 1);
+
+            mkdir(folderName.c_str(), 0777);
+            time_t now = time(0);
+            string date = ctime(&now);
+            json j = {
+                {"Date", date},
+                {"Epochs", this->epochs},
+                {"Num_of_batches", this->num_of_batches},
+                {"Batch_size", this->batch_size},
+                {"Training_loss", this->loss},
+                {"Learning_rate", this->learning_rate}
+            };
+            ofstream file(folderName + "/metadata.json");
+            file << j;
+            file.close();
+
             for ( int i = 0; i < layers.size(); i++ ){
-                mkdir(folderName.c_str(), 0777);
                 string fileName = folderName + "/" + to_string(i) + ".weights";
                 save_layer_weight( layers[i], fileName );
-            }
+            }        
             cout << "\n Mode saved in folder " << folderName << endl;
         }
 
         void load_weights( string folderName ){
             assert(layers.size() > 1);
+            ifstream file(folderName+"/metadata.json");
+            json j;
+            file >> j;
+            this->epochs = j["Epochs"];
+            this->num_of_batches = j["Num_of_batches"];
+            this->batch_size = j["Batch_size"];
+            this->loss = j["Training_loss"];
+            file.close();
+            struct stat buffer;
             for ( int i = 0; i < layers.size(); i++ ){
                 string fileName = folderName + "/" + to_string(i) + ".weights";
-                cout<<fileName<<endl;
-                load_layer_weight( layers[i], fileName);
+                if (stat (fileName.c_str(), &buffer) == 0)
+                    load_layer_weight( layers[i], fileName);
+                else{
+                    cout << "File " << fileName << " does not exist\n";
+                    exit(0);
+                }
             }
             cout << "\n Model loaded from folder " << folderName << endl;
         }
 
+        void load( string folderName ){
+            this->load_model( folderName + "/model.json");
+            this->load_weights( folderName + "/weights");
+        }
+
+        void save( string folderName ){
+            this->save_model( folderName + "/model.json");
+            this->save_weights( folderName + "/weights");
+        }
+
         void summary(){
             cout << "\n\t\t\tMODEL SUMMARY\n";
-            for (auto& layer : layers)
+            for (auto& layer : layers){
                 print_layer(layer);
+                cout << "Error occured";
+            }
             cout << endl<< endl;
+            cout << "Model summary printed";
         }
 };
 
