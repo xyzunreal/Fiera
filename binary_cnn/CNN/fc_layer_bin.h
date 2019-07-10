@@ -148,8 +148,8 @@ struct fc_layer_bin_t
 			for(int x=0; x<in_size.x; x++)
 				for(int y=0; y<in_size.y; y++)
 					for(int z=0; z<in_size.z; z++){
-						al_b(e, x, y, z) = alpha[e] * (in_bin(e, x, y, z) == 1 ? float(1) : float(-1) ) +
-								alpha2[e] * (in_bin2(e, x, y, z) == 1 ? float(1) : float(-1) );
+						al_b(e, x, y, z) = alpha[e] * (in_bin.data[in_bin(e, x, y, z)] == 1 ? float(1) : float(-1) ) +
+								alpha2[e] * (in_bin2.data[in_bin2(e, x, y, z)] == 1 ? float(1) : float(-1) );
 					}
 	
 		// if(debug)

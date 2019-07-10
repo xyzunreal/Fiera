@@ -45,12 +45,15 @@ class Model{
             this->num_of_batches = input.size.m / batch_size ;
             this->learning_rate = lr;
 
+            cout<<"flag1";
             cout<<"Total images: " << input.size.m<<endl;
             cout<<"batch_size: " << batch_size<<endl;
 
             // tensor_t<float> input_batch = input.get_batch(batch_size, 0);
             // tensor_t<float> output_batch = output.get_batch(batch_size, 0);
+            cout<<"epochs "<<epochs<<endl;
             for ( int epoch = 0; epoch < epochs; ++epoch){
+    cout<<"flag2";
                 for(int batch_num = 0; batch_num<num_of_batches; batch_num++)
                 {
                     auto start = std::chrono::high_resolution_clock::now();
@@ -61,6 +64,7 @@ class Model{
                     // Forward propogate
                     for ( int i = 0; i < layers.size(); i++ )
                     {
+
                         if ( i == 0 )
                             out = activate( layers[i], input_batch, true);
                         else
@@ -286,6 +290,7 @@ class Model{
             assert(layers.size() > 1);
 
             mkdir(folderName.c_str(), 0777);
+            
             time_t now = time(0);
             string date = ctime(&now);
             json j = {
@@ -336,6 +341,7 @@ class Model{
         }
 
         void save( string folderName ){
+            mkdir(folderName.c_str(), 0777);
             this->save_model( folderName + "/model.json");
             this->save_weights( folderName + "/weights");
         }
@@ -344,10 +350,8 @@ class Model{
             cout << "\n\t\t\tMODEL SUMMARY\n";
             for (auto& layer : layers){
                 print_layer(layer);
-                cout << "Error occured";
             }
             cout << endl<< endl;
-            cout << "Model summary printed";
         }
 };
 

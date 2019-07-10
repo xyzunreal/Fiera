@@ -7,6 +7,8 @@
 #include <cmath>
 #include <string.h>
 #include <fstream>
+#include <inttypes.h> //printing unit64_t
+
 
 using namespace std;
 using json = nlohmann::json;
@@ -93,6 +95,12 @@ struct tensor_t
 	void operator = (tensor_t<T> t){
 		// ccount++;
 		if(t.size.m != size.m or t.size.x != size.x or t.size.y != size.y or t.size.z != size.z){
+			// free(data);
+
+			// if(data){
+			// 	free(data);
+			// }
+
 			data = new T[t.size.m * t.size.x * t.size.y * t.size.z];
 			memset(data,0,sizeof(T)*t.size.m * t.size.x * t.size.y * t.size.z);
 			size.m = t.size.m ;
@@ -106,6 +114,11 @@ struct tensor_t
 
 	void resize(tdsize sz){
 		this->size = sz;
+
+		// if(data){
+		// 	free(data);
+		// }
+
 		data = new T[size.m * size.x * size.y * size.z];
 		memset(data,0,sizeof(T)*size.m * size.x * size.y * size.z);	
 	}	
@@ -160,11 +173,12 @@ struct tensor_t
 	~tensor_t()
 	{
 		// dcount++;
-		delete[] data;
+		free(data);
 	}
 };
 
-void print_tensor( tensor_t<float>& data )
+template<typename T>
+void print_tensor( tensor_t<T>& data )
 {
 	int mx = data.size.x;
 	int my = data.size.y;
@@ -182,6 +196,31 @@ void print_tensor( tensor_t<float>& data )
 			{
 				for ( int x = 0; x < mx; x++ )
 					printf( "%.4f \t", (float)data(tm, x, y, z));
+				printf( "\n" );
+			}
+		}
+	}
+}
+
+template<typename T>
+void print_tensor_t( tensor_t<T>& data )
+{
+	int mx = data.size.x;
+	int my = data.size.y;
+	int mz = data.size.z;
+	int mm = data.size.m;
+
+	for(int tm = 0; tm < mm; tm++){
+		
+		printf("[Example %d]\n", tm);
+
+		for ( int z = 0; z < mz; z++ )
+		{
+			printf( "[Dim%d]\n", z );
+			for ( int y = 0; y < my; y++ )
+			{
+				for ( int x = 0; x < mx; x++ )
+					printf( "%" PRId64 "\t",data(tm, x, y, z));
 				printf( "\n" );
 			}
 		}

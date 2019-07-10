@@ -1,5 +1,17 @@
 #pragma once
 #include "layer_t.h"
+#include <climits>
+
+typedef unsigned int uint128_t __attribute__((mode(TI)));
+
+struct packed_var{
+	tensor_t<uint64_t> packed_input, packed_weight;
+
+	void operator = (packed_var t){
+		this->packed_input = t.packed_input;
+		this->packed_input = t.packed_input;
+	}
+};
 
 #pragma pack(push, 1)
 struct conv_layer_bin_t
@@ -10,6 +22,7 @@ struct conv_layer_bin_t
 	tensor_t<float> filters; 
 	tensor_bin_t filters_bin; 
 	tensor_t<gradient_t> filter_grads;
+	tensor_t<uint64_t> packed_input, packed_weight;
 	uint16_t stride;
 	uint16_t extend_filter, number_filters;
 	tdsize in_size, out_size;
@@ -52,13 +65,6 @@ struct conv_layer_bin_t
 				}
 			}
 		}
-		// if(debug)
-		// {
-		// 	cout<<"\n******weights for conv_bin********\n"<<endl;
-		// 	print_tensor(filters);
-		// }
-
-
 	}
 
 	point_t map_to_input( point_t out, int z )
@@ -104,6 +110,105 @@ struct conv_layer_bin_t
 		};
 	}
 
+	void bitpack_64(tensor_t<float> in){
+
+		// assert(in.size.z % 64 == 0);
+			// packed_var pack;
+
+			packed_input.resize({in.size.m, in.size.x, in.size.y, in.size.z/64});
+			packed_weight.resize({filters.size.m, filters.size.x, filters.size.y, filters.size.z/64});
+
+			for(int i=0; i<in.size.m; i++){
+				for(int j=0; j<in.size.x; j++){
+					for(int k=0; k<in.size.y; k++){
+						for(int z=0; z<in.size.z; z+=64){
+							
+							const size_t UNIT_LEN = 64;
+							std::bitset<UNIT_LEN> bits;
+
+							for(int zz = z; zz<z+64; zz++)
+								bits[zz-z] = in(i,j,k,zz) >= 0;
+
+								static_assert(sizeof(decltype(bits.to_ullong())) * CHAR_BIT == 64,
+									"bits.to_ullong() must return a 64-bit element");
+								packed_input(i,j,k,z/64) = bits.to_ullong();
+						}
+					}
+				}
+			}
+			
+			for(int i=0; i<filters.size.m; i++){
+				for(int j=0; j<filters.size.x; j++){
+					for(int k=0; k<filters.size.y; k++){
+						for(int z=0; z<filters.size.z; z+=64){
+							
+							const size_t UNIT_LEN = 64;
+							std::bitset<UNIT_LEN> bits;
+
+							for(int zz = z; zz<z+64; zz++)
+								bits[zz-z] = filters(i,j,k,zz) >= 0;
+								// cout<<bits[zz-z]<<' '/
+
+								static_assert(sizeof(decltype(bits.to_ullong())) * CHAR_BIT == 64,
+										"bits.to_ullong() must return a 64-bit element");
+								packed_weight(i,j,k,z/64) = bits.to_ullong();
+						}
+					}
+				}
+			}
+
+			// return pack;
+	}
+
+    
+    // packed_var<uint128_t> bitpack_128(tensor_t<float> in){
+    //     	packed_var<uint128_t> pack;
+
+	// 		pack.packed_input.resize({in.size.m, in.size.x, in.size.y, in.size.z/128});
+	// 		pack.packed_weight.resize({filters.size.m, filters.size.x, filters.size.y, filters.size.z/128});
+
+	// 		for(int i=0; i<in.size.m; i++){
+	// 			for(int j=0; j<in.size.x; j++){
+	// 				for(int k=0; k<in.size.y; k++){
+	// 					for(int z=0; z<in.size.z; z+=128){
+							
+	// 						const size_t UNIT_LEN = 128;
+	// 						std::bitset<UNIT_LEN> bits;
+
+	// 						for(int zz = z; zz<z+128; zz++)
+	// 							bits[zz-z] = in(i,j,k,zz) >= 0;
+
+	// 							static_assert(sizeof(decltype(bits.to_ullong())) * CHAR_BIT == 128,
+	// 								"bits.to_ullong() must return a 64-bit element");
+	// 							pack.packed_input(i,j,k,z/128) = bits.to_ullong();
+	// 					}
+	// 				}
+	// 			}
+	// 		}
+			
+	// 		for(int i=0; i<filters.size.m; i++){
+	// 			for(int j=0; j<filters.size.x; j++){
+	// 				for(int k=0; k<filters.size.y; k++){
+	// 					for(int z=0; z<filters.size.z; z+=128){
+							
+	// 						const size_t UNIT_LEN = 128;
+	// 						std::bitset<UNIT_LEN> bits;
+
+	// 						for(int zz = z; zz<z+128; zz++)
+	// 							bits[zz-z] = filters(i,j,k,zz) >= 0;
+	// 							// cout<<bits[zz-z]<<' '/
+
+	// 							static_assert(sizeof(decltype(bits.to_ullong())) * CHAR_BIT == 128,
+	// 									"bits.to_ullong() must return a 64-bit element");
+	// 							pack.packed_weight(i,j,k,z/128) = bits.to_ullong();
+	// 					}
+	// 				}
+	// 			}
+	// 		}
+	// 		return pack;	
+
+    // }
+
 	tensor_bin_t binarize(tensor_t<float> in){
 		
 		tensor_bin_t in_bin(in.size.m, in_size.x, in_size.y, in_size.z );
@@ -118,12 +223,7 @@ struct conv_layer_bin_t
 				}
 			}
 		}
-		// if(debug)
-		// {
-		// 	cout<<"\n************ binarized weights **********\n";
-		// 	print_tensor_bin(filters_bin);
-		// }
-		
+	
 		//binarizes in 
 		for(int example = 0; example<in.size.m; example++)
 			for(int x=0; x<in.size.x; x++)
@@ -151,10 +251,6 @@ struct conv_layer_bin_t
 			
 			alpha[e] = sum/(in.size.x*in.size.y*in.size.z);
 
-			// if(debug)
-			// {
-			// 	cout<<"\nalpha1 for"<<e<<"th example is "<<alpha[e]<<endl;
-			// }
 		}
 
 		// CALCULATE alpha2
@@ -168,24 +264,19 @@ struct conv_layer_bin_t
 			for(int x=0; x<in.size.x; x++)
 				for(int y=0; y<in.size.y; y++)
 					for(int z=0; z<in.size.z; z++){
-						temp(e,x,y,z) = in(e,x,y,z) - alpha[e]*(in_bin(e,x,y,z)==1 ? float(1) : float(-1) );
+						temp(e,x,y,z) = in(e,x,y,z) - alpha[e]*(in_bin.data[in_bin(e,x,y,z)]==1 ? float(1) : float(-1) );
 						in_bin2.data[in_bin2(e,x,y,z)] = temp(e,x,y,z)>=0? 1 : 0;
 						sum += abs(temp(e,x,y,z));
 					}
 
+
+
+
+
 			alpha2[e] = sum/(in.size.x*in.size.y*in.size.z);
 
-			// if(debug)
-			// {
-			// 	cout<<"\nalpha2 for "<<e<<"th example is "<<alpha2[e]<<endl;
-			// }
 		}
 
-		// if(debug)
-		// {
-		// 	cout<<"\nin_bin2"<<endl;
-		// 	print_tensor_bin(in_bin2);
-		// }
 		return in_bin2;
 	}
 		
@@ -193,36 +284,56 @@ struct conv_layer_bin_t
 		// CALCULATE al_b
 
 		tensor_t<float> al_b(in_bin.size.m, in_size.x, in_size.y, in_size.z);
-		for (int e = 0; e < in.size.m; e++)
-			for(int x=0; x<in.size.x; x++)
-				for(int y=0; y<in.size.y; y++)
-					for(int z=0; z<in.size.z; z++){
-						al_b(e, x, y, z) = alpha[e] * (in_bin(e, x, y, z) == 1 ? float(1) : float(-1) ) +
-								alpha2[e] * (in_bin2(e, x, y, z) == 1 ? float(1) : float(-1) );
+        // #pragma omp parallel for private(e, x, y, z,al_b) num_threads(25)
+		for (int e = 0; e < in_bin.size.m; e++)
+			for(int x=0; x<in_bin.size.x; x++)
+				for(int y=0; y<in_bin.size.y; y++)
+					for(int z=0; z<in_bin.size.z; z++){
+
+
+
+						al_b(e, x, y, z) = (in_bin.data[in_bin(e, x, y, z)] == 1 ? float(1) : float(-1) );
+								// alpha2[e] * (in_bin2(e, x, y, z) == 1 ? float(1) : float(-1) );
 					}
 		
-		// if(debug)
-		// {
-		// 	cout<<"\nal_b\n"<<endl;
-		// 	print_tensor(al_b);
-		// }
 		return al_b;
 	}
 
+	tensor_t<float> calculate_al_b_first_bn(tensor_t<float> in){
+
+		tensor_t<float> al_b(in.size.m, in_size.x, in_size.y, in_size.z);
+        
+		#pragma omp parallel for private(e, x, y, z,al_b) num_threads(25)
+		
+		for (int e = 0; e < in.size.m; e++)
+			for(int x=0; x<in.size.x; x++)
+				for(int y=0; y<in.size.y; y++)
+					for(int z=0; z<in.size.z; z++)
+						al_b(e, x, y, z) = (in(e,x,y,z) >= 0.0 ? float(1) : float(-1) );
+					
+		return al_b;
+	}
 	
-	tensor_t<float> activate(tensor_t<float> in, bool train = false)
+	tensor_t<float> activate_old(tensor_t<float> in, bool train = false)
 	{
+		auto start = std::chrono::high_resolution_clock::now();
+
 		if (train) this->in = in;
+		
 		tensor_t<float> out(in.size.m, (in_size.x - extend_filter) / stride + 1, (in_size.y - extend_filter) / stride + 1, number_filters );
+		
 		//binarize filters and in 
         tensor_bin_t in_bin = binarize(in);
+		
 		//initialize alpha and calculate in_bin2
         tensor_bin_t in_bin2 = calculate_alpha(in, in_bin);
+		
 		tensor_t<float> al_b = 	calculate_al_b(in_bin, in_bin2);
 
 		if(train) this->al_b = al_b;
 		
 		//calculating binary convolution
+        // #pragma omp parallel for private(example, filter,x, y,i,sum) num_threads(25)
 		for(int example = 0; example<in.size.m; example++)
 			for ( int filter = 0; filter < filters_bin.size.m; filter++ )
 				for ( int x = 0; x < out.size.x; x++ )
@@ -240,22 +351,85 @@ struct conv_layer_bin_t
 									sum += (!(f^v));
 									sum2 += (!(f^v2));
 								}
-						out(example, x, y, filter ) = alpha[example]*(2*sum - extend_filter*extend_filter*in.size.z);
+						out(example, x, y, filter ) = (2*sum - extend_filter*extend_filter*in.size.z);
 						
-						out(example, x,y,filter) += alpha2[example]*(2*sum2 - extend_filter*extend_filter*in.size.z);
+						// out(example, x,y,filter) += alpha2[example]*(2*sum2 - extend_filter*extend_filter*in.size.z);
 						
 					}
 			
-		
-		// if(debug)
-		// {
-		// 	cout<<"*********output for conv_bin*********\n";
-		// 	print_tensor(out);
-		// }
+			auto finish = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double> elapsed = finish - start;
+		std::cout << "Old binarized time: " << elapsed.count() << " s\n";
+
 		return out;
 
 	}	
-	
+
+
+	tensor_t<float> activate(tensor_t<float> in, bool train = false){
+		
+		this->al_b = calculate_al_b_first_bn(in);
+		tensor_t<float> out(in.size.m, (in_size.x - extend_filter) / stride + 1, (in_size.y - extend_filter) / stride + 1, number_filters );
+		
+		// auto start = std::chrono::high_resolution_clock::now();
+		
+
+		// if(in.size.z % 128==0){
+		// 	packed_var<uint128_t> pack;
+		// 	pack = bitpack_128(in, 128);
+
+		// 	for(int example = 0; example<pack.packed_input.size.m; example++){
+		// 		for ( int filter = 0; filter < pack.packed_weight.size.m; filter++ )
+		// 			for ( int x = 0; x < out.size.x; x++ )
+		// 				for ( int y = 0; y < out.size.y; y++ ){
+
+		// 					point_t mapped = map_to_input( { 0, (uint16_t)x, (uint16_t)y, 0 }, 0 );
+		// 					float sum = 0, sum2 = 0;
+		// 					for ( int i = 0; i < extend_filter; i++ )
+		// 						for ( int j = 0; j < extend_filter; j++ )
+		// 							for ( int z = 0; z < pack.packed_input.size.z; z++ )
+		// 							{
+		// 								uint128_t xnor = ~(pack.packed_input(example,mapped.x + i, mapped.y + j, z)
+		// 													^pack.packed_weight(filter, i, j, z));
+		// 								sum += __builtin_popcount(xnor);
+		// 							}
+		// 					out(example, x, y, filter ) = (2*sum - extend_filter*extend_filter*in.size.z);
+							
+		// 				}
+		// 	}
+
+		// }
+		assert(in.size.z % 64 == 0);
+
+		bitpack_64(in);
+
+		for(int example = 0; example<packed_input.size.m; example++){
+			for ( int filter = 0; filter < packed_weight.size.m; filter++ )
+				for ( int x = 0; x < out.size.x; x++ )
+					for ( int y = 0; y < out.size.y; y++ ){
+
+						point_t mapped = map_to_input( { 0, (uint16_t)x, (uint16_t)y, 0 }, 0 );
+						float sum = 0, sum2 = 0;
+						for ( int i = 0; i < extend_filter; i++ )
+							for ( int j = 0; j < extend_filter; j++ )
+								for ( int z = 0; z < packed_input.size.z; z++ )
+								{
+									uint64_t xnor = ~(packed_input(example,mapped.x + i, mapped.y + j, z)
+														^ packed_weight(filter, i, j, z));
+									sum += __builtin_popcount(xnor);
+								}
+						out(example, x, y, filter ) = (2*sum - extend_filter*extend_filter*in.size.z);
+						
+					}
+		}
+		
+		// auto finish = std::chrono::high_resolution_clock::now();
+		// std::chrono::duration<double> elapsed = finish - start;
+		// std::cout << "New binarized time: " << elapsed.count() << " s\n";
+
+		return out;
+
+	}
 	void fix_weights(float learning_rate){
 		for ( int a = 0; a < filters.size.m; a++ )
 			for ( int i = 0; i < extend_filter; i++ )
@@ -268,15 +442,12 @@ struct conv_layer_bin_t
 						w = update_weight( w, grad, 1, true, learning_rate);
 						update_gradient(grad);
 					}
-		// if(debug)
-		// {
-		// 	cout<<"\n*******new weights for conv_bin*****\n";
-		// 	print_tensor(filters);
-		// }
 	}
 
 	tensor_t<float> calc_grads( tensor_t<float>& grad_next_layer)
 	{
+		auto start = std::chrono::high_resolution_clock::now();
+
 		tensor_t<float> grads_in(grad_next_layer.size.m, in_size.x, in_size.y, in_size.z);
 
 		for ( int k = 0; k < filter_grads.size.m; k++ )
@@ -287,6 +458,7 @@ struct conv_layer_bin_t
 						filter_grads(k, i, j, z ).grad = 0;
 		}
 
+        // #pragma omp parallel for private(e, x, y,z,sum_error) num_threads(25)
 		for ( int e = 0; e < in.size.m; e++)
 			for ( int x = 0; x < in.size.x; x++ )
 				for ( int y = 0; y < in.size.y; y++ ){
@@ -314,13 +486,11 @@ struct conv_layer_bin_t
 						clip_gradients(clip_gradients_flag, grads_in(e,x,y,z));
 					}
 				}
-		// if(debug)
-		// {
-		// 	cout<<"*********grads filter*****************\n";
-		// 	print_tensor(filter_grads);
-		// 	cout<<"*********grads_in for conv_bin************\n";
-		// 	print_tensor(grads_in);
-		// }
+		
+		auto finish = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double> elapsed = finish - start;
+		std::cout << "backprop time: " << elapsed.count() << " s\n";
+		
 		return grads_in;
 	}
 

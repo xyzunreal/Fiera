@@ -199,7 +199,7 @@ struct conv_layer_t
 						grads_in(e, x, y, z ) = sum_error;
 						// clip_gradients(clip_gradients_flag, grads_in(e,x,y,z));
 					}
-				}
+					}
 			}
 		}
 		
