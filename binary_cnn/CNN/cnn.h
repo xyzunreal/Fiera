@@ -1,3 +1,9 @@
+
+/*! CNN.h
+	It refers 
+    where s_param is a learnable parameter 
+ */
+
 #pragma once
 #include "tensor_t.h"
 #include "tensor_bin_t.h"

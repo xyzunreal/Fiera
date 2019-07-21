@@ -1,3 +1,5 @@
+/*! Custom Class to hold data as 'images' and 'labels'*/
+
 #pragma once
 #include "tensor_t.h"
 

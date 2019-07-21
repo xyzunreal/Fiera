@@ -1,3 +1,5 @@
+/*! Custom Class to hold dataset in three different form i.e. train, test, validation*/
+
 #pragma once
 #include "tensor_t.h"
 #include "data.h"

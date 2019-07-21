@@ -1,6 +1,11 @@
-/*
-To implement softmax 
+
+/*! Softmax layer 
+	It follows:
+	  output(i) = exp(xi)/sum(exp(x1)+...+exp(xn)) 
 */
+
+//TODO: Adding debug flags to ifdef
+
 
 #pragma once
 #include <math.h>
@@ -20,11 +25,23 @@ struct softmax_layer_t
 	tensor_t<float> out;
 	bool to_normalize;
 	bool debug, clip_gradients_flag;	
-	softmax_layer_t( tdsize in_size, bool to_normalize=true,bool clip_gradients_flag = true, bool debug_flag = false)
-		// in( in_size.m, in_size.x, 1, 1),
-		// out( in_size.m, in_size.x, 1, 1 ),
-		// grads_in( in_size.m, in_size.x, 1, 1)
+	softmax_layer_t( tdsize in_size, bool clip_gradients_flag = true, bool debug_flag = false)
+		/**
+		* 
+		* Parameters
+		* ----------
+		* in_size : (int m, int x, int y, int z)
+		* 		Size of input matrix.
+		*
+		* clip_gradients_flag : bool
+		* 		Whether gradients have to be clipped or not
+		* 
+		* debug_flag : bool
+		* 		Whether to print variables for debugging purpose
+		*
+		**/
 	{
+
 		this->in_size = in_size;
 		this->out_size = in_size;
 		this->to_normalize = to_normalize;
@@ -32,50 +49,31 @@ struct softmax_layer_t
 		this->clip_gradients_flag = clip_gradients_flag;
 	}
 	
-	// void normalize_in()
-	// {
-	// 	for(int tm=0; tm<in_size.m; tm++){
-	// 		float minm = 1e7;
-	// 		float maxm = -1e7;
-	// 		for(int i=0; i<in.size.x; i++){
-	// 			minm = min(in(tm,i,0,0), minm);
-	// 			maxm = max(in(tm,i,0,0), maxm);
-	// 		}
-
-	// 		for(int i=0; i<in.size.x; i++){
-	// 			in(tm,i,0,0) = (in(tm,i,0,0) - minm)/(maxm-minm);
-	// 		// in(tm,i,0,0) = in(tm,i,0,0) - maxm;
-	// 		}
-	// 	}
-	// }
 	
 	tensor_t<float> activate( tensor_t<float> in, bool train = true)
+	//  `activate` FORWARD PROPOGATES AND RETURNS THE RESULT.	
 	{	
-		
-		if (to_normalize) {}
-			// normalize_in();
+		/** 
+     	* @param 'in': input tensor for size expected (m, 10, 1, 1) 
+     	*/
+
 		tensor_t<float> out( in.size.m, in.size.x, 1, 1 );
+
 		float temp1, sum = 0;
+		
 		for ( int tm = 0; tm < in.size.m; tm++ ){
 			sum = 0;
 			for ( int i = 0; i < in.size.x; i++ )
 			{
 				temp1= in(tm, i, 0, 0);
-				// sum += exp(temp1);
 				sum += max(exp(temp1), float(1e-7));
 			}
 		
 			for ( int i = 0; i < in.size.x; i++ )
-				// out(tm, i, 0, 0) = exp(in(tm, i, 0, 0);
 				out(tm, i, 0, 0) = max(exp(in(tm, i, 0, 0)), float(1e-7))/sum;	
 		}
 
-		// if(debug)
-		// {		
-		// 	cout<<"********output for softmax ********\n";
-		// 	print_tensor(out);
-		// }
-
+		// to save inference time
 		if (train) this->out = out;
 		
 		return out;
@@ -88,6 +86,7 @@ struct softmax_layer_t
 	}
 	
 	tensor_t<float> calc_grads( tensor_t<float>& grad_next_layer )
+	//  `calc_grads` BACKWARD PROPOGATES AND RETURNS THE RESULT.	
 	{
 		
 		float m = grad_next_layer.size.m;
@@ -106,16 +105,8 @@ struct softmax_layer_t
 		 		if(idx!=i){
 					grads_in(e,i,0,0) = ((out(e,i,0,0))/m);
 				}
-				clip_gradients(clip_gradients_flag, grads_in(e,i,0,0));
-				
 			}	
 		}
-		
-		// if(debug)
-		// {
-		// 	cout<<"********grads_in for softmax*********\n";
-		// 	print_tensor(grads_in);
-		// }
 
 		return grads_in;
 	}

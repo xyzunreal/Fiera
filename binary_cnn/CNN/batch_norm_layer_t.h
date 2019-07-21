@@ -1,5 +1,11 @@
+/*! 
+* Batch Norm Layer
+*/
+
+//TODO: Adding debug flags to ifdef
+
 #pragma once
-#include<math.h>
+#include <math.h>
 #include "layer_t.h"
 
 #pragma pack(push, 1)
@@ -7,7 +13,8 @@ struct batch_norm_layer_t
 {
 	layer_type type = layer_type::batch_norm;
 	tensor_t<float> in;
-	tensor_t<float> in_hat,out;
+	tensor_t<float> in_hat;
+	tensor_t<float> out;
 	tdsize in_size, out_size;
 	float epsilon;
 	vector<float> gamma, beta, u_mean, sigma;
@@ -16,6 +23,20 @@ struct batch_norm_layer_t
 	bool debug, clip_gradients_flag;
 
 	batch_norm_layer_t(tdsize in_size,bool clip_gradients_flag = true, bool debug_flag = false)
+	/**
+	* 
+	* Parameters
+	* ----------
+	* in_size : tdsize
+	* 		size of input
+	*
+	* clip_gradients_flag : bool
+	* 		Whether gradients have to be clipped or not
+	* 
+	* debug_flag : bool
+	* 		Whether to print variables for debugging purpose
+	*
+	**/
 	{
 		this->in_size = in_size;
 		this->out_size = in_size;
@@ -89,13 +110,6 @@ struct batch_norm_layer_t
                 }
             }
         }
-		
-		// in_hat = in*gamma + beta
-
-		// if(debug){
-		// 	cout<<"\n**********output for batchnorm************\n";
-		// 	print_tensor(out);
-		// }
 
 		if(train) {
 			this->out = out;
@@ -118,8 +132,6 @@ struct batch_norm_layer_t
 
 	tensor_t<float> calc_grads( tensor_t<float>& grad_next_layer)
 	{
-		// fill(grads_beta.begin(), grads_beta.end(), 0);
-		// fill(grads_gamma.begin(), grads_gamma.end(), 0);
 		assert(in.size > 0); 
 
 		tensor_t <float> grads_xmu1(grad_next_layer.size.m, in_size.x,in_size.y, in_size.z),
@@ -197,12 +209,6 @@ struct batch_norm_layer_t
 				}
 			}
 		}
-
-		// if(debug)
-		// {
-		// 	cout<<"\n*********grads_in for batch_norm************\n";
-		// 	print_tensor(grads_in);
-		// }
 
 		return grads_in;	
 	}

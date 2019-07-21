@@ -1,3 +1,10 @@
+
+/*! Convolution Layer
+    It follows: 
+		Well, you know what happens in convolution layer.
+ */
+
+//TODO: Adding debug flags to ifdef
 #pragma once
 #include "layer_t.h"
 
@@ -16,7 +23,29 @@ struct conv_layer_t
 		:
 		filters(number_filters, extend_filter, extend_filter, in_size.z),
 		filter_grads(number_filters, extend_filter, extend_filter, in_size.z)
-
+    /**
+	* 
+	* Parameters
+	* ----------
+	* stride : int
+	* 		Strides during convolution
+	*
+	* extend_filter : int
+	*		Size of Filters (height and width)
+    *
+	* number_filters: int
+	* 		Number of Channels in ouput
+	*
+	* in_size : (int m, int x, int y, int z)
+	* 		Size of input matrix.
+	*
+	* clip_gradients_flag : bool
+	* 		Whether gradients have to be clipped or not
+	* 
+	* debug_flag : bool
+	* 		Whether to print variables for debugging purpose
+	*
+	**/
 	{	
 		this->number_filters = number_filters;
 		this->debug=debug_flag;
@@ -46,11 +75,6 @@ struct conv_layer_t
 			}
 		}
 
-		if(debug)
-		{
-			cout<<"**************weights for convolution*******\n";
-			print_tensor(filters);
-		}
 	}
 
 	point_t map_to_input( point_t out, int z )	
@@ -98,7 +122,6 @@ struct conv_layer_t
 
 	tensor_t<float> activate(tensor_t<float>& in, bool train)
 	{
-		
 
 		if (train) this->in = in;
 
@@ -128,12 +151,6 @@ struct conv_layer_t
 			}
 		}
 
-		// if(debug)
-		// {
-		// 	cout<<"*********out for convolution*************\n";
-		// 	print_tensor(out);
-		// }
-		
 
 		return out;
 	}
@@ -152,12 +169,6 @@ struct conv_layer_t
 						w = update_weight( w, grad,1,false,learning_rate);
 						update_gradient( grad );
 					}
-		// if(debug)
-		// {
-		// 	cout<<"*******new weights for float conv*****\n";
-		// 	print_tensor(filters);
-		// }
-		
 	}
 
 	tensor_t<float> calc_grads( tensor_t<float>& grad_next_layer )
@@ -203,14 +214,6 @@ struct conv_layer_t
 			}
 		}
 		
-		// if(debug)
-		// {
-		// 	cout<<"*************grads filter**********\n";
-		// 	print_tensor(filter_grads);
-
-		// 	cout<<"*********grads_in for float conv********\n";
-		// 	print_tensor(grads_in);
-		// }
 
 		return grads_in;
 	}

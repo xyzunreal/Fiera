@@ -1,3 +1,9 @@
+
+/*! Custom tensor*/
+
+// REMEMBER: tensor_bin_t(m, x, y, z) returns the position in linear array
+//           while tensor_t(m, x, y, z) returns the reference
+
 #pragma once
 #include "point_t.h"
 #include "../Libraries/json.hpp"
@@ -7,20 +13,28 @@
 #include <cmath>
 #include <string.h>
 #include <fstream>
-#include <inttypes.h> //printing unit64_t
-
+#include <inttypes.h> //!< For printing uint64_t
 
 using namespace std;
 using json = nlohmann::json;
 
-// Checks equality of two floating point numbers upto two decimal points.
 bool areEqual(float a,float b) {
+	
+	/** 
+     * @param a, b float variables
+	 * @return true if a equals b upto two decimal points
+     */
+
 	return trunc(100. * a) == trunc(100. * b);
 }
 
 template<typename T>
 struct tensor_t
 {
+	/** 
+     * Custom 4D tensor holding two variables i.e. data and size(m,x,y,z)
+     */
+
 	T * data;
 	// static int ccount, dcount;
 	tdsize size;
@@ -30,6 +44,11 @@ struct tensor_t
 	
 	tensor_t(int _m, int _x, int _y, int _z)
 	{
+		/** 
+     	* @param _m, _x, _y, _z 
+		* @return Constructor to declare tensor having size of _m, _x, _y, _z
+		*/
+
 		// ccount+=1;
 		data = new T[_x * _y * _z * _m];
 		memset(data,0,sizeof(T)*_x*_y*_z*_m);
@@ -41,17 +60,26 @@ struct tensor_t
 
 	tensor_t(tdsize sz)
 	{
+		/** 
+     	* @param tdsize sz 
+		* @return Constructor to declare tensor having size of 'sz'
+		*/
 		// ccount++;
 		data = new T[sz.x * sz.y * sz.z * sz.m];
 		memset(data,0,sizeof(T)*sz.x*sz.y*sz.z*sz.m);
-		size.m = sz.m;
 		size.x = sz.x;
 		size.y = sz.y;
+		size.m = sz.m;
 		size.z = sz.z;
 	}
 
 	tensor_t( const tensor_t& other )
 	{
+		/** 
+     	* @param tensor_t other 
+		* @return cloned tensor with 'other' tensor values   
+		*/
+
 		// ccount++;
 		data = new T[other.size.x *other.size.y *other.size.z * other.size.m];
 		memcpy(
@@ -59,11 +87,20 @@ struct tensor_t
 			other.data,
 			other.size.x *other.size.y *other.size.z * other.size.m * sizeof( T )
 		);
+		// this->data = other.data;
 		this->size = other.size;
 	}
 
 	tensor_t<T> operator+( tensor_t<T>& other )
 	{
+		/** 
+		* overloaded '+' operator to add two tensors 
+     	* @param tensor_t other, this
+		* @return summation of other and this   
+		*/
+
+		assert(this->size == other->size);
+
 		tensor_t<T> clone( *this );
 		for ( int i = 0; i < other.size.x * other.size.y * other.size.z * other.size.m; i++ )
 			clone.data[i] += other.data[i];
@@ -72,6 +109,12 @@ struct tensor_t
 
 	tensor_t<T> operator-( tensor_t<T>& other )
 	{
+		/** 
+		* overloaded '-' operator to add two tensors 
+     	* @param tensor_t other, this 
+		* @return difference of other and this   
+		*/
+	
 		tensor_t<T> clone( *this );
 		for ( int i = 0; i < other.size.x * other.size.y * other.size.z* other.size.m; i++ )
 			clone.data[i] -= other.data[i];
@@ -80,6 +123,12 @@ struct tensor_t
 
 	bool operator==( tensor_t<T> t2 )
 	{
+		/** 
+		* overloaded '==' operator to add two tensors 
+     	* @param tensor_t t2, this 
+		* @return whether t2 equals this   
+		*/
+
 		tensor_t<T> t1( *this );	
 		bool equal = false;
 		for ( int i = 0; i < t1.size.x * t1.size.y * t1.size.z* t1.size.m; i++ )
@@ -89,17 +138,25 @@ struct tensor_t
 
 	T& operator()( int _m, int _x, int _y, int _z)
 	{
+		/** 
+		* to access the elements at [_m][_x][_y][_z] position in tensor 
+     	* @param integer _m, _x, _y, _z 
+		* @return integer at the given position   
+		*/
+	
 		return this->get(_m, _x, _y, _z);
 	}
 
 	void operator = (tensor_t<T> t){
 		// ccount++;
-		if(t.size.m != size.m or t.size.x != size.x or t.size.y != size.y or t.size.z != size.z){
-			// free(data);
 
-			// if(data){
-			// 	free(data);
-			// }
+		/** 
+		* transfer the value of tensor t to this tensor  
+     	* @param integer _m, _x, _y, _z 
+		* @return integer at the given position   
+		*/
+
+		if(t.size.m != size.m or t.size.x != size.x or t.size.y != size.y or t.size.z != size.z){
 
 			data = new T[t.size.m * t.size.x * t.size.y * t.size.z];
 			memset(data,0,sizeof(T)*t.size.m * t.size.x * t.size.y * t.size.z);
@@ -113,22 +170,14 @@ struct tensor_t
 	}
 
 	void resize(tdsize sz){
+		
 		this->size = sz;
-
-		// if(data){
-		// 	free(data);
-		// }
-
 		data = new T[size.m * size.x * size.y * size.z];
 		memset(data,0,sizeof(T)*size.m * size.x * size.y * size.z);	
 	}	
 
 	T& get(int _m, int _x, int _y, int _z)
 	{
-		// data is accessed as ( m, x, y, z )
-		// assert( _m >=0 &&_x >= 0 && _y >= 0 && _z >= 0 );
-		// assert( _m < size.m && _x < size.x && _y < size.y && _z < size.z );
-		
 		return data[
 			_m * (size.x * size.y * size.z) +
 				_z * (size.x * size.y) +
@@ -145,8 +194,6 @@ struct tensor_t
 		int y = data[0][0].size();
 		int x = data[0][0][0].size();
 
-	// cout<<m<<' '<<z<<" "<<y<<' '<<x<<endl;
-	// print_tensor_size(this->size);
 
 		for( int tm = 0; tm<m; tm++ )
 			for ( int i = 0; i < x; i++ )
@@ -157,6 +204,10 @@ struct tensor_t
 	}
 
 	tensor_t<float> get_batch(int batch_size, int batch_num){
+		
+		/** 
+		* return a batch of 'batch_size' starting from 'batch_num'     
+		*/
 
 		tensor_t<float> t(batch_size , this->size.x, this->size.y, this->size.z );	
 		int start = batch_num * batch_size;
@@ -173,7 +224,8 @@ struct tensor_t
 	~tensor_t()
 	{
 		// dcount++;
-		free(data);
+		// free(data);
+		delete[] data;
 	}
 };
 
@@ -205,6 +257,10 @@ void print_tensor( tensor_t<T>& data )
 template<typename T>
 void print_tensor_t( tensor_t<T>& data )
 {
+	/** 
+	* Print tensor having uint64_t data values   
+	*/
+
 	int mx = data.size.x;
 	int my = data.size.y;
 	int mz = data.size.z;
@@ -228,6 +284,11 @@ void print_tensor_t( tensor_t<T>& data )
 }
 
 void print_tensor(tensor_t<gradient_t>& data){
+
+	/** 
+	* Printing tensort of gradient_t type values   
+	*/
+
 	int mx = data.size.x;
 	int my = data.size.y;
 	int mz = data.size.z;
@@ -251,11 +312,14 @@ void print_tensor(tensor_t<gradient_t>& data){
 }
 
 void print_tensor_size(tdsize data){
-	cout<<data.m<<",  "<<data.x<<",  "<<data.y<<", "<<data.z;
+
+	cout<<data.m<<",  "<<data.x<<",  "<<data.y<<", "<<data.z<<endl;
+
 }
 
 static tensor_t<float> to_tensor( std::vector<std::vector<std::vector<std::vector<float> > > > data )
 {
+	
 	int m = data.size();
 	int z = data[0].size();
 	int y = data[0][0].size();

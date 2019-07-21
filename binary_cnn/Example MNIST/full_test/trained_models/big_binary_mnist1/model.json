@@ -13,17 +13,17 @@
                 1
             ],
             "layer_type": "conv",
-            "number_filters": 20,
+            "number_filters": 64,
             "stride": 1
         },
         {
-            "alpha": -7.70648717880249,
+            "alpha": 0.05000000074505806,
             "clip_gradients": false,
             "in_size": [
                 -1,
                 24,
                 24,
-                20
+                64
             ],
             "layer_type": "prelu",
             "prelu_zero": 0.5
@@ -34,7 +34,7 @@
                 -1,
                 24,
                 24,
-                20
+                64
             ],
             "layer_type": "batch_norm2D"
         },
@@ -45,20 +45,20 @@
                 -1,
                 24,
                 24,
-                20
+                64
             ],
             "layer_type": "conv_bin",
-            "number_filters": 50,
+            "number_filters": 128,
             "stride": 1
         },
         {
-            "alpha": -26.60887908935547,
+            "alpha": 0.05000000074505806,
             "clip_gradients": false,
             "in_size": [
                 -1,
                 20,
                 20,
-                50
+                128
             ],
             "layer_type": "prelu",
             "prelu_zero": 0.5
@@ -69,7 +69,7 @@
                 -1,
                 20,
                 20,
-                50
+                128
             ],
             "layer_type": "batch_norm2D"
         },
@@ -80,20 +80,20 @@
                 -1,
                 20,
                 20,
-                50
+                128
             ],
             "layer_type": "conv_bin",
-            "number_filters": 80,
+            "number_filters": 192,
             "stride": 1
         },
         {
-            "alpha": 7.634146690368652,
+            "alpha": 0.05000000074505806,
             "clip_gradients": false,
             "in_size": [
                 -1,
                 16,
                 16,
-                80
+                192
             ],
             "layer_type": "prelu",
             "prelu_zero": 0.5
@@ -104,7 +104,7 @@
                 -1,
                 16,
                 16,
-                80
+                192
             ],
             "layer_type": "batch_norm2D"
         },
@@ -115,20 +115,20 @@
                 -1,
                 16,
                 16,
-                80
+                192
             ],
             "layer_type": "conv_bin",
-            "number_filters": 100,
+            "number_filters": 256,
             "stride": 1
         },
         {
-            "alpha": 1.4622461795806885,
+            "alpha": 0.05000000074505806,
             "clip_gradients": false,
             "in_size": [
                 -1,
                 12,
                 12,
-                100
+                256
             ],
             "layer_type": "prelu",
             "prelu_zero": 0.5
@@ -139,7 +139,7 @@
                 -1,
                 12,
                 12,
-                100
+                256
             ],
             "layer_type": "batch_norm2D"
         },
@@ -150,20 +150,20 @@
                 -1,
                 12,
                 12,
-                100
+                256
             ],
             "layer_type": "conv_bin",
-            "number_filters": 120,
+            "number_filters": 128,
             "stride": 1
         },
         {
-            "alpha": 15.752050399780273,
+            "alpha": 0.05000000074505806,
             "clip_gradients": false,
             "in_size": [
                 -1,
                 8,
                 8,
-                120
+                128
             ],
             "layer_type": "prelu",
             "prelu_zero": 0.5
@@ -174,7 +174,7 @@
                 -1,
                 8,
                 8,
-                120
+                128
             ],
             "layer_type": "batch_norm2D"
         },
@@ -184,7 +184,7 @@
                 -1,
                 8,
                 8,
-                120
+                128
             ],
             "layer_type": "fc",
             "out_size": [
@@ -195,7 +195,7 @@
             ]
         },
         {
-            "clip_gradients": true,
+            "clip_gradients": false,
             "in_size": [
                 -1,
                 10,

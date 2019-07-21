@@ -1,4 +1,11 @@
 
+/*! Cross Entropy loss function
+    It follows:
+     loss = (-log(predicted)) for true class
+ */
+
+//TODO: Adding debug flags to ifdef
+
 #pragma once
 #include <math.h>
 #include <float.h>
@@ -12,18 +19,10 @@ float cross_entropy(tensor_t<float>& predicted ,tensor_t<float>& actual, bool de
         int index;
         tensor_t<float> temp(predicted.size.m, 1, 1, 1);
         float cost = 0.0;
-        if(debug)
-        {
-            cout<<"***********predicted*********";
-            print_tensor(predicted);
 
-            cout<<"***********actual***********";
-            print_tensor(actual);
-        }
-
-        
         for(int e=0; e < predicted.size.m; e++){
             for ( int i = 0; i < predicted.size.x; i++ ){
+                // Checking for true class
                 if( int(actual(e,i, 0, 0)) == 1){
                     index=i;
                     break;

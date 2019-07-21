@@ -1,3 +1,16 @@
+/*! Fully Connected Binary layer
+    It follows: 
+      y = sum(~x^y)
+ */
+
+//TODO: Adding debug flags to ifdef
+//    : bitpacking
+//    : Adding Flatten layer
+
+
+// REMEMBER: alpha and alpha2 is different for different image
+//         : inbin and inbin2 are referred as 1 and -1 for explanation purpose
+
 #pragma once
 #include <math.h>
 #include <float.h>
@@ -60,16 +73,12 @@ struct fc_layer_bin_t
 				weights(h,i, 0, 0 ) =  (1.0f * (rand()-rand())) / float( RAND_MAX );  // Generates a random number between -1 and 1 
 				weights_bin.data[weights_bin(h, i, 0, 0)] = 0;
 			}
-		// if(debug)
-		// {
-		// 	cout<<"***********float weights for fc bin ************\n";
-		// 	print_tensor(weights);
-		// }
-		
+
 	}
 
     tensor_bin_t binarize(tensor_t<float> in)
-    {
+	//returns first binarization of input
+	{
 		tensor_bin_t in_bin(in.size.m, in_size.x, in_size.y, in_size.z );
         // BINARIZING `weights`
         for (int i = 0; i < weights.size.m; ++i)
@@ -88,11 +97,17 @@ struct fc_layer_bin_t
     }
 
 	tensor_bin_t calculate_alpha( tensor_t<float> in, tensor_bin_t in_bin){
-		
+		// calculates alpha, alpha2, in_bin2
+
+		// REMEMBER: alpha and alpha2 is different for different image
+		//         : inbin and inbin2 are referred as 1 and -1 for explanation purpose
+
 		alpha.resize(in.size.m);
 		alpha2.resize(in.size.m);
 
-		// CALCULATE alpha1		
+		// CALCULATE alpha1
+		// alpha1 = sum(abs(in))/size
+
 		for(int e = 0; e < in.size.m; e++)
 		{
 			float sum = 0;
@@ -102,14 +117,13 @@ struct fc_layer_bin_t
 						sum += abs(in(e,x,y,z));
 			
 			alpha[e] = sum/(in.size.x*in.size.y*in.size.z);
-			
-			// if(debug)
-			// {
-			// 	cout<<"alpha1 for"<<e<<"th example is "<<alpha[e]<<endl;
-			// }
+
 		}
 
 		// CALCULATE alpha2
+		// inbin2 = (in - alpha*in_bin)
+		// alpha2 = sum(abs(in - alpha*in_bin))/size
+		
 		tensor_bin_t in_bin2(in.size.m, in_size.x, in_size.y, in_size.z);
 		tensor_t<float> temp(in.size.m, in.size.x, in.size.y, in.size.z);
 
@@ -127,21 +141,13 @@ struct fc_layer_bin_t
 
 			alpha2[e] = sum/(in.size.x*in.size.y*in.size.z);
 
-			// if(debug)
-			// {
-			// 	cout<<"alpha2 for "<<e<<"th example is "<<alpha2[e]<<endl;
-			// }
 		}
 
-		// if(debug)
-		// {
-		// 	cout<<"\nin_bin2\n"<<endl;
-		// 	print_tensor_bin(in_bin2);
-		// }
 		return in_bin2;
 	}
 	tensor_t<float> calculate_al_b(tensor_bin_t in_bin, tensor_bin_t in_bin2){
-		// CALCULATE al_b
+		// CALCULATE al_b 
+		// al_b = alpha * in_bin + alpha2 * in_bin2
 
 		tensor_t<float> al_b(in_bin.size.m, in_size.x, in_size.y, in_size.z);
 		for (int e = 0; e < in_bin.size.m; e++)
@@ -152,11 +158,6 @@ struct fc_layer_bin_t
 								alpha2[e] * (in_bin2.data[in_bin2(e, x, y, z)] == 1 ? float(1) : float(-1) );
 					}
 	
-		// if(debug)
-		// {
-		// 	cout<<"\nal_b\n"<<endl;
-		// 	print_tensor(al_b);
-		// }
 		return al_b;
 	
 	}
@@ -175,22 +176,16 @@ struct fc_layer_bin_t
 	 //  `activate` FORWARD PROPOGATES AND SAVES THE RESULT IN `out` VARIABLE.
 
 	{
-		if (train) this->in = in;
 
 		tensor_t<float> out( in.size.m, weights.size.x, 1, 1 );
-        tensor_bin_t in_bin = binarize(in);
-
-		// if(debug)
-		// {
-		// 	cout<<"**********binary weights for fc bin **********\n";
-	    //     print_tensor_bin(weights_bin);
-	    //     cout<<"**********binary inputs for fc bin ************\n";
-	    //     print_tensor_bin(in_bin);
-		// }
-        tensor_bin_t in_bin2 = calculate_alpha(in, in_bin);
-		tensor_t<float> al_b = 	calculate_al_b(in_bin, in_bin2);
+        tensor_bin_t in_bin = binarize(in); // first binarization 
+        tensor_bin_t in_bin2 = calculate_alpha(in, in_bin); // second binarization
+		
+		// al_b = alpha * in_bin + alpha2 * in_bin2
+		tensor_t<float> al_b = 	calculate_al_b(in_bin, in_bin2); 
 
 		if (train) this->al_b = al_b;
+		if (train) this->in = in;
 
 		for( int e = 0; e < in.size.m; e++)
 			for(int n = 0; n < weights.size.x; n++ ){
@@ -208,16 +203,12 @@ struct fc_layer_bin_t
 						}
 
 				// weights.size.m is equals to total size of input. i.e. in.size.x * in.size.y * in.size.z
-				out(e, n, 0, 0 ) = alpha[e] * ( 2 * sum - weights.size.m );			// alpha * ( 2P - N )
-				out(e, n, 0, 0 ) += alpha2[e] * (2 * sum2 - weights.size.m ); 		// alpha2 * ( 2P - N )
+				
+				// alpha * ( 2P - N )
+				out(e, n, 0, 0 ) = alpha[e] * ( 2 * sum - weights.size.m );	
+				// alpha2 * ( 2P - N )		
+				out(e, n, 0, 0 ) += alpha2[e] * (2 * sum2 - weights.size.m ); 
 			}
-
-
-		// if(debug)
-		// {
-		// 	cout << "*************output of fc bin *************\n";
-		// 	print_tensor(out);
-		// }
 
 		return out;
 	}
@@ -237,12 +228,6 @@ struct fc_layer_bin_t
 						update_gradient( grad );
 					}
 
-
-		// if(debug)
-		// {
-		// 	cout<<"*******new weights for fc_bin*****\n";
-		// 	print_tensor(weights);
-		// }
 	}
 
 	tensor_t<float> calc_grads( tensor_t<float>& grad_next_layer )
@@ -274,13 +259,6 @@ struct fc_layer_bin_t
 							clip_gradients(clip_gradients_flag, grads_in(e,i,j,z));
 						}
 			}
-
-
-
-		// if(debug){	
-		// 	cout<<"*********grads_in for fc bin***********\n";
-		// 	print_tensor(grads_in);
-		// }	
 
 		return grads_in;
 	}

@@ -66,14 +66,15 @@ int main()
     PATH="Example\\ MNIST/full_test/trained_models/big_binary_mnist1";
     #endif
 
-    Dataset data = load_mnist(100,0,0);
+    model.save(PATH);
+
+    Dataset data = load_mnist(5,5,0);
     // model.load("PATH");
     model.train(data.train.images, data.train.labels, 16, 1, 0.0001);
    
 
     // model.train(data.train.images, data.train.labels, 56, 2, 0.0002);
     
-    model.save(PATH);
 
     // model.save(PATH);
 

@@ -1,10 +1,14 @@
-/*Implement parametric ReLU activation function
-   It follows:
-    f(x) = alpha * x	if x < 0
-    f(x) = x			if x >= 0
+
+/*! Implement parametric ReLU activation function
+    It follows:
+      f(x) = alpha * x	if x < 0
+      f(x) = x			if x >= 0
     where alpha is a learnable parameter
 
 */
+
+//TODO: Adding debug flags to ifdef
+
 #pragma once
 #include "layer_t.h"
 
@@ -14,13 +18,14 @@ struct prelu_layer_t
 	layer_type type = layer_type::prelu;
 	tensor_t<float> in;
 	float alpha;
-	gradient_t grads_alpha;
+	gradient_t grads_alpha; // REMEMBER: Contains sum of gradients of s_param for all examples.
 	float prelu_zero;		// Differential of PReLU is undefined at 0. 'p_relu_zero' defines value to be used instead.
 	bool debug,clip_gradients_flag;
 	tdsize in_size;
 	tdsize out_size;
 
 	prelu_layer_t( tdsize in_size, bool clip_gradients_flag = true, bool flag_debug = false )
+	
 	/**
 	* 
 	* Parameters
@@ -35,6 +40,7 @@ struct prelu_layer_t
 	* 		Whether to print variables for debugging purpose
 	*
 	**/
+	
 	{
 		alpha=0.05;
 		prelu_zero = 0.5;
@@ -46,7 +52,7 @@ struct prelu_layer_t
 
 	tensor_t<float> activate(tensor_t<float>& in, bool train)
 
-	//  `activate` FORWARD PROPOGATES AND SAVES THE RESULT IN `out` VARIABLE.
+	//  `activate` FORWARD PROPOGATES AND RETURNS `out` VARIABLE.
 	{
 		if (train) this->in = in;
 		tensor_t<float> out(in.size.m, in_size.x, in_size.y, in_size.z);
@@ -61,11 +67,6 @@ struct prelu_layer_t
 							x = x*alpha;
 						out( tm, i, j, k) = x;
 					}
-		// if(debug)
-		// {
-		// 	cout<<"********output for prelu*****\n";
-		// 	print_tensor(out);
-		// }
 		return out;
 	}
 
@@ -75,33 +76,24 @@ struct prelu_layer_t
 		// grads_alpha.grad /= out.size.m;
 		alpha = update_weight(alpha,grads_alpha,1,false, learning_rate);
 		update_gradient(grads_alpha);
-		
-		// if(debug)
-		// {
-		// 	cout<<"*******updated alpha for prelu*****\n";
-		// 	cout<<alpha<<endl;
-		// }
 	}
 
 	tensor_t<float> calc_grads( tensor_t<float>& grad_next_layer )
 	{
 		assert(in.size > 0);
 		tensor_t<float> grads_in(grad_next_layer.size.m, in_size.x, in_size.y, in_size.z);
- 
 
-
-	
 		for ( int e = 0; e < in.size.m; e++ ){
 			for ( int i = 0; i < in.size.x; i++ ){
 				for ( int j = 0; j < in.size.y; j++ ){
 					for ( int k = 0; k < in.size.z; k++ )
 					{
-						if(in(e,i,j,k)>0.0){
+						if(in(e,i,j,k)>0.0)
 							grads_in(e,i,j,k) = grad_next_layer(e,i,j,k);
-						}
-						else if(areEqual(in(e,i,j,k),0.0)){
+
+						else if(areEqual(in(e,i,j,k),0.0))
 							grads_in(e,i,j,k) = grad_next_layer(e,i,j,k)*prelu_zero;
-						}
+						
 						else{
 							grads_alpha.grad += grad_next_layer(e,i,j,k) * (in(e, i, j, k));
 							grads_in(e,i,j,k) = grad_next_layer(e,i,j,k)*alpha;
@@ -113,13 +105,6 @@ struct prelu_layer_t
 			}
 		}
 		
-		// if(debug)
-		// {
-		// 	cout<<"***********grads_in for prelu********\n";
-  	    // 	print_tensor(grads_in);
-		// 	cout<<"*********grad alpha***********\n";
-		// 	cout<<grads_alpha.grad<<endl;
-		// }
 		return grads_in;
 	}
 

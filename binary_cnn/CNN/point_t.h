@@ -1,3 +1,5 @@
+/*! Custom object for holding size in m, x, y, z*/
+
 #pragma once
 #include "../Libraries/json.hpp"
 using json = nlohmann::json;

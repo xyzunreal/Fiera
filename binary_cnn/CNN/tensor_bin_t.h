@@ -1,3 +1,12 @@
+
+/*! Custom binarized tensor */
+
+// REMEMBER: tensor_bin_t(m, x, y, z) returns the position in linear array
+//           while tensor_t(m, x, y, z) returns the reference
+
+//TODO: Adding debug flags to ifdef
+//	  : Upgrade bitset declaration from compile time to runtime 
+
 #pragma once
 #include "point_t.h"
 #include <bitset>
@@ -6,7 +15,8 @@ using namespace std;
 
 struct tensor_bin_t
 {
-	bitset<10000000> data;
+	
+	bitset<10000000> data; // Currently we used Static bitset of size 1e5 
 	tdsize size;
 	tensor_bin_t(int _m, int _x, int _y, int _z )
 	{
@@ -46,6 +56,7 @@ struct tensor_bin_t
 		assert( _m >=0 &&_x >= 0 && _y >= 0 && _z >= 0 );
 		assert( _m < size.m && _x < size.x && _y < size.y && _z < size.z );
 
+		// return the position in linear 
 		return (
 			_m * (size.x * size.y * size.z) +
 				_z * (size.x * size.y) +
@@ -69,8 +80,6 @@ struct tensor_bin_t
 						this->data[tm*(size.x*size.y*size.z) + k*(size.x*size.y) + j*(size.x) + i] = data[m][k][j][i];
 	}
 	
-	void xnor_builtin_popcount(tensor_bin_t other){
-	}
 	
 	~tensor_bin_t()
 	{

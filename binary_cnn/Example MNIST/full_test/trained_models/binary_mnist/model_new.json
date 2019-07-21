@@ -1,0 +1,139 @@
+{
+    "config": [
+        null
+    ],
+    "layers": [
+        {
+            "clip_gradients": false,
+            "extend_filter": 3,
+            "in_size": [
+                -1,
+                28,
+                28,
+                1
+            ],
+            "layer_type": "conv",
+            "number_filters": 20,
+            "stride": 1
+        },
+        {
+            "alpha": 7.532990455627441,
+            "clip_gradients": false,
+            "in_size": [
+                -1,
+                26,
+                26,
+                4
+            ],
+            "layer_type": "prelu",
+            "prelu_zero": 0.5
+        },
+        {
+            "clip_gradients": true,
+            "in_size": [
+                -1,
+                26,
+                26,
+                4
+            ],
+            "layer_type": "batch_norm2D"
+        },
+        {
+            "clip_gradients": false,
+            "extend_filter": 3,
+            "in_size": [
+                -1,
+                26,
+                26,
+                4
+            ],
+            "layer_type": "conv_bin",
+            "number_filters": 64,
+            "stride": 1
+        },
+        {
+            "alpha": 1.3010072708129883,
+            "clip_gradients": false,
+            "in_size": [
+                -1,
+                24,
+                24,
+                8
+            ],
+            "layer_type": "prelu",
+            "prelu_zero": 0.5
+        },
+        {
+            "clip_gradients": true,
+            "in_size": [
+                -1,
+                24,
+                24,
+                8
+            ],
+            "layer_type": "batch_norm2D"
+        },
+        {
+            "clip_gradients": false,
+            "extend_filter": 3,
+            "in_size": [
+                -1,
+                24,
+                24,
+                8
+            ],
+            "layer_type": "conv_bin",
+            "number_filters": 128,
+            "stride": 1
+        },
+        {
+            "alpha": 0.5665978789329529,
+            "clip_gradients": false,
+            "in_size": [
+                -1,
+                22,
+                22,
+                10
+            ],
+            "layer_type": "prelu",
+            "prelu_zero": 0.5
+        },
+        {
+            "clip_gradients": true,
+            "in_size": [
+                -1,
+                22,
+                22,
+                10
+            ],
+            "layer_type": "batch_norm2D"
+        },
+        {
+            "clip_gradients": false,
+            "in_size": [
+                -1,
+                22,
+                22,
+                10
+            ],
+            "layer_type": "fc",
+            "out_size": [
+                -1,
+                4,
+                1,
+                1
+            ]
+        },
+        {
+            "clip_gradients": true,
+            "in_size": [
+                -1,
+                4,
+                1,
+                1
+            ],
+            "layer_type": "softmax",
+            "to_normalize": false
+        }
+    ]
+}

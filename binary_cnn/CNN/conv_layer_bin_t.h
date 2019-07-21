@@ -1,40 +1,60 @@
+
+/*! Convolution Binary layer */
+
+//TODO: Adding debug flags to ifdef
+
 #pragma once
 #include "layer_t.h"
 #include <climits>
 
 typedef unsigned int uint128_t __attribute__((mode(TI)));
 
-struct packed_var{
-	tensor_t<uint64_t> packed_input, packed_weight;
-
-	void operator = (packed_var t){
-		this->packed_input = t.packed_input;
-		this->packed_input = t.packed_input;
-	}
-};
-
 #pragma pack(push, 1)
 struct conv_layer_bin_t
 {
 	layer_type type = layer_type::conv_bin;
 	tensor_t<float> in;
-	tensor_t<float> al_b; 			// α1 * h1 + α2 * h2
+	tensor_t<float> al_b; 			// alpha * in_bin + alpha * in_bin2
 	tensor_t<float> filters; 
-	tensor_bin_t filters_bin; 
+	tensor_bin_t filters_bin; 		// Filters after binarization
 	tensor_t<gradient_t> filter_grads;
-	tensor_t<uint64_t> packed_input, packed_weight;
+	tensor_t<uint64_t> packed_input, packed_weight; 
 	uint16_t stride;
 	uint16_t extend_filter, number_filters;
 	tdsize in_size, out_size;
 	vector<float> alpha;
 	vector<float> alpha2;
 	bool debug,clip_gradients_flag; 	
-	conv_layer_bin_t( uint16_t stride, uint16_t extend_filter, uint16_t number_filters, tdsize in_size, bool clip_gradients_flag = true, bool debug_flag = false)
+
+	conv_layer_bin_t( int stride, int extend_filter, int number_filters, tdsize in_size, bool clip_gradients_flag = true, bool debug_flag = false)
 		:
 		filters(number_filters, extend_filter, extend_filter, in_size.z),
 		filter_grads(number_filters, extend_filter, extend_filter, in_size.z),
 		filters_bin(number_filters, extend_filter, extend_filter, in_size.z)
 
+    /**
+	* 
+	* Parameters
+	* ----------
+	* stride : int
+	* 		Strides during convolution
+	*
+	* extend_filter : int
+	*		Size of Filters (height and width)
+    *
+	* number_filters: int
+	* 		Number of Channels in ouput
+	*
+	* in_size : (int m, int x, int y, int z)
+	* 		Size of input matrix.
+	*
+	* clip_gradients_flag : bool
+	* 		Whether gradients have to be clipped or not
+	* 
+	* debug_flag : bool
+	* 		Whether to print variables for debugging purpose
+	*
+	**/
 	{
 		this->number_filters = number_filters;
 		this->out_size =  {in_size.m, (in_size.x - extend_filter) / stride + 1, (in_size.y - extend_filter) / stride + 1, number_filters};
@@ -43,6 +63,8 @@ struct conv_layer_bin_t
 		this->stride = stride;
 		this->extend_filter = extend_filter;
 		this->clip_gradients_flag = clip_gradients_flag;
+
+		
 		assert( (float( in_size.x - extend_filter ) / stride + 1)
 				==
 				((in_size.x - extend_filter) / stride + 1) );
@@ -51,23 +73,28 @@ struct conv_layer_bin_t
 				==
 				((in_size.y - extend_filter) / stride + 1) );
 
+	
+		// initialization
 		for ( int a = 0; a < number_filters; a++ ){
 			int maxval = extend_filter * extend_filter * in_size.z;
-			for ( int i = 0; i < extend_filter; i++ ){
-				for ( int j = 0; j < extend_filter; j++ ){
+			for ( int i = 0; i < extend_filter; i++ )
+				for ( int j = 0; j < extend_filter; j++ )
 					for ( int z = 0; z < in_size.z; z++ ){
 						 //initialization of floating weights 
 						filters(a,i, j, z ) =  (1.0f * (rand()-rand())) / float( RAND_MAX );
 
 						// initialization of binary weights
 						filters_bin.data[filters_bin(a,i,j,z)] = 0;
+						// print_tensor_size(filters.size);
+						// print_tensor_size(filters_bin.size);
+						// cout<<"a: "<<a<<" i: "<<i<<" j: "<<j<<" z: "<<z<<endl;
 					}
-				}
-			}
+				
 		}
 	}
 
 	point_t map_to_input( point_t out, int z )
+
 	{
 		out.x *= stride;
 		out.y *= stride;
@@ -111,104 +138,52 @@ struct conv_layer_bin_t
 	}
 
 	void bitpack_64(tensor_t<float> in){
+	// packing input for fast computation 
+		packed_input.resize({in.size.m, in.size.x, in.size.y, in.size.z/64});
+		packed_weight.resize({filters.size.m, filters.size.x, filters.size.y, filters.size.z/64});
 
-		// assert(in.size.z % 64 == 0);
-			// packed_var pack;
+		// packing input channel wise
+		for(int i=0; i<in.size.m; i++){
+			for(int j=0; j<in.size.x; j++){
+				for(int k=0; k<in.size.y; k++){
+					for(int z=0; z<in.size.z; z+=64){
+						
+						const size_t UNIT_LEN = 64;
+						std::bitset<UNIT_LEN> bits;
 
-			packed_input.resize({in.size.m, in.size.x, in.size.y, in.size.z/64});
-			packed_weight.resize({filters.size.m, filters.size.x, filters.size.y, filters.size.z/64});
+						for(int zz = z; zz<z+64; zz++)
+							bits[zz-z] = in(i,j,k,zz) >= 0;
 
-			for(int i=0; i<in.size.m; i++){
-				for(int j=0; j<in.size.x; j++){
-					for(int k=0; k<in.size.y; k++){
-						for(int z=0; z<in.size.z; z+=64){
-							
-							const size_t UNIT_LEN = 64;
-							std::bitset<UNIT_LEN> bits;
+							static_assert(sizeof(decltype(bits.to_ullong())) * CHAR_BIT == 64,
+								"bits.to_ullong() must return a 64-bit element");
+							packed_input(i,j,k,z/64) = bits.to_ullong();
+					}
+				}
+			}
+		}
+		// packing weights channel wise
+		for(int i=0; i<filters.size.m; i++){
+			for(int j=0; j<filters.size.x; j++){
+				for(int k=0; k<filters.size.y; k++){
+					for(int z=0; z<filters.size.z; z+=64){
+						
+						const size_t UNIT_LEN = 64;
+						std::bitset<UNIT_LEN> bits;
 
-							for(int zz = z; zz<z+64; zz++)
-								bits[zz-z] = in(i,j,k,zz) >= 0;
+						for(int zz = z; zz<z+64; zz++)
+							bits[zz-z] = filters(i,j,k,zz) >= 0;
 
-								static_assert(sizeof(decltype(bits.to_ullong())) * CHAR_BIT == 64,
+							static_assert(sizeof(decltype(bits.to_ullong())) * CHAR_BIT == 64,
 									"bits.to_ullong() must return a 64-bit element");
-								packed_input(i,j,k,z/64) = bits.to_ullong();
-						}
+							packed_weight(i,j,k,z/64) = bits.to_ullong();
 					}
 				}
 			}
-			
-			for(int i=0; i<filters.size.m; i++){
-				for(int j=0; j<filters.size.x; j++){
-					for(int k=0; k<filters.size.y; k++){
-						for(int z=0; z<filters.size.z; z+=64){
-							
-							const size_t UNIT_LEN = 64;
-							std::bitset<UNIT_LEN> bits;
+		}
 
-							for(int zz = z; zz<z+64; zz++)
-								bits[zz-z] = filters(i,j,k,zz) >= 0;
-								// cout<<bits[zz-z]<<' '/
-
-								static_assert(sizeof(decltype(bits.to_ullong())) * CHAR_BIT == 64,
-										"bits.to_ullong() must return a 64-bit element");
-								packed_weight(i,j,k,z/64) = bits.to_ullong();
-						}
-					}
-				}
-			}
-
-			// return pack;
 	}
 
     
-    // packed_var<uint128_t> bitpack_128(tensor_t<float> in){
-    //     	packed_var<uint128_t> pack;
-
-	// 		pack.packed_input.resize({in.size.m, in.size.x, in.size.y, in.size.z/128});
-	// 		pack.packed_weight.resize({filters.size.m, filters.size.x, filters.size.y, filters.size.z/128});
-
-	// 		for(int i=0; i<in.size.m; i++){
-	// 			for(int j=0; j<in.size.x; j++){
-	// 				for(int k=0; k<in.size.y; k++){
-	// 					for(int z=0; z<in.size.z; z+=128){
-							
-	// 						const size_t UNIT_LEN = 128;
-	// 						std::bitset<UNIT_LEN> bits;
-
-	// 						for(int zz = z; zz<z+128; zz++)
-	// 							bits[zz-z] = in(i,j,k,zz) >= 0;
-
-	// 							static_assert(sizeof(decltype(bits.to_ullong())) * CHAR_BIT == 128,
-	// 								"bits.to_ullong() must return a 64-bit element");
-	// 							pack.packed_input(i,j,k,z/128) = bits.to_ullong();
-	// 					}
-	// 				}
-	// 			}
-	// 		}
-			
-	// 		for(int i=0; i<filters.size.m; i++){
-	// 			for(int j=0; j<filters.size.x; j++){
-	// 				for(int k=0; k<filters.size.y; k++){
-	// 					for(int z=0; z<filters.size.z; z+=128){
-							
-	// 						const size_t UNIT_LEN = 128;
-	// 						std::bitset<UNIT_LEN> bits;
-
-	// 						for(int zz = z; zz<z+128; zz++)
-	// 							bits[zz-z] = filters(i,j,k,zz) >= 0;
-	// 							// cout<<bits[zz-z]<<' '/
-
-	// 							static_assert(sizeof(decltype(bits.to_ullong())) * CHAR_BIT == 128,
-	// 									"bits.to_ullong() must return a 64-bit element");
-	// 							pack.packed_weight(i,j,k,z/128) = bits.to_ullong();
-	// 					}
-	// 				}
-	// 			}
-	// 		}
-	// 		return pack;	
-
-    // }
-
 	tensor_bin_t binarize(tensor_t<float> in){
 		
 		tensor_bin_t in_bin(in.size.m, in_size.x, in_size.y, in_size.z );
@@ -367,38 +342,11 @@ struct conv_layer_bin_t
 
 
 	tensor_t<float> activate(tensor_t<float> in, bool train = false){
-		
+
+		if(train) this->in = in;
 		this->al_b = calculate_al_b_first_bn(in);
 		tensor_t<float> out(in.size.m, (in_size.x - extend_filter) / stride + 1, (in_size.y - extend_filter) / stride + 1, number_filters );
 		
-		// auto start = std::chrono::high_resolution_clock::now();
-		
-
-		// if(in.size.z % 128==0){
-		// 	packed_var<uint128_t> pack;
-		// 	pack = bitpack_128(in, 128);
-
-		// 	for(int example = 0; example<pack.packed_input.size.m; example++){
-		// 		for ( int filter = 0; filter < pack.packed_weight.size.m; filter++ )
-		// 			for ( int x = 0; x < out.size.x; x++ )
-		// 				for ( int y = 0; y < out.size.y; y++ ){
-
-		// 					point_t mapped = map_to_input( { 0, (uint16_t)x, (uint16_t)y, 0 }, 0 );
-		// 					float sum = 0, sum2 = 0;
-		// 					for ( int i = 0; i < extend_filter; i++ )
-		// 						for ( int j = 0; j < extend_filter; j++ )
-		// 							for ( int z = 0; z < pack.packed_input.size.z; z++ )
-		// 							{
-		// 								uint128_t xnor = ~(pack.packed_input(example,mapped.x + i, mapped.y + j, z)
-		// 													^pack.packed_weight(filter, i, j, z));
-		// 								sum += __builtin_popcount(xnor);
-		// 							}
-		// 					out(example, x, y, filter ) = (2*sum - extend_filter*extend_filter*in.size.z);
-							
-		// 				}
-		// 	}
-
-		// }
 		assert(in.size.z % 64 == 0);
 
 		bitpack_64(in);
@@ -423,11 +371,8 @@ struct conv_layer_bin_t
 					}
 		}
 		
-		// auto finish = std::chrono::high_resolution_clock::now();
-		// std::chrono::duration<double> elapsed = finish - start;
-		// std::cout << "New binarized time: " << elapsed.count() << " s\n";
-
 		return out;
+		cout<<"flag44\n";		
 
 	}
 	void fix_weights(float learning_rate){

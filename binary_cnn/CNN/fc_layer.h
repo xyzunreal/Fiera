@@ -1,3 +1,11 @@
+/*! Fully Connected layer
+    It follows: 
+      Y  = X * trans(W)
+ */
+
+//TODO: Adding debug flags to ifdef
+//    : Adding Flatten layer
+
 #pragma once
 #include <math.h>
 #include <float.h>
@@ -32,13 +40,8 @@ struct fc_layer_t
 		
 		for ( int i = 0; i < out_size.x; i++ )
 			for ( int h = 0; h < in_size.x * in_size.y * in_size.z; h++ )
-				weights( h, i, 0, 0 ) =  ( 1.0f * (rand()-rand())) / (float( RAND_MAX ) * 10);  // Generates a random number between -1 and 1 
-		
-		// if(debug)
-		// {
-		// 	cout << "********weights for fc************\n";
-		// 	print_tensor(weights);
-		// }
+				// Generates a random number between -1 and 1
+				weights( h, i, 0, 0 ) =  ( 1.0f * (rand()-rand())) / (float( RAND_MAX ) * 10);  
 
 	}
 
@@ -73,11 +76,6 @@ struct fc_layer_t
 		
 		}
 		
-		// if(debug)
-		// {
-		// 	cout<<"*******output for fc**********\n";
-		// 	print_tensor(out);
-		// }
 		return out;
 	}
 
@@ -95,12 +93,6 @@ struct fc_layer_t
 						w = update_weight( w, grad, 1, false, learning_rate);
 						update_gradient( grad );
 					}
-
-		// if(debug)
-		// {
-		// 	cout<<"*******new weights for float fc*****\n";
-		// 	print_tensor(weights);
-		// }
 	}
 
 	tensor_t<float> calc_grads( tensor_t<float>& grad_next_layer )
@@ -126,11 +118,6 @@ struct fc_layer_t
 						}
 			}
 		}	
-		// if(debug)
-		// {
-		// 	cout<<"**********grads_in for float fc***********\n";
-		// 	print_tensor(grads_in);
-		// }
 		return grads_in;	
 
 	}
