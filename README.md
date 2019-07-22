@@ -66,7 +66,7 @@ You can train model yourself by changing in MNIST.cpp
 * Implement different weight initializers, loss functions, optimizers etc.
 * ONNX support to increase interoperability between Fiera and other frameworks.
 * Allow users to download Datasets and Trained models from fiera.io. Provide pretrained models of high speed models like MobileNet, Squeezenet first.
-* Add Documentation on [Fiera.io](fiera.io) and improve Github Documentation .
+* Add Documentation on [Fiera.io](https://fiera.io) and improve Github Documentation .
 
 #### Later Down the Road
 
@@ -75,7 +75,7 @@ You can train model yourself by changing in MNIST.cpp
 
 ## Support
 
-Join chat at [Gitter](https://https://gitter.im/Fiera-UnrealAI/)
+Join chat at [Gitter](https://gitter.im/Fiera-UnrealAI/)
  
 ## Why Fiera?
 
