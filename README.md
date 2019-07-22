@@ -1,7 +1,7 @@
-# Fiera: Swift as a Wild beast
-
+# Fiera: Deep Learning on the Edge
 <p align="center">
-<img src="https://raw.githubusercontent.com/xyzunreal/Fiera/master/images/fiera.png" width = 650 height = 300/>
+<img src="https://raw.githubusercontent.com/xyzunreal/Fiera/master/images/fiera.png" width = 650 height = 205/>
+<hr>
 </p>
 
 
