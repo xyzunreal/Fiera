@@ -12,7 +12,7 @@ Binarised Neural Networks will play a huge role in bringing AI to the edge devic
 
 * Binarize both inputs and weights. Currenly we support binarization of both inputs and weights but later we want to give user flexibility to choose.
 * Supports both forward and backward propogation. Most of the frameworks present today are only inference based which cannot leverage benefits of research focused on training strategies to increase accuracy and training speed of BNNs specifically.
-* Use c++ or either will use libraries of c++ which will prevent from slow function calls of high level languages and also allow to write assembly level optimizations.
+* Use C++ or either will use libraries of C++ which will prevent from slow function calls of high level languages and also allow to write assembly level optimizations.
 * Solely built on C++ that can benefit from machine level optimizations.
 * Currenly we are only binarizing Convolution layers but later we will also allow to binarize Fully Connected(FC) layers if user want.
 * We provide support for binarization of both fc and conv layers.
