@@ -8,6 +8,8 @@
 #include <math.h>
 #include "layer_t.h"
 
+#include "tensor_t.h"
+
 #pragma pack(push, 1)
 struct batch_norm_layer_t
 {
@@ -182,6 +184,10 @@ struct batch_norm_layer_t
 			grads_sqrtvar[z] = -1*sum1/(epsilon+sigma[z]);
 			grads_var[z] = 0.5 * (grads_sqrtvar[z]/sqrt(epsilon+sigma[z]));
 		}
+
+		cout<<"grads_var: \n";
+		for(int i=0; i<grads_var.size(); i++)
+			cout<<grads_var[i]<<' ';
 		
 		for(int z = 0; z<in_size.z; z++){
 			float sum = 0;

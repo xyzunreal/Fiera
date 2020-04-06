@@ -82,14 +82,19 @@ class Model{
                     tensor_t<float> output_batch = output.get_batch(batch_size, batch_num);
                     tensor_t<float> out;
                     
+                    cout<<"forward: "<<endl;
+
                     /*! Forward propogate */
                     for ( int i = 0; i < layers.size(); i++ )
                     {
-
+                        
                         if ( i == 0 )
                             out = activate( layers[i], input_batch, true);
                         else
                             out = activate( layers[i], out, true);
+                        
+                        cout<<"index: "<<i<<endl;
+                        print_tensor(out);
                     }
 
                     /*! Calculate Loss */
@@ -100,6 +105,8 @@ class Model{
                     /*!  Backpropogation */
                     tensor_t<float> grads_in;
 
+                    cout<<"backward: "<<endl;
+
                     for ( int i = layers.size() - 1; i >= 0; i-- )
                     {
 
@@ -107,6 +114,9 @@ class Model{
                             grads_in = calc_grads( layers[i], output_batch);
                         else
                             grads_in = calc_grads( layers[i], grads_in );
+                        
+                        cout<<"grads calculated for index: "<<i<<endl;
+                        print_tensor(grads_in);
                      }
                     
                     /*! setup 'drop' and 'epoch_drop' parameters in the function itself*/

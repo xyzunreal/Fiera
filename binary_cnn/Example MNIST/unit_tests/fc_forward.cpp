@@ -47,14 +47,14 @@ int main()
 
     expected_output.from_vector(vect);
 
-    fc_layer_bin_t * layer = new fc_layer_bin_t( {2, 2, 2, 2}, 4, false);
+    fc_layer_t * layer = new fc_layer_t( {2, 2, 2, 2}, 4, false);
     layer->in = temp_in;
     layer->weights = weights;
-    layer->activate(temp_in, 1);
+    tensor_t<float> out = layer->activate(temp_in, 1);
     cout << "\nExpected output is\n";
     print_tensor(expected_output);
     cout << "\nActual output is\n";
-    print_tensor(layer->out);
+    print_tensor(out);
 
     return 0;
     }
